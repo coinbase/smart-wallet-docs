@@ -1,0 +1,29 @@
+## The Basics
+::::steps
+### Test your app using the beta SDK
+ 
+Test your app with Smart Wallet enabled on using the Beta SDK. See [our guide](/guides/beta).
+
+### Ensure Smart Wallet compatible Signature Validation
+ 
+If your app is using Sign in with Ethereum or similar, ensure you are [ERC-6492](https://eips.ethereum.org/EIPS/eip-6492) compliant. 
+Viem's [verifyMessage](https://viem.sh/docs/actions/public/verifyMessage#verifymessage) makes this very simple. 
+
+If your smart contracts do any signature validation, ensure they follow [ERC-1271](https://eips.ethereum.org/EIPS/eip-1271)
+when the account is not an EOA.    
+
+### Use SDK 4.0 or later
+Your production app, or its wallet provider, should be using Coinbase Wallet SDK version 4.0 or later.
+See Release Plan for more details. 
+
+::::
+## Bonus: Make the most of Smart Wallet!
+::::steps
+### Magic Spend Compatible
+Magic Spend enables users to get "just in time" transaction funding from their Coinbase account.
+This is currently supported for ETH only on Base. 
+To give users the best experience, apps should make use of the auxiliaryFunds capability, 
+documented [here](/features/magic-spend) and ensure they are not blocking actions based solely on onchain balance checks. 
+### Batch Transactions
+### Paymasters
+::::
