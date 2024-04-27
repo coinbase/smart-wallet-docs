@@ -38,16 +38,16 @@ export default defineConfig({
       link: '/why', 
     }, 
     { 
-      text: 'Quick Start', 
+      text: 'Getting started', 
       link: '/start', 
-    }, 
-    { 
-      text: 'Release Plan', 
-      link: '/release-plan', 
     }, 
     { 
       text: 'FAQ', 
       link: '/faq', 
+    },
+    { 
+      text: 'Launch Ready Checklist', 
+      link: '/checklist', 
     },
     { 
       text: 'Guides', 
@@ -58,13 +58,17 @@ export default defineConfig({
           link: '/guides/wagmi', 
         }, 
         { 
-          text: 'Using Beta SDK', 
-          link: '/guides/beta', 
+          text: 'Batch transactions', 
+          link: '/guides/batch', 
         }, 
         { 
-          text: 'Launch Ready Checklist', 
-          link: '/guides/checklist', 
-        },
+          text: 'Paymasters (sponsored transactions)', 
+          link: '/guides/paymaster', 
+        }, 
+        { 
+          text: 'Magic Spend support', 
+          link: '/guides/magic-spend', 
+        }, 
         // {
         //   text: "wallet aggregators",
         //   link: '/docs/api/config',
@@ -118,21 +122,6 @@ export default defineConfig({
       ], 
     } ,
     { 
-      text: 'Features', 
-      collapsed: false, 
-      items: [
-        {
-          text: "Magic Spend"
-        },
-        {
-          text: "Batch Transactions"
-        },
-        {
-          text: "Paymasters"
-        },
-      ]
-    },
-    { 
       text: 'SDK', 
       collapsed: false, 
       items: [ 
@@ -144,6 +133,10 @@ export default defineConfig({
           text: 'Setup', 
           link: '/sdk/setup', 
         }, 
+        {
+          text: 'makeWeb3Provider',
+          link: '/sdk/makeWeb3Provider'
+        }
       ], 
     },
     { 
