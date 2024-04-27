@@ -2,6 +2,7 @@ import { defineConfig } from 'vocs'
 
 export default defineConfig({
   theme: {
+    colorScheme: 'system',
     variables: {
       color: {
         textAccent: { light: '#2394ff', dark: '#e9e9ea' },
@@ -140,8 +141,8 @@ export default defineConfig({
           link: '/sdk/install', 
         }, 
         { 
-          text: 'Configuration', 
-          link: '/sdk/config', 
+          text: 'Setup', 
+          link: '/sdk/setup', 
         }, 
       ], 
     },

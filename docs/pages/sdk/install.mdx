@@ -1,0 +1,61 @@
+## Install 
+
+Smart Wallet is accessible to developers through the [Coinbase Wallet SDK](https://github.com/coinbase/coinbase-wallet-sdk), versions `4.0` and later. 
+Today, there are release candidate versions (labeled `-rc.XX`) and beta versions (labeled `-beta.XX`). 
+
+:::warning
+**IMPORTANT** 
+
+Smart Wallet is not yet publicly launched on mainnet networks. Read about the current SDK versions below 
+and reach out on [Discord](https://discord.com/invite/cdp/) in the `#smart-wallet` channel if you have questions. 
+
+Public mainnet launch is expected to occur by early June.
+:::
+
+### Release Candidate 
+:::code-group
+ 
+```bash [npm]
+npm i @coinbase/wallet-sdk@4.0.0-rc.1
+```
+ 
+```bash [pnpm]
+pnpm i @coinbase/wallet-sdk@4.0.0-rc.1
+```
+
+```bash [yarn]
+yarn add @coinbase/wallet-sdk@4.0.0-rc.1
+```
+ 
+```bash [bun]
+bun i @coinbase/wallet-sdk@4.0.0-rc.1
+```
+:::
+
+- Intended for production environments.
+- Allows developers to see Smart Wallet option on `keys.coinbase.com` popup when app running on `localhost`.
+- Before public mainnet launch, will *not* show Smart Wallet option on `keys.coinbase.com` popup when app *not* running on `localhost`.
+- Allows using Smart Wallet on mainnet networks. 
+
+### Beta
+:::code-group
+ 
+```bash [npm]
+npm i @coinbase/wallet-sdk@4.0.0-beta.12
+```
+ 
+```bash [pnpm]
+pnpm i @coinbase/wallet-sdk@4.0.0-beta.12
+```
+
+```bash [yarn]
+yarn add @coinbase/wallet-sdk@4.0.0-beta.12
+```
+ 
+```bash [bun]
+bun i @coinbase/wallet-sdk@4.0.0-beta.12
+```
+:::
+- Intended for local testing or demo testnet apps. 
+- Based on [config](/sdk/setup), can show Smart Wallet option on `keys.coinbase.com` popup, `localhost` or not.
+- Only allows using Smart Wallet on testnets (currently just Base Sepolia).
