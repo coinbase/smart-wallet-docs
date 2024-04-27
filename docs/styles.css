@@ -1,0 +1,33 @@
+/* body {
+  background-color: black;
+}
+
+.vocs_Content {
+  background-color: blue;
+}
+
+.vocs_Sidebar {
+  background-color: orange;
+}
+ 
+.Vocs_H1 {
+  color: red;
+}
+
+.vocs_Heading {
+  color: green;
+} */
+
+.vocs_NavLogo_title {
+  color: #0d59fe;
+  font-size: 2.5em;
+  font-weight: bold;
+}
+
+.vocs_Sidebar_sectionTitle {
+  color: #0d59fe;
+}
+
+.vocs_Body {
+  background-color: yellow;
+}

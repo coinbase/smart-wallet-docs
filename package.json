@@ -5,13 +5,21 @@
   "scripts": {
     "dev": "vocs dev",
     "build": "vocs build",
-    "preview": "vocs preview"
+    "preview": "vocs preview",
+    "format": "dprint fmt"
   },
   "dependencies": {
     "@types/react": "latest",
+    "dprint": "^0.45.1",
     "react": "latest",
     "react-dom": "latest",
     "typescript": "latest",
     "vocs": "latest"
+  },
+  "devDependencies": {
+    "simple-git-hooks": "^2.11.1"
+  },
+  "simple-git-hooks": {
+    "pre-commit": "bun dprint check"
   }
 }
