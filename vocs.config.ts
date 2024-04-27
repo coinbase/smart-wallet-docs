@@ -16,6 +16,10 @@ export default defineConfig({
       link: '/release-plan', 
     }, 
     { 
+      text: 'FAQ', 
+      link: '/faq', 
+    },
+    { 
       text: 'Guides', 
       collapsed: false, 
       items: [ 
