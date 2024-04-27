@@ -141,8 +141,8 @@ export default defineConfig({
           link: '/sdk/install', 
         }, 
         { 
-          text: 'Configure', 
-          link: '/sdk/configure', 
+          text: 'Setup', 
+          link: '/sdk/setup', 
         }, 
       ], 
     },
