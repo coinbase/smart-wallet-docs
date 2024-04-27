@@ -1,0 +1,53 @@
+# makeWeb3Provider 
+Creates a new `CoinbaseWalletProvider` instance using a `CoinbaseWalletSDK` instance. 
+
+## Usage
+:::code-group
+``` typescript [provider.ts]
+// Create provider
+const provider = sdk.makeWeb3Provider({options: 'smartWalletOnly'});
+// Use provider
+const addresses = provider.request('eth_requestAccounts');
+```
+``` typescript [setup.ts]
+import { CoinbaseWalletSDK } from '@coinbase/wallet-sdk'
+
+const sdk = new CoinbaseWalletSDK({
+  appName: 'My App Name',
+  appChainIds: [8453]
+});
+```
+:::
+
+## Returns 
+A new `CoinbaseWalletProvider` instance, which is an [Ethereum Javascript provider](https://eips.ethereum.org/EIPS/eip-1193) provider.
+
+## Parameters 
+
+### options (optional)
+- Type: `'all' | 'smartWalletOnly' | 'eoaOnly'`
+
+Determines which connection options users will see. Defaults to `all`. 
+
+
+#### `all`
+Users will see Smart Wallet and Wallet Link connection options. 
+
+:::info
+If a user is using a browser with Coinbase Wallet Extension installed, they will be taken straight to the 
+Coinbase Wallet Extension and not see any choice. 
+:::
+
+#### `smartWalletOnly`
+With this option, users will only see an option to create a Smart Wallet or sign into their Smart Wallet. 
+
+:::warning
+If a user is using a browser with Coinbase Wallet Extension installed, they will be taken straight to the 
+extension *even if* this option is set. If users want to use Smart Wallet on that broswer, they will need
+to disable the Coinbase Wallet Extension temporarily. See FAQ on "How this works with the rest of Coinbase Wallet" TODO. 
+:::
+
+#### `eoaOnly`
+Users will only see Wallet Link connection option. If the user is on mobile, they will be taken directly 
+to the Coinbase Wallet app. If the user is using a browser with Coinbase Wallet Extension, they will be taken 
+directly to the Extension.
