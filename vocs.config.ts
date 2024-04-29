@@ -16,21 +16,10 @@ export default defineConfig({
   },
   title: 'Smart Wallet',
   topNav: [ 
-    { text: 'Guide & API', link: '/docs/getting-started', match: '/docs' }, 
-    { text: 'Blog', link: '/blog' }, 
-    { 
-      text: 'version', 
-      items: [ 
-        { 
-          text: 'Changelog', 
-          link: 'https://github.com/wevm/vocs/blob/main/src/CHANGELOG.md', 
-        }, 
-        { 
-          text: 'Contributing', 
-          link: 'https://github.com/wevm/vocs/blob/main/.github/CONTRIBUTING.md', 
-        }, 
-      ], 
-    }, 
+    { text: 'Docs', link: '/start', match: '/docs' }, 
+    { text: 'Demo', link: 'https://smart-wallet.xyz/' }, 
+    { text: 'SDK Playground', link: 'https://coinbase.github.io/coinbase-wallet-sdk/'},
+    { text: 'Github', link: 'https://github.com/coinbase/coinbase-wallet-sdk'}
   ], 
   sidebar: [ 
     { 
@@ -54,7 +43,7 @@ export default defineConfig({
       collapsed: false, 
       items: [ 
         { 
-          text: 'Integrating via Wagmi', 
+          text: 'Using with Wagmi', 
           link: '/guides/wagmi', 
         }, 
         { 
@@ -136,6 +125,23 @@ export default defineConfig({
         {
           text: 'makeWeb3Provider',
           link: '/sdk/makeWeb3Provider'
+        },
+        {
+          text: 'CoinbaseWalletProvider',
+          items: [
+            {
+              text: 'request',
+              items: [
+                {text: 'Overview', link: '/sdk/coinbaseWalletProvider/request/overview'},
+                {text: 'wallet_getCapabilities'},
+                {text: 'wallet_sendCalls'},
+                {text: 'wallet_getCallsStatus'},
+                {text: 'wallet_showCallsStatus'},
+              ]
+            }
+          ]
+        }, {
+          text: 'Supported Networks'
         }
       ], 
     },
