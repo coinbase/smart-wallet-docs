@@ -27,8 +27,8 @@ export default defineConfig({
       link: '/why', 
     }, 
     { 
-      text: 'Getting started', 
-      link: '/start', 
+      text: 'Quick start', 
+      link: '/quick-start', 
     }, 
     { 
       text: 'FAQ', 
@@ -140,9 +140,7 @@ export default defineConfig({
               ]
             }
           ]
-        }, {
-          text: 'Supported Networks'
-        }
+        },
       ], 
     },
     { 
