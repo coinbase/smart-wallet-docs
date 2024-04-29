@@ -1,7 +1,7 @@
 # Using with Smart Wallet with Wagmi 
 This guide covers creating a new Wagmi template project that uses Smart Wallet. 
 
-Run the following command and proceed through the prompts.
+**1. Run the following command and proceed through the prompts.**
 
 :::code-group
  
@@ -14,14 +14,15 @@ bun create wagmi
 ```
 :::
 
-In your new project directory, add the following to `package.json`.
+**2. In your new project directory, add the following to `package.json`.**
 ```json
 "resolutions": {
   "@coinbase/wallet-sdk": "npm:@coinbase/wallet-sdk@4.0.0-beta.12"
 }
 ```
 
-Now install packages with your package manager and run dev. 
+**3. Now install packages with your package manager and run dev.**
+
 :::code-group
  
 ```bash [pnpm]
@@ -33,4 +34,81 @@ bun install && bun run dev
 ```
 :::
 
-Visit localhost:3000 (Next) or localhost:5174 (Vite) and click the "Coinbase Wallet" button. 
+**4. Visit localhost:3000 (Next) or localhost:5174 (Vite) and click the "Coinbase Wallet" button.**
+
+**5. Configure the coinbaseWallet connector**
+
+   - Only `baseSepolia` is supported by http://keys.coinbase.com at this time.
+   - Remove unecessary connectors
+   - Edit `src/wagmi.ts` to look like this:
+
+   ```typescript
+   import { http, createConfig } from 'wagmi';
+   import { baseSepolia } from 'wagmi/chains';
+   import { coinbaseWallet } from 'wagmi/connectors';
+
+   export const config = createConfig({
+     chains: [baseSepolia],
+     connectors: [
+       coinbaseWallet({
+         appName: 'Create Wagmi',
+         appChainIds: [baseSepolia.id],
+       }),
+     ],
+     transports: {
+       [baseSepolia.id]: http(),
+     },
+   });
+
+   declare module 'wagmi' {
+     interface Register {
+       config: typeof config;
+     }
+   }
+   ```
+
+   Note: Any of the following options may optionally be passed to the `coinbaseWallet` connector:
+
+   - `appName?: string`
+     - Your dapp's name to display in wallet with requests
+   - `appLogoUrl?: string`
+     - Your dapp's logo
+     - Favicon is used if unspecified
+   - `appChainIds?: number[]`
+
+     - _Note: you will see typescript warnings since wagmi hasn't been upgraded to use Coinbase Wallet SDK v4 yet_
+     - An array of chain ids your dapp supports
+     - The first chain in this array will be used as the default chain, removing the need for non-mainnet dapps to request switching chains immediately.
+     - Default value is `[1]`, which is not supported by scw fe at this time.
+
+   - There is an option to allow users to connect via smart wallet only or EOA wallet only, but that option will not be available to use via wagmi until wagmi has released a new version with Coinbase wallet SDK v4)
+
+**6. In the test app, click the 'Coinbase Wallet' button to open the smart wallet popup and connect!**
+
+   - If you have the Coinbase wallet extension enabled, that will be the default connection method. Disable it to see the Coinbase wallet popup.
+   - The Coinbase wallet popup allows users to choose their connection method:
+     - Create and connect a new smart wallet
+     - Connect with an existing smart wallet via passkey
+     - Connect with Coinbase Wallet mobile app via QR code scan
+   - Once connected, your app will display the connected status, wallet address, and the current chainId
+
+**7. Take a look at `src/App.tsx` to see how things work, and edit as needed**
+
+   - For example, you may want to show different content depending on connection status. You can accomplish that by adding these few lines before the return statement in App.tsx.
+
+     ```ts
+     // src/App.tsx
+
+     const connector = connectors[0];
+     if (account.status !== 'connected') {
+       return (
+         <button key={connector.uid} onClick={() => connect({ connector })} type="button">
+           {connector.name}
+         </button>
+       );
+     }
+     ```
+
+**8. Make more requests!**
+
+   - You can find everything you need here: https://wagmi.sh/react/api/hooks
