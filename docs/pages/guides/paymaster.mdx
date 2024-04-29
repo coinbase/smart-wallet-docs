@@ -1,12 +1,8 @@
 # Paymasters (Sponsored Transactions)
 
-One of the biggest UX enhancements unlocked by Smart Wallet is the ability for app developers to sponsor their users' transactions. If your app supports Smart Wallet, you can start sponsoring your users' transactions by using [EIP-5792](https://eips.ethereum.org/EIPS/eip-5792) and [ERC-7677](https://erc7677.xyz).
+One of the biggest UX enhancements unlocked by Smart Wallet is the ability for app developers to sponsor their users' transactions. If your app supports Smart Wallet, you can start sponsoring your users' transactions by using [standardized paymaster service communication](https://erc7677.xyz) enabled by [new wallet RPC methods](https://eips.ethereum.org/EIPS/eip-5792).
 
 ## Using Wagmi + Viem
-
-:::warning[Warning]
-The actions below are experimental and not supported in most wallets. It is recommended to have a fallback mechanism if using this in production.
-:::
 
 ### 1. Choose a paymaster service provider
 
@@ -56,6 +52,8 @@ Once you have your paymaster service set up, you can now pass its URL along to V
 
 If you set up a proxy in your app's backend as recommended in step (2) above, you'll want to pass in the proxy URL you created.
 
+If your app supports other wallets that do not yet support the experimental `writeContracts` action, you will need to fall back to Viem's `writeContract` action. Note that this fallback action does not support supplying a paymaster service URL, so the user will pay the transaction fee in this case.
+
 ```ts twoslash
 import { useWalletClient } from 'wagmi'
 import { erc20Abi, parseUnits } from "viem";
@@ -65,27 +63,45 @@ const { data: walletClient } = useWalletClient()
 
 if (walletClient) {
   const client = walletClient.extend(walletActionsEip5792())
-  const id = await client.writeContracts({
-    contracts: [
-      {
-        abi: erc20Abi,
-        address: '0x...', // ERC-20
-        functionName: 'approve',
-        args: ['0x...', parseUnits('10', 18)],
-      },
-      {
-        address: '0x...', // Your contract
-        abi: [], // Your contract ABI
-        functionName: '...',
-        args: [],
-      },
-    ],
-    capabilities: {
-      payamsterService: {
-        url: 'https://...' // The URL from your paymaster service provider, or your app's backend as described in step (2) above
+  try {
+    // Try experimental Viem actions
+    const id = await client.writeContracts({
+      contracts: [
+        {
+          abi: erc20Abi,
+          address: '0x...', // ERC-20
+          functionName: 'approve',
+          args: ['0x...', parseUnits('10', 18)],
+        },
+        {
+          address: '0x...', // Your contract
+          abi: [], // Your contract ABI
+          functionName: '...',
+          args: [],
+        },
+      ],
+      capabilities: {
+        payamsterService: {
+          url: 'https://...' // The URL from your paymaster service provider, or your app's backend as described in step (2) above
+        }
       }
-    }
-  })
+    })
+  } catch {
+    // Fall back to writeContract
+    const approveTxHash = await client.writeContract({
+      address: '0x...', // ERC-20
+      abi: erc20Abi,
+      functionName: 'approve',
+      args: ['0x...', parseUnits('10', 18)],
+    })
+
+    const yourContractTxHash = await client.writeContract({
+      address: '0x...', // Your contract
+      abi: [], // Your contract ABI
+      functionName: '...',
+      args: [],
+    })
+  }
 }
 ```
 

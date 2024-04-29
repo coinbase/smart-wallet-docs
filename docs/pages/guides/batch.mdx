@@ -2,13 +2,9 @@
 
 With Smart Wallet, you can send multiple onchain calls in a single transaction. Doing so improves the UX of multi-step interactions by reducing them to a single click. A common example of where you might want to leverage batch transactions is an ERC-20 `approve` followed by a swap.
 
-You can submit batch transactions by using [EIP-5792](https://eips.ethereum.org/EIPS/eip-5792) RPC methods.
+You can submit batch transactions by using [new `wallet_`-namespaced RPC methods](https://eips.ethereum.org/EIPS/eip-5792).
 
 ## Using Wagmi + Viem
-
-:::warning[Warning]
-The actions below are experimental and not supported in most wallets. It is recommended to have a fallback mechanism if using this in production.
-:::
 
 ### 1. (Optional) Check for atomic batching support
 
@@ -39,35 +35,58 @@ The `getCapabilities` method will return, per chain, the capabilities that the c
 
 If you have your smart contract ABIs, the easiest way to send multiple calls is to use the Viem `writeContracts` action.
 
+Note that you'll want to fall back to Viem's `writeContract` action if your app supports other wallets that do not support EIP-5792 RPC methods.
+
 ```ts twoslash
-import { useWalletClient } from 'wagmi'
+import { useWalletClient, useChainId } from 'wagmi'
 import { erc20Abi, parseUnits } from "viem";
 import { walletActionsEip5792 } from 'viem/experimental'
  
 const { data: walletClient } = useWalletClient()
+const chainId = useChainId()
 
 if (walletClient) {
   const client = walletClient.extend(walletActionsEip5792())
-  const id = await client.writeContracts({
-    contracts: [
-      {
-        abi: erc20Abi,
-        address: '0x...', // ERC-20
-        functionName: 'approve',
-        args: ['0x...', parseUnits('10', 18)],
-      },
-      {
-        address: '0x...', // Your contract
-        abi: [], // Your contract ABI
-        functionName: '...',
-        args: [],
-      },
-    ]
-  })
+  try {
+    // Try experimental Viem actions
+    const id = await client.writeContracts({
+      contracts: [
+        {
+          address: '0x...', // ERC-20
+          abi: erc20Abi,
+          functionName: 'approve',
+          args: ['0x...', parseUnits('10', 18)],
+        },
+        {
+          address: '0x...', // Your contract
+          abi: [], // Your contract ABI
+          functionName: '...',
+          args: [],
+        },
+      ]
+    })
+  } catch {
+    // Fall back to writeContract
+    const approveTxHash = await client.writeContract({
+      address: '0x...', // ERC-20
+      abi: erc20Abi,
+      functionName: 'approve',
+      args: ['0x...', parseUnits('10', 18)],
+    })
+
+    const yourContractTxHash = await client.writeContract({
+      address: '0x...', // Your contract
+      abi: [], // Your contract ABI
+      functionName: '...',
+      args: [],
+    })
+  }
 }
 ```
 
 The Viem `writeContracts` action will construct the necessary calldata for you, given you provide your smart contract ABIs. You can, however, use the lower level `sendCalls` method if you want to provide the calldata yourself.
+
+In this case, you'll want to fall back to the `sendTransaction` action if a connected wallet does not support the experimental Viem actions.
 
 ```ts twoslash
 import { useWalletClient } from 'wagmi'
@@ -78,33 +97,55 @@ const { data: walletClient } = useWalletClient()
 
 if (walletClient) {
   const client = walletClient.extend(walletActionsEip5792())
-  const id = await client.sendCalls({
-    calls: [
-      {
-        to: '0x...', // ERC-20
-        data: encodeFunctionData({
-          abi: erc20Abi,
-          functionName: 'approve',
-          args: ['0x...', parseUnits('10', 18)],
-        }),
-      },
-      {
-        to: '0x...', // Your contract
-        data: '0x...',
-        value: parseEther('0.001')
-      },
-    ],
-  })
+  try {
+    // Try experimental Viem actions
+    const id = await client.sendCalls({
+      calls: [
+        {
+          to: '0x...', // ERC-20
+          data: encodeFunctionData({
+            abi: erc20Abi,
+            functionName: 'approve',
+            args: ['0x...', parseUnits('10', 18)],
+          }),
+        },
+        {
+          to: '0x...', // Your contract
+          data: '0x...',
+          value: parseEther('0.001')
+        },
+      ],
+    })
+  } catch {
+    // Fall back to sendTransaction
+    const approveTxHash = await client.sendTransaction({
+      to: '0x...', // ERC-20
+      data: encodeFunctionData({
+        abi: erc20Abi,
+        functionName: 'approve',
+        args: ['0x...', parseUnits('10', 18)],
+      }),
+    })
+
+    const yourContractTxHash = await client.sendTransaction({
+      to: '0x...', // Your contract
+      data: '0x...',
+      value: parseEther('0.001')
+    })
+  }
 }
 ```
 
 ### 3. Check on the status of your calls
 
-The above `writeContracts` and `sendCalls` examples both return a call bundle identifier. Ese the Viem `getCallsStatus` action with this identifier to check on the status of your calls.
+The above `writeContracts` and `sendCalls` examples both return a call bundle identifier. Use the Viem `getCallsStatus` action with this identifier to check on the status of your calls.
 
 This will return a `PENDING` or `CONFIRMED` status along with a subset of a transaction receipt.
 
+If you sent transactions using the fallback `writeContract` / `sendTransaction` actions, the returned identifiers would be transaciton hashes, and you use the `getTransactionReceipt` action to get receipts once the transactions have been inclued in a block.
+
 ```ts twoslash
+// @noErrors
 import { useWalletClient } from 'wagmi'
 import { walletActionsEip5792 } from 'viem/experimental'
  
@@ -114,7 +155,8 @@ if (walletClient) {
   const client = walletClient.extend(walletActionsEip5792())
   // ...
   // ...
-  const status = await client.getCallsStatus({id: '...'}) // The id returned by writeContracts / sendCalls
+  if (submittedWithExperimentalActions) {
+    const status = await client.getCallsStatus({id: '...'}) // The id returned by writeContracts / sendCalls
 // @log: {
 // @log:   status: 'CONFIRMED',
 // @log:   receipts: [
@@ -136,5 +178,10 @@ if (walletClient) {
 // @log:     }
 // @log:   ]
 // @log: }
+  } else {
+    // Fall back to getTransactionReceipt
+    const approvalReceipt = await client.getTransactionReceipt({hash: approveTxHash})
+    const yourContractReceipt = await client.getTransactionReceipt({hash: yourContractTxHash})
+  }
 }
 ```
