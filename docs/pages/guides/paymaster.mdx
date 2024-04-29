@@ -48,9 +48,9 @@ export async function POST(r: Request) {
 
 ### 3. Send EIP-5792 requests with a paymaster service capability
 
-Once you have your paymaster service set up, you can now pass its URL along to Viem's `writeContracts` action.
+Once you have your paymaster service set up, you can now pass its URL along to Viem's `writeContracts` or `sendCalls` actions.
 
-If you set up a proxy in your app's backend as recommended above, you'll want to pass in the proxy URL you created.
+If you set up a proxy in your app's backend as recommended in step (2) above, you'll want to pass in the proxy URL you created.
 
 ```ts twoslash
 import { useWalletClient } from 'wagmi'
@@ -85,4 +85,4 @@ if (walletClient) {
 }
 ```
 
-That's it! Smart Wallet will handle the rest. If your paymaster service is able to sponsor the transaction, Smart Wallet will indicate to your user that the transaction is gas-free.
+That's it! Smart Wallet will handle the rest. If your paymaster service is able to sponsor the transaction, Smart Wallet will indicate to your user that the transaction is sponsored.
