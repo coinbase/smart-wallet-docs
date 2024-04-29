@@ -1,6 +1,45 @@
-Coming soon...
+## When will Smart Wallet be publicly available on mainnets? 
+By early June. 
 
-- When will Smart Wallet be live?
-- How does Smart Wallet work with Coinbase Wallet app and extension? 
-- What networks will be supported? 
--... 
+## What networks will be supported at launch?
+- Base
+- Arbitrum
+- Optimism
+- Polygon 
+- BNB
+- Avalanche
+- ETH mainnet (not preferred for use, due to gas cost)
+
+## How does Smart Wallet work with Coinbase Wallet mobile app and extension? 
+At launch, Smart Wallet is separate from wallet mobile and extension. Users sign on [keys.coinbase.com](https://keys.coinbase.com/)
+and can view and manage assets at [homebase.coinbase.com](https://homebase.coinbase.com/). 
+
+See [makeWeb3Provider](/sdk/makeWeb3Provider#parameters) documentation for nuances based on different configurations. 
+
+## How much does it cost?
+Smart Wallet is free to use for both developers and users. 
+
+## Who's holding the keys?
+Smart wallets are secured by passkeys stored on the user's device. 
+Passkeys are backed up with passkey providers such as Apple, Chrome, or 1Password, 
+or on hardware such as YubiKeys. 
+Passkey signatures are validated directly onchain via an [open source and audited smart contract](https://github.com/base-org/webauthn-sol). 
+Coinbase never holds keys and never has access to user funds.
+
+## What is a passkey? 
+Passkeys are alternatives to passwords or other encrypted methods like recovery phrases, that are extremely easy to create and highly secure.
+
+They are end-to-end encrypted and linked to your Google or iCloud account, Chrome profile, or hardware device such as a YubiKey.
+
+This means users no longer have to deal with passwords or recovery phrases. Instead they can use common methods of authorization like touch or faceID, and be more resistant to phishing attempts.
+
+## What happens if user lose their passkey? 
+Every Smart Wallet supports multiple owners, and our client encourages users to add a backup recovery key, for the unlikely case they lose their passkey.
+
+## Is Smart Wallet more expensive to use? 
+Smart contract wallets use more gas per transaction than EOA wallets. This means they should be avoided on networks like Ethereum mainnet, 
+but elsewhere the difference is negligible. 
+
+For example, some current transaction costs on Base using Smart Wallet
+- ETH transfer: $0.03
+- ERC-20 transfer: $0.06

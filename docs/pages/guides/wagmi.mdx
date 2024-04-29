@@ -1,1 +1,52 @@
-Coming soon... 
+# Using with Smart Wallet with Wagmi 
+This guide covers creating a new Wagmi template project that uses Smart Wallet. 
+
+Run the following command and proceed through the prompts.
+
+:::code-group
+ 
+```bash [npm]
+npm create wagmi
+```
+ 
+```bash [pnpm]
+pnpm create wagmi
+```
+
+```bash [yarn]
+yarn create wagmi
+```
+ 
+```bash [bun]
+bun create wagmi
+```
+:::
+
+In your new project directory, add the following to `package.json`.
+```json
+"resolutions": {
+  "@coinbase/wallet-sdk": "npm:@coinbase/wallet-sdk@4.0.0-beta.12"
+}
+```
+
+Now install packages with your package manager and run dev. 
+:::code-group
+ 
+```bash [npm]
+npm install && npm run dev
+```
+ 
+```bash [pnpm]
+pnpm install && pnpm run dev
+```
+
+```bash [yarn]
+yarn install && yarn run dev
+```
+ 
+```bash [bun]
+bun install && bun run dev
+```
+:::
+
+Visit localhost:3000 and click the "Coinbase Wallet" button. 
