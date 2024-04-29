@@ -1,1 +1,136 @@
-Coming soon... 
+# Batch Transactions
+
+With Smart Wallet, you can send multiple onchain calls in a single transaction. Doing so improves the UX of multi-step interactions by reducing them to a single click. A common example of where you might want to leverage batch transactions is an ERC-20 `approve` followed by a `transferFrom`.
+
+You can submit batch transactions by using [EIP-5792](https://eips.ethereum.org/EIPS/eip-5792) RPC methods.
+
+## Using Wagmi + Viem
+
+### 1. (Optional) Check for atomic batching support
+
+Smart Wallet will submit multiple calls as part of a single transaction. However, if your app supports other wallets, and you want to check that multiple calls will be submitted atomically (in a single transaction), check the wallet's capabilities.
+
+```ts twoslash
+import { useWalletClient } from 'wagmi'
+import { walletActionsEip5792 } from 'viem/experimental'
+ 
+const { data: walletClient } = useWalletClient()
+
+if (walletClient) {
+  const client = walletClient.extend(walletActionsEip5792())
+  const capabilities = await client.getCapabilities()
+// @log: {
+// @log:   8453: {
+// @log:      atomicBatch: {
+// @log:        supported: true,
+// @log:      },
+// @log:    }
+// @log: }
+}
+```
+
+The `getCapabilities` method will return, per chain, the capabilities that the connected wallet supports. If the connected wallet supports atomic batching, it will return an `atomicBatch` capability with a `supported` field equal to `true` for each chain it supports atomic batching on.
+
+### 2. Send the calls
+
+If you have your smart contract ABIs, the easiest way to send multiple calls is to use the Viem `writeContracts` action.
+
+```ts twoslash
+import { useWalletClient } from 'wagmi'
+import { erc20Abi, parseUnits } from "viem";
+import { walletActionsEip5792 } from 'viem/experimental'
+ 
+const { data: walletClient } = useWalletClient()
+
+if (walletClient) {
+  const client = walletClient.extend(walletActionsEip5792())
+  const id = await client.writeContracts({
+    contracts: [
+      {
+        abi: erc20Abi,
+        address: '0x...', // ERC-20
+        functionName: 'approve',
+        args: ['0x...', parseUnits('10', 18)],
+      },
+      {
+        address: '0x...', // Your contract
+        abi: [], // Your contract ABI
+        functionName: '...',
+        args: [],
+      },
+    ]
+  })
+}
+```
+
+The Viem `writeContracts` action will construct the necessary calldata for you, given you provide your smart contract ABIs. You can, however, use the lower level `sendCalls` method if you want to provide the calldata yourself.
+
+```ts twoslash
+import { useWalletClient } from 'wagmi'
+import { erc20Abi, parseUnits, encodeFunctionData, parseEther } from "viem";
+import { walletActionsEip5792 } from 'viem/experimental'
+ 
+const { data: walletClient } = useWalletClient()
+
+if (walletClient) {
+  const client = walletClient.extend(walletActionsEip5792())
+  const id = await client.sendCalls({
+    calls: [
+      {
+        to: '0x...', // ERC-20
+        data: encodeFunctionData({
+          abi: erc20Abi,
+          functionName: 'approve',
+          args: ['0x...', parseUnits('10', 18)],
+        }),
+      },
+      {
+        to: '0x...', // Your contract
+        data: '0x...',
+        value: parseEther('0.001')
+      },
+    ],
+  })
+}
+```
+
+### 3. Check on the status of your calls
+
+The above `writeContracts` and `sendCalls` examples both return a call bundle identifier. Ese the Viem `getCallsStatus` action with this identifier to check on the status of your calls.
+
+This will return a `PENDING` or `CONFIRMED` status along with a subset of a transaction receipt.
+
+```ts twoslash
+import { useWalletClient } from 'wagmi'
+import { walletActionsEip5792 } from 'viem/experimental'
+ 
+const { data: walletClient } = useWalletClient()
+
+if (walletClient) {
+  const client = walletClient.extend(walletActionsEip5792())
+  // ...
+  // ...
+  const status = await client.getCallsStatus({id: '...'}) // The id returned by writeContracts / sendCalls
+// @log: {
+// @log:   status: 'CONFIRMED',
+// @log:   receipts: [
+// @log:     {
+// @log:       logs: [
+// @log:         {
+// @log:           address: '0x...',
+// @log:           topics: [
+// @log:             '0x...'
+// @log:           ],
+// @log:           data: '0x...'
+// @log:         },
+// @log:       ],
+// @log:       status: 'success',
+// @log:       blockHash: '0x...',
+// @log:       blockNumber: 122414523n,
+// @log:       gasUsed: 390000n,
+// @log:       transactionHash: '0x...'
+// @log:     }
+// @log:   ]
+// @log: }
+}
+```
