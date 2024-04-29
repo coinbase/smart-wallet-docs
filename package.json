@@ -6,17 +6,18 @@
     "dev": "vocs dev",
     "build": "vocs build",
     "preview": "vocs preview",
-    "format": "dprint fmt"
+    "format": "dprint fmt",
+    "prepare": "bun x simple-git-hooks"
   },
   "dependencies": {
     "@types/react": "latest",
-    "dprint": "^0.45.1",
     "react": "latest",
     "react-dom": "latest",
     "typescript": "latest",
     "vocs": "latest"
   },
   "devDependencies": {
+    "dprint": "^0.45.1",
     "simple-git-hooks": "^2.11.1"
   },
   "simple-git-hooks": {
