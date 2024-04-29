@@ -16,7 +16,7 @@ export default defineConfig({
   },
   title: 'Smart Wallet',
   topNav: [ 
-    { text: 'Docs', link: '/start', match: '/docs' }, 
+    { text: 'Docs', link: '/why', match: '/docs' }, 
     { text: 'Demo', link: 'https://smart-wallet.xyz/' }, 
     { text: 'SDK Playground', link: 'https://coinbase.github.io/coinbase-wallet-sdk/'},
     { text: 'Github', link: 'https://github.com/coinbase/coinbase-wallet-sdk'}
