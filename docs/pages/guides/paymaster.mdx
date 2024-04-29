@@ -1,1 +1,88 @@
-Coming soon... 
+# Paymasters (Sponsored Transactions)
+
+One of the biggest UX enhancements unlocked by Smart Wallet is the ability for app developers to sponsor their users' transactions. If your app supports Smart Wallet, you can start sponsoring your users' transactions by using [EIP-5792](https://eips.ethereum.org/EIPS/eip-5792) and [ERC-7677](https://erc7677.xyz).
+
+## Using Wagmi + Viem
+
+### 1. Choose a paymaster service provider
+
+As a prerequisite, you'll need to obtain a paymaster service URL from a paymaster service provider. To be compatible with Smart Wallet, the paymaster provider you choose must be ERC-7677-compliant.
+
+Once you choose a paymaster service provider and obtain a paymaster service URL, you can proceed to integration.
+
+### 2. (Recommended) Setup your paymaster proxy
+
+Most service providers provide URLs that have API keys in them. More often than not, you'll want to keep these API keys secret. This could be problematic because sponsoring users' transactions involves passing your paymaster service URL to Smart Wallet so it can communicate with the service.
+
+As a result, we recommend setting up an endpoint on your app's backend that is ultimately responsible for communication with your paymaster service URL. This way, you can give Smart Wallet your app's new endpoint instead of the service URL directly.
+
+The proxy you create will need to handle the `pm_getPaymasterStubData` and `pm_getPaymasterData` JSON-RPC requests specified by ERC-7677.
+
+```ts twoslash [route.ts]
+// @noErrors
+export async function POST(r: Request) {
+  const req = await r.json()
+  const method = req.method
+  const [userOp, entrypoint, chainId] = req.params
+
+  if (method === 'pm_getPaymasterStubData') {
+    const data = {
+      id: 1,
+      jsonrpc: '2.0',
+      method: 'pm_getPaymasterStubData',
+      params: [userOp, entrypoint, chainId],
+    }
+    const res = await fetch(process.env.PAYMASTER_SERVICE_URL, { // URL from your paymaster service provider
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      method: 'POST',
+      body: JSON.stringify(data)
+    })
+    return Response.json(await res.json())
+  } else if (method === 'pm_getPaymasterData') {
+    // handle pm_getPaymasterData
+  }
+}
+```
+
+### 3. Send EIP-5792 requests with a paymaster service capability
+
+Once you have your paymaster service set up, you can now pass its URL along to Viem's `writeContracts` action.
+
+If you set up a proxy in your app's backend as recommended above, you'll want to pass in the proxy URL you created.
+
+```ts twoslash
+import { useWalletClient } from 'wagmi'
+import { erc20Abi, parseUnits } from "viem";
+import { walletActionsEip5792 } from 'viem/experimental'
+ 
+const { data: walletClient } = useWalletClient()
+
+if (walletClient) {
+  const client = walletClient.extend(walletActionsEip5792())
+  const id = await client.writeContracts({
+    contracts: [
+      {
+        abi: erc20Abi,
+        address: '0x...', // ERC-20
+        functionName: 'approve',
+        args: ['0x...', parseUnits('10', 18)],
+      },
+      {
+        address: '0x...', // Your contract
+        abi: [], // Your contract ABI
+        functionName: '...',
+        args: [],
+      },
+    ],
+    capabilities: {
+      payamsterService: {
+        url: 'https://...' // The URL from your paymaster service provider, or your app's backend as described in step (2) above
+      }
+    }
+  })
+}
+```
+
+That's it! Smart Wallet will handle the rest. If your paymaster service is able to sponsor the transaction, Smart Wallet will indicate to your user that the transaction is gas-free.
