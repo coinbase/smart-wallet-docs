@@ -18,7 +18,9 @@
   },
   "devDependencies": {
     "dprint": "^0.45.1",
-    "simple-git-hooks": "^2.11.1"
+    "simple-git-hooks": "^2.11.1",
+    "viem": "^2.9.28",
+    "wagmi": "^2.7.0"
   },
   "simple-git-hooks": {
     "pre-commit": "bun dprint check"
