@@ -1,14 +1,9 @@
----
-layout: landing
----
+import { useEffect } from 'react';
 
-import { HomePage } from 'vocs/components'
+export default function Redirect() {
+  useEffect(() => {
+    window.location.href = "/why";
+  }, []);
 
-<HomePage.Root>
-  <HomePage.Logo />
-  <HomePage.Description>Smart Wallet Documentation</HomePage.Description>
-  <HomePage.Buttons>
-    <HomePage.Button href="/quick-start" variant="accent">Get started</HomePage.Button>
-    <HomePage.Button href="https://github.com/coinbase/coinbase-wallet-sdk">GitHub</HomePage.Button>
-  </HomePage.Buttons>
-</HomePage.Root>
+  return null;
+}
