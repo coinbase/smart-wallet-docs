@@ -57,57 +57,7 @@ export default defineConfig({
         { 
           text: 'Magic Spend support', 
           link: '/guides/magic-spend', 
-        }, 
-        // {
-        //   text: "wallet aggregators",
-        //   link: '/docs/api/config',
-        //   items: [
-        //     {
-        //       text: "Wallet Connect",
-        //       link: '/docs/api/config',
-        //     },
-        //     {
-        //       text: "Portis",
-        //       link: '/docs/api/config',
-        //     },
-        //     {
-        //       text: "Fortmatic",
-        //       link: '/docs/api/config',
-        //     },
-        //     {
-        //       text: "Torus",
-        //       link: '/docs/api/config',
-        //     },
-        //     {
-        //       text: "Authereum",
-        //       link: '/docs/api/config',
-        //     },
-        //     {
-        //       text: "Arkane",
-        //       link: '/docs/api/config',
-        //     },
-        //     {
-        //       text: "Bitski",
-        //       link: '/docs/api/config',
-        //     },
-        //     {
-        //       text: "Squarelink",
-        //       link: '/docs/api/config',
-        //     },
-        //     {
-        //       text: "Ledger",
-        //       link: '/docs/api/config',
-        //     },
-        //     {
-        //       text: "Trezor",
-        //       link: '/docs/api/config',
-        //     },
-        //     {
-        //       text: "WalletLink",
-        //       link: '/docs/api/config',
-        //     }
-        //   ]
-        // }
+        },
       ], 
     } ,
     { 
@@ -126,29 +76,29 @@ export default defineConfig({
           text: 'makeWeb3Provider',
           link: '/sdk/makeWeb3Provider'
         },
-        {
-          text: 'CoinbaseWalletProvider',
-          items: [
-            {
-              text: 'request',
-              items: [
-                {text: 'Overview', link: '/sdk/coinbaseWalletProvider/request/overview'},
-                {text: 'wallet_getCapabilities'},
-                {text: 'wallet_sendCalls'},
-                {text: 'wallet_getCallsStatus'},
-                {text: 'wallet_showCallsStatus'},
-              ]
-            }
-          ]
-        },
+        // {
+        //   text: 'CoinbaseWalletProvider',
+        //   items: [
+        //     {
+        //       text: 'request',
+        //       items: [
+        //         {text: 'Overview', link: '/sdk/coinbaseWalletProvider/request/overview'},
+        //         {text: 'wallet_getCapabilities'},
+        //         {text: 'wallet_sendCalls'},
+        //         {text: 'wallet_getCallsStatus'},
+        //         {text: 'wallet_showCallsStatus'},
+        //       ]
+        //     }
+        //   ]
+        // },
       ], 
     },
-    { 
-      text: 'Smart Contracts', 
-      collapsed: false, 
-      items: [ 
+    // { 
+    //   text: 'Smart Contracts', 
+    //   collapsed: false, 
+    //   items: [ 
         
-      ], 
-    } 
+    //   ], 
+    // } 
   ], 
 })

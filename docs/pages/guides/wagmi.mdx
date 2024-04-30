@@ -1,5 +1,7 @@
-# Using with Smart Wallet with Wagmi 
+# Using Smart Wallet with Wagmi
 This guide covers creating a new Wagmi template project that uses Smart Wallet. 
+We use [pnpm](https://pnpm.io/) or [bun](https://bun.sh/) for Node package manager 
+as these have superior `resolutions` support. 
 
 ## Setup 
 ### 1. Run the following command and proceed through the prompts. 
@@ -22,7 +24,7 @@ bun create wagmi
 }
 ```
 
-### 3. Now install packages with your package manager and run dev. 
+### 3. Install packages and run dev. 
 
 :::code-group
  
@@ -35,8 +37,8 @@ bun install && bun run dev
 ```
 :::
 
-### 4. Update the wagmi config and coinbaseWallet connector to use baseSepolia
-   - `src/wagmi.ts` should look something like this:
+### 4. Update the Wagmi config and coinbaseWallet connector to use baseSepolia
+`src/wagmi.ts` should look something like this:
 
    ```typescript
    import { http, createConfig } from 'wagmi';
@@ -65,10 +67,12 @@ bun install && bun run dev
 
 ## Usage
 
-### 1. Visit localhost:3000 and click the "Coinbase Wallet" button. 
-   - If you chose Vanilla or Vite in the create wagmi cli visit localhost:5174
-   - If you have the Coinbase wallet extension enabled, that will be the default connection method. Disable it to connect via smart wallet.
+### 1. Visit your site locally, click the "Coinbase Wallet" button, and choose "Create a Smart Wallet." 
+
+Note, if you are using a browser with Coinbase Wallet Extension enabled, 
+that will be the default connection method and you will not see a screen to choose Smart Wallet. 
+Temporarily disable the Extension to connect with Smart Wallet.
+
 
 ### 2. Keep building 
-
-   - You can find everything you need here: https://wagmi.sh/react/api/hooks
+You can find everything you need here: https://wagmi.sh/react/api/hooks
