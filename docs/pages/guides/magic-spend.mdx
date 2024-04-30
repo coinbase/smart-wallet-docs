@@ -1,1 +1,34 @@
-Coming soon... 
+# Magic Spend
+
+With Magic Spend, Smart Wallet users can use their Coinbase balances onchain. This means users can easily start using onchain apps without needing to onramp funds into their wallet.
+
+This also means that apps might not have all the balance information typically available to them by reading onchain data. Smart Wallet indicates that this is the case by responding to [`wallet_getCapabilities` RPC calls](https://eips.ethereum.org/EIPS/eip-5792#wallet_getcapabilities) with the `auxiliaryFunds` capability for each chain Smart Wallet users can use their Coinbase balances on.
+
+If your app supports Smart Wallet, it should not assume it knows the full balances available to a user if the `auxiliaryFunds` capability is present on a given chain.
+
+## Using Wagmi + Viem
+
+:::info
+The actions below are experimental and not supported in most wallets. It is recommended to have a fallback mechanism if using this in production.
+:::
+
+```ts twoslash
+import { useWalletClient } from 'wagmi'
+import { walletActionsEip5792 } from 'viem/experimental'
+ 
+const { data: walletClient } = useWalletClient()
+
+if (walletClient) {
+  const client = walletClient.extend(walletActionsEip5792())
+  const capabilities = await client.getCapabilities()
+// @log: {
+// @log:   8453: {
+// @log:      auxiliaryFunds: {
+// @log:        supported: true,
+// @log:      },
+// @log:    }
+// @log: }
+}
+```
+
+If your app supports Smart Wallet and sees that the `auxiliaryFunds` capability is supported on a given chain, it means that a user might have funds available for use onchain on Coinbase. As a result, your app should not block user actions on the basis of balance checks.
