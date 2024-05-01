@@ -3,16 +3,18 @@ Creates a new `CoinbaseWalletProvider` instance using a `CoinbaseWalletSDK` inst
 
 ## Usage
 :::code-group
-``` typescript [provider.ts]
+```ts twoslash [provider.ts]
+import {sdk} from "./setup";
+
 // Create provider
 const provider = sdk.makeWeb3Provider({options: 'smartWalletOnly'});
 // Use provider
 const addresses = provider.request('eth_requestAccounts');
 ```
-``` typescript [setup.ts]
+```ts twoslash [setup.ts] filename="setup.ts"
 import { CoinbaseWalletSDK } from '@coinbase/wallet-sdk'
 
-const sdk = new CoinbaseWalletSDK({
+export const sdk = new CoinbaseWalletSDK({
   appName: 'My App Name',
   appChainIds: [8453]
 });
