@@ -56,37 +56,81 @@ Once you have your paymaster service set up, you can now pass its URL along to V
 
 If you set up a proxy in your app's backend as recommended in step (2) above, you'll want to pass in the proxy URL you created.
 
-```ts twoslash
-import { useWalletClient } from 'wagmi'
-import { erc20Abi, parseUnits } from "viem";
-import { walletActionsEip5792 } from 'viem/experimental'
- 
-const { data: walletClient } = useWalletClient()
+:::code-group
 
-if (walletClient) {
-  const client = walletClient.extend(walletActionsEip5792())
-  const id = await client.writeContracts({
-    contracts: [
-      {
-        abi: erc20Abi,
-        address: '0x...', // ERC-20
-        functionName: 'approve',
-        args: ['0x...', parseUnits('10', 18)],
-      },
-      {
-        address: '0x...', // Your contract
-        abi: [], // Your contract ABI
-        functionName: '...',
-        args: [],
-      },
-    ],
-    capabilities: {
-      payamsterService: {
-        url: 'https://...' // The URL from your paymaster service provider, or your app's backend as described in step (2) above
+```ts twoslash [App.tsx]
+// @filename: useEIP5792WalletClient.ts
+// [!include ~/snippets/useEIP5792WalletClient.ts]
+
+// @filename: useWriteContracts.ts
+// [!include ~/snippets/useWriteContracts.ts]
+
+// @filename: App.tsx
+import React from 'react'
+// ---cut---
+import { useAccount } from 'wagmi'
+import { useWriteContracts } from './useWriteContracts'
+
+const abi = [
+  {
+    stateMutability: 'nonpayable',
+    type: 'function',
+    inputs: [{ name: 'to', type: 'address' }],
+    name: 'safeMint',
+    outputs: [],
+  }
+] as const
+
+function App() {
+  const account = useAccount()
+  const { id, writeContracts } = useWriteContracts()
+
+  const handleMint = () => {
+    writeContracts({
+      contracts: [
+        {
+          address: "0x119Ea671030FBf79AB93b436D2E20af6ea469a19",
+          abi,
+          functionName: "safeMint",
+          args: [account.address],
+        },
+        {
+          address: "0x119Ea671030FBf79AB93b436D2E20af6ea469a19",
+          abi,
+          functionName: "safeMint",
+          args: [account.address],
+        }
+      ],
+      capabilities: {
+        paymasterService: {
+          url: 'https://...' // The URL from your paymaster service provider, or your app's backend as described in step (2) above
+        }
       }
-    }
-  })
+    })
+  }
+
+  return ( 
+    <div>
+      <button onClick={handleMint}>Mint</button>
+      {id && <div> ID: {id}</div>}
+    </div>
+  )
 }
 ```
+
+```ts twoslash [useWriteContracts.ts]
+// @filename: useEIP5792WalletClient.ts
+// [!include ~/snippets/useEIP5792WalletClient.ts]
+
+// @filename: useWriteContracts.ts
+// ---cut---
+// [!include ~/snippets/useWriteContracts.ts]
+```
+
+```ts twoslash [useEIP5792WalletClient.ts]
+// [!include ~/snippets/useEIP5792WalletClient.ts]
+```
+
+:::
 
 That's it! Smart Wallet will handle the rest. If your paymaster service is able to sponsor the transaction, Smart Wallet will indicate to your user that the transaction is sponsored.
