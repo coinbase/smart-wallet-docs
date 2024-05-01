@@ -24,5 +24,8 @@
   },
   "simple-git-hooks": {
     "pre-commit": "bun dprint check"
+  },
+  "resolutions": {
+    "@coinbase/wallet-sdk": "npm:@coinbase/wallet-sdk@4.0.0-beta.12"
   }
 }

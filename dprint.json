@@ -4,7 +4,8 @@
   "markdown": {
   },
   "excludes": [
-    "**/*-lock.json"
+    "**/*-lock.json",
+    "/docs/dist/**"
   ],
   "plugins": [
     "https://plugins.dprint.dev/json-0.19.2.wasm",
