@@ -12,23 +12,47 @@ If your app supports Smart Wallet, it should not assume it knows the full balanc
 The actions below are experimental and not supported in most wallets. It is recommended to have a fallback mechanism if using this in production.
 :::
 
-```ts twoslash
-import { useWalletClient } from 'wagmi'
-import { walletActionsEip5792 } from 'viem/experimental'
- 
-const { data: walletClient } = useWalletClient()
+:::code-group
 
-if (walletClient) {
-  const client = walletClient.extend(walletActionsEip5792())
-  const capabilities = await client.getCapabilities()
-// @log: {
-// @log:   8453: {
-// @log:      auxiliaryFunds: {
-// @log:        supported: true,
-// @log:      },
-// @log:    }
-// @log: }
+```ts twoslash [App.tsx]
+// @filename: useEIP5792WalletClient.ts
+// [!include ~/snippets/useEIP5792WalletClient.ts]
+
+// @filename: useWalletCapabilities.ts
+// [!include ~/snippets/useWalletCapabilities.ts]
+
+// @filename: App.tsx
+import React from 'react'
+// ---cut---
+import { useChainId } from 'wagmi'
+import { useWalletCapabilities } from './useWalletCapabilities'
+
+function App() {
+  const chainId = useChainId()
+  const { capabilities, loading } = useWalletCapabilities({ chainId })
+// @log:   {
+// @log:     auxiliaryFunds: {
+// @log:       supported: true,
+// @log:     },
+// @log:   }
+
+  return <div />
 }
 ```
+
+```ts twoslash [useWalletCapabilities.ts]
+// @filename: useEIP5792WalletClient.ts
+// [!include ~/snippets/useEIP5792WalletClient.ts]
+
+// @filename: useWalletCapabilities.ts
+// ---cut---
+// [!include ~/snippets/useWalletCapabilities.ts]
+```
+
+```ts twoslash [useEIP5792WalletClient.ts]
+// [!include ~/snippets/useEIP5792WalletClient.ts]
+```
+
+:::
 
 If your app supports Smart Wallet and sees that the `auxiliaryFunds` capability is supported on a given chain, it means that a user might have funds available for use onchain on Coinbase. As a result, your app should not block user actions on the basis of balance checks.
