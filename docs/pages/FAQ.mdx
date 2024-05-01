@@ -17,8 +17,19 @@ and can view and manage assets at [homebase.coinbase.com](https://homebase.coinb
 
 See [makeWeb3Provider](/sdk/makeWeb3Provider#parameters) documentation for nuances based on different configurations. 
 
+## Will users have the same address across chains? 
+Yes, a user's Smart Wallet address will be the same across all the chains we support. 
+
 ## How much does it cost?
 Smart Wallet is free to use for both developers and users. 
+
+## Is Smart Wallet more expensive to use? 
+Smart contract wallets use more gas per transaction than EOA wallets. This means they should be avoided on networks like Ethereum mainnet, 
+but elsewhere the cost difference is negligible. 
+
+For example, some current transaction costs on Base using Smart Wallet
+- ETH transfer: $0.03
+- ERC-20 transfer: $0.06
 
 ## Who's holding the keys?
 Smart wallets are secured by passkeys stored on the user's device. 
@@ -37,10 +48,3 @@ This means users no longer have to deal with passwords or recovery phrases. Inst
 ## What happens if user lose their passkey? 
 Every Smart Wallet supports multiple owners, and our client encourages users to add a backup recovery key, for the unlikely case they lose their passkey.
 
-## Is Smart Wallet more expensive to use? 
-Smart contract wallets use more gas per transaction than EOA wallets. This means they should be avoided on networks like Ethereum mainnet, 
-but elsewhere the difference is negligible. 
-
-For example, some current transaction costs on Base using Smart Wallet
-- ETH transfer: $0.03
-- ERC-20 transfer: $0.06

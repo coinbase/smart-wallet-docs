@@ -13,18 +13,31 @@ Viem's [verifyMessage](https://viem.sh/docs/actions/public/verifyMessage#verifym
 If your smart contracts do any signature validation, ensure they follow [ERC-1271](https://eips.ethereum.org/EIPS/eip-1271)
 when the account is not an EOA.    
 
+### Magic Spend Compatible
+Magic Spend enables users to get "just in time" transaction funding from their Coinbase account.
+This is currently supported for ETH only on Base. 
+To give users the best experience, apps should make use of the `auxiliaryFunds` capability 
+and ensure they are not blocking actions based solely on onchain balance checks. See [our guide](/guides/magic-spend).
+
 ### Use SDK 4.0 or later
-Your production app, or its wallet provider, should be using Coinbase Wallet SDK version 4.0 or later.
-See Release Plan for more details. 
+Ensure your app is using SDK version 4.0 ahead of mainnet launch. If you are using a wallet library, check
+[Wallet Library Support](/wallet-library-support) to ensure day 1 readiness.
+:::info
+Ahead of mainnet release, we have released a 4.0 version of the Coinbase Wallet SDK. For now, 
+this version still only supports connecting via the Coinbase Wallet Extension or mobile app, but 
+switches to using a popup window rather than an in-app modal. At mainnet launch, this popup window
+will begin showing a Smart Wallet connection option, as well. 
+See our [documentation](/sdk/makeWeb3Provider#parameters) for configuration options.
+:::
 
 ::::
 ## Bonus: Make the most of Smart Wallet!
 ::::steps
-### Magic Spend Compatible
-Magic Spend enables users to get "just in time" transaction funding from their Coinbase account.
-This is currently supported for ETH only on Base. 
-To give users the best experience, apps should make use of the auxiliaryFunds capability, 
-documented [here](#TODO /features/magic-spend) and ensure they are not blocking actions based solely on onchain balance checks. 
 ### Batch Transactions
-### Paymasters
+Improve your app's UX by using batch transactions, allowing, for examples, 
+approvals and swaps to happen in a single transaction. See [our guide](/guides/batch-transactions).
+### Paymasters (sponsored transactions)
+Smart Wallet is one of the first wallets to support app-defined paymasters. This enables sponsoring
+certain transactions for your users, so they do not have to know or think about gas cost. 
+See [our guide](/guides/paymasters).
 ::::

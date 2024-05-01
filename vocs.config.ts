@@ -16,10 +16,10 @@ export default defineConfig({
   },
   title: 'Smart Wallet',
   topNav: [ 
-    { text: 'Docs', link: '/why', match: '/docs' }, 
     { text: 'Demo', link: 'https://smart-wallet.xyz/' }, 
     { text: 'SDK Playground', link: 'https://coinbase.github.io/coinbase-wallet-sdk/'},
-    { text: 'Github', link: 'https://github.com/coinbase/coinbase-wallet-sdk'}
+    { text: 'Github', link: 'https://github.com/coinbase/coinbase-wallet-sdk'},
+    { text: 'Discord', link: 'https://discord.com/invite/cdp/'}
   ], 
   sidebar: [ 
     { 
@@ -39,20 +39,31 @@ export default defineConfig({
       link: '/checklist', 
     },
     { 
+      text: 'Wallet Library Support', 
+      link: '/wallet-library-support', 
+    },
+    { 
       text: 'Guides', 
       collapsed: false, 
       items: [ 
-        { 
-          text: 'Using with Wagmi', 
-          link: '/guides/wagmi', 
-        }, 
+        {
+          text: "Create a new app",
+          items: [
+            {text: 'Using Build Onchain Template', link: '/guides/create-app/using-boat'},
+            {text: 'Using Wagmi Template', link: '/guides/create-app/using-wagmi'},
+          ]
+        },
+        {
+          text: 'Update an existing app',
+          link: '/guides/update-existing-app'
+        },
         { 
           text: 'Batch transactions', 
-          link: '/guides/batch', 
+          link: '/guides/batch-transactions', 
         }, 
         { 
           text: 'Paymasters (sponsored transactions)', 
-          link: '/guides/paymaster', 
+          link: '/guides/paymasters', 
         }, 
         { 
           text: 'Magic Spend support', 
