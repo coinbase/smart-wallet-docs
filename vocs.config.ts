@@ -27,7 +27,7 @@ export default defineConfig({
       link: '/why', 
     }, 
     { 
-      text: 'Quick start', 
+      text: 'Quick Start', 
       link: '/quick-start', 
     }, 
     { 
