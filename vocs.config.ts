@@ -1,4 +1,4 @@
-import { defineConfig } from 'vocs'
+import { defineConfig } from 'vocs';
 
 export default defineConfig({
   theme: {
@@ -6,15 +6,19 @@ export default defineConfig({
     variables: {
       color: {
         textAccent: { light: '#2394ff', dark: '#e9e9ea' },
-        backgroundDark: {light: '#ebeaee', dark: 'black'},
-        background: {light: '#f6f5f8', dark: 'black'}, //f6f5f8 /ebf1f8
+        backgroundDark: { light: '#ebeaee', dark: 'black' },
+        background: { light: '#f6f5f8', dark: 'black' }, //f6f5f8 /ebf1f8
         heading: { light: 'black', dark: '#e9e9ea' },
         text3: { light: 'black', dark: '#e9e9ea' },
         background5: { light: '#dee8ff', dark: '#3c393f' },
-      }
-    }
+      },
+    },
   },
+  ogImageUrl: 'https://vocs.dev/api/og?logo=%logo&title=%title&description=%description',
   title: 'Smart Wallet',
+  description: 'Smart Wallet Documentation',
+  logoUrl: '/logo.svg',
+  iconUrl: '/logo.svg',
   topNav: [ 
     { text: 'Demo', link: 'https://smart-wallet.xyz/' }, 
     { text: 'SDK Playground', link: 'https://coinbase.github.io/coinbase-wallet-sdk/'},
@@ -34,28 +38,36 @@ export default defineConfig({
       text: 'FAQ', 
       link: '/FAQ', 
     },
-    { 
-      text: 'Launch Ready Checklist', 
-      link: '/checklist', 
+    {
+      text: 'Quick Start',
+      link: '/quick-start',
     },
-    { 
-      text: 'Wallet Library Support', 
-      link: '/wallet-library-support', 
+    {
+      text: 'FAQ',
+      link: '/faq',
     },
-    { 
-      text: 'Guides', 
-      collapsed: false, 
-      items: [ 
+    {
+      text: 'Launch Ready Checklist',
+      link: '/checklist',
+    },
+    {
+      text: 'Wallet Library Support',
+      link: '/wallet-library-support',
+    },
+    {
+      text: 'Guides',
+      collapsed: false,
+      items: [
         {
-          text: "Create a new app",
+          text: 'Create a new app',
           items: [
-            {text: 'Using Build Onchain Template', link: '/guides/create-app/using-boat'},
-            {text: 'Using Wagmi Template', link: '/guides/create-app/using-wagmi'},
-          ]
+            { text: 'Using Build Onchain Template', link: '/guides/create-app/using-boat' },
+            { text: 'Using Wagmi Template', link: '/guides/create-app/using-wagmi' },
+          ],
         },
         {
           text: 'Update an existing app',
-          link: '/guides/update-existing-app'
+          link: '/guides/update-existing-app',
         },
         {
           text: "Signature Verification",
@@ -73,23 +85,9 @@ export default defineConfig({
           text: 'Magic Spend support', 
           link: '/guides/magic-spend', 
         },
-      ], 
-    } ,
-    { 
-      text: 'SDK', 
-      collapsed: false, 
-      items: [ 
-        { 
-          text: 'Install', 
-          link: '/sdk/install', 
-        }, 
-        { 
-          text: 'Setup', 
-          link: '/sdk/setup', 
-        }, 
         {
           text: 'makeWeb3Provider',
-          link: '/sdk/makeWeb3Provider'
+          link: '/sdk/makeWeb3Provider',
         },
         // {
         //   text: 'CoinbaseWalletProvider',
@@ -106,14 +104,14 @@ export default defineConfig({
         //     }
         //   ]
         // },
-      ], 
+      ],
     },
-    // { 
-    //   text: 'Smart Contracts', 
-    //   collapsed: false, 
-    //   items: [ 
-        
-    //   ], 
-    // } 
-  ], 
-})
+    // {
+    //   text: 'Smart Contracts',
+    //   collapsed: false,
+    //   items: [
+
+    //   ],
+    // }
+  ],
+});
