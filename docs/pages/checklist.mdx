@@ -7,11 +7,9 @@ Test your app with Smart Wallet enabled on using the Beta SDK. See [our guide](/
 
 ### Ensure Smart Wallet compatible Signature Validation
  
-If your app is using Sign in with Ethereum or similar, ensure you are [ERC-6492](https://eips.ethereum.org/EIPS/eip-6492) compliant. 
-Viem's [verifyMessage](https://viem.sh/docs/actions/public/verifyMessage#verifymessage) makes this very simple. 
-
-If your smart contracts do any signature validation, ensure they follow [ERC-1271](https://eips.ethereum.org/EIPS/eip-1271)
-when the account is not an EOA.    
+If your app does any offchain signature validation (such as Sign In With Ethereum) or your smart contracts 
+do any signature validation, ensure your app is [ERC-6492](https://eips.ethereum.org/EIPS/eip-6492) compliant. 
+See [our guide](/guides/signature-verification). 
 
 ### Magic Spend Compatible
 Magic Spend enables users to get "just in time" transaction funding from their Coinbase account.
