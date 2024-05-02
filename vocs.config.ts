@@ -57,6 +57,10 @@ export default defineConfig({
           text: 'Update an existing app',
           link: '/guides/update-existing-app'
         },
+        {
+          text: "Signature Verification",
+          link: '/guides/signature-verification'
+        },
         { 
           text: 'Batch transactions', 
           link: '/guides/batch-transactions', 
