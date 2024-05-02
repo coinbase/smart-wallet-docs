@@ -32,7 +32,7 @@ export default defineConfig({
     }, 
     { 
       text: 'FAQ', 
-      link: '/faq', 
+      link: '/FAQ', 
     },
     { 
       text: 'Launch Ready Checklist', 
