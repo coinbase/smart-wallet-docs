@@ -39,14 +39,6 @@ export default defineConfig({
       link: "/FAQ",
     },
     {
-      text: "Quick Start",
-      link: "/quick-start",
-    },
-    {
-      text: "FAQ",
-      link: "/faq",
-    },
-    {
       text: "Launch Ready Checklist",
       link: "/checklist",
     },
