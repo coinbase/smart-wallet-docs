@@ -1,6 +1,6 @@
 # Signature Verification
 
-The are important details to verifying smart contract wallet signatures. The smart contract itself
+There are important details to verifying smart contract wallet signatures. The smart contract itself
 cannot produce a signature. Instead, the contract has a function
 ```solidity
 function isValidSignature(bytes32 _hash, bytes memory _signature) returns (bytes4 magicValue);
