@@ -27,9 +27,10 @@ We won't go unto all the details here, read the ERC linked above, if you're look
 Below we cover the minimum work needed to support on and off chain signature validation for Smart Wallet.
 
 ## Offchain
-For purely offchain signature verification, simply ensure you are using 
-a ERC-6492-compliant signature verification library, and it all should *just work*. 
-We recommend [Viem's `verifyMessage`](https://viem.sh/docs/actions/public/verifyMessage#verifymessage).
+For purely offchain signature verification––such as "Sign in With Ethereum"––ensure you are using 
+a ERC-6492-compliant signature verification library. 
+We recommend Viem's [`verifyMessage`](https://viem.sh/docs/actions/public/verifyMessage#verifymessage) ([example](https://github.com/wilsoncusack/wagmi-scw/blob/main/src/components/SignMessage.tsx#L28)) 
+and [verifyTypedData](https://viem.sh/docs/actions/public/verifyTypedData) ([example](https://github.com/wilsoncusack/wagmi-scw/blob/main/src/components/TypedSign.tsx#L46)).
 
 ## Onchain
 For signatures that will be used onchain, such as with [Permit2](https://github.com/Uniswap/permit2) 
