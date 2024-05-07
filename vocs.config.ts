@@ -66,6 +66,10 @@ export default defineConfig({
           link: "/guides/signature-verification",
         },
         {
+          text: "Sign-in with Ethereum",
+          link: "/guides/siwe",
+        },
+        {
           text: "Batch transactions",
           link: "/guides/batch-transactions",
         },
