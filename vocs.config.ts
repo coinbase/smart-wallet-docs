@@ -66,7 +66,7 @@ export default defineConfig({
           link: "/guides/signature-verification",
         },
         {
-          text: "Sign-in with Ethereum",
+          text: "Sign-In with Ethereum",
           link: "/guides/siwe",
         },
         {
