@@ -25,7 +25,7 @@ const buttonStyles = {
 export function WagmiCreateWalletButton() {
   const { connectors, connect, data } = useConnect();
 
-  const connectCoinbaseWallet = useCallback(() => {
+  const createWallet = useCallback(() => {
     const coinbaseWalletConnector = connectors.find(
       (connector) => connector.id === "coinbaseWalletSDK"
     );
@@ -34,7 +34,7 @@ export function WagmiCreateWalletButton() {
     }
   }, [connectors, connect]);
   return (
-    <button style={buttonStyles} onClick={connectCoinbaseWallet}>
+    <button style={buttonStyles} onClick={createWallet}>
       <CoinbaseWalletLogo />
       Create Wallet
     </button>
