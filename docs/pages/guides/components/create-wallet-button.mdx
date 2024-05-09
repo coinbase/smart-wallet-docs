@@ -147,7 +147,7 @@ export function CreateWalletButton({
     handleSuccess,
     handleError,
 }: CreateWalletButtonProps) {
-    const connectToSmartWallet = async () => {
+    const createWallet = async () => {
         try {
             const [address] = await provider.request<string[]>({
                 method: "eth_requestAccounts",
@@ -158,7 +158,7 @@ export function CreateWalletButton({
         }
     };
     return (
-        <button style={buttonStyles} onClick={connectToSmartWallet}>
+        <button style={buttonStyles} onClick={createWallet}>
             <CoinbaseWalletLogo />
             Create Wallet
         </button>
