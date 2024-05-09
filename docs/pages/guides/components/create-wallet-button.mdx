@@ -148,6 +148,7 @@ export function CreateWalletButton({
   handleSuccess,
   handleError,
 }: CreateWalletButtonProps) {
+  
   const createWallet = useCallback(async () => {
     try {
       const [address] = await provider.request<string[]>({
