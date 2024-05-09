@@ -106,8 +106,8 @@ declare module "wagmi" {
 ### Notes
 
 - For more detail, view the [`useConnect` documentation](https://wagmi.sh/react/api/hooks/useConnect).
-- Upon successful connection, account information can be accessed via [data](https://wagmi.sh/react/api/hooks/useConnect#data) 
-returned from `useConnect`, or via [`useAccount`](https://wagmi.sh/react/api/hooks/useAccount).
+- Upon successful connection, account information can be accessed via [data](https://wagmi.sh/react/api/hooks/useConnect#data)
+  returned from `useConnect`, or via [`useAccount`](https://wagmi.sh/react/api/hooks/useAccount).
 
 ## Without wagmi
 
@@ -116,53 +116,55 @@ returned from `useConnect`, or via [`useAccount`](https://wagmi.sh/react/api/hoo
 ```tsx [CreateWalletButton.tsx]
 import { CoinbaseWalletSDK } from "@coinbase/wallet-sdk";
 import { CoinbaseWalletLogo } from "./CoinbaseWalletLogo";
+import { useCallback } from "react";
 
 const buttonStyles = {
-    background: "transparent",
-    border: "1px solid transparent",
-    display: "flex",
-    alignItems: "center",
-    fontFamily: "Arial, sans-serif",
-    fontWeight: "bold",
-    fontSize: 18,
-    backgroundColor: "#0052FF",
-    padding: "7px 14px",
-    borderRadius: 10,
+  background: "transparent",
+  border: "1px solid transparent",
+  display: "flex",
+  alignItems: "center",
+  fontFamily: "Arial, sans-serif",
+  fontWeight: "bold",
+  fontSize: 18,
+  backgroundColor: "#0052FF",
+  padding: "7px 14px",
+  borderRadius: 10,
 };
 
 const sdk = new CoinbaseWalletSDK({
-    appName: "My Dapp",
-    appLogoUrl: "https://example.com/logo.png",
-    appChainIds: [84532],
+  appName: "My Dapp",
+  appLogoUrl: "https://example.com/logo.png",
+  appChainIds: [84532],
 });
 
 const provider = sdk.makeWeb3Provider();
 
 interface CreateWalletButtonProps {
-    handleSuccess: (res: any) => void;
-    handleError: (error: any) => void;
+  handleSuccess: (res: any) => void;
+  handleError: (error: any) => void;
 }
 
 export function CreateWalletButton({
-    handleSuccess,
-    handleError,
+  handleSuccess,
+  handleError,
 }: CreateWalletButtonProps) {
-    const createWallet = async () => {
-        try {
-            const [address] = await provider.request<string[]>({
-                method: "eth_requestAccounts",
-            });
-            handleSuccess(address);
-        } catch (error) {
-            handleError(error);
-        }
-    };
-    return (
-        <button style={buttonStyles} onClick={createWallet}>
-            <CoinbaseWalletLogo />
-            Create Wallet
-        </button>
-    );
+  const createWallet = useCallback(async () => {
+    try {
+      const [address] = await provider.request<string[]>({
+        method: "eth_requestAccounts",
+      });
+      handleSuccess(address);
+    } catch (error) {
+      handleError(error);
+    }
+  }, [handleSuccess, handleError]);
+
+  return (
+    <button style={buttonStyles} onClick={createWallet}>
+      <CoinbaseWalletLogo />
+      Create Wallet
+    </button>
+  );
 }
 ```
 
