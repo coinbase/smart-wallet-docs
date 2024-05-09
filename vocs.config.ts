@@ -62,6 +62,10 @@ export default defineConfig({
           link: "/guides/update-existing-app",
         },
         {
+          text: "Add Create Wallet Button",
+          link: "/guides/create-wallet-button",
+        },
+        {
           text: "Signature Verification",
           link: "/guides/signature-verification",
         },
