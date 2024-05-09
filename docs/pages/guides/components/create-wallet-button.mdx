@@ -1,5 +1,9 @@
 # Add a Create Wallet button to your app
 
+This guide provides copy-pasteable code to easily add this button to your app.
+
+![Create Wallet Button](/createWalletButton.png)
+
 ## With wagmi
 
 :::code-group
@@ -109,7 +113,7 @@ declare module "wagmi" {
 - Upon successful connection, account information can be accessed via [data](https://wagmi.sh/react/api/hooks/useConnect#data)
   returned from `useConnect`, or via [`useAccount`](https://wagmi.sh/react/api/hooks/useAccount).
 
-## Without wagmi
+## With CoinbaseWalletSDK only
 
 :::code-group
 
@@ -148,7 +152,7 @@ export function CreateWalletButton({
   handleSuccess,
   handleError,
 }: CreateWalletButtonProps) {
-  
+
   const createWallet = useCallback(async () => {
     try {
       const [address] = await provider.request<string[]>({
