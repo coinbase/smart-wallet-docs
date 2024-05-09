@@ -1,0 +1,228 @@
+# Add a Create Wallet button to your app
+
+## With wagmi
+
+:::code-group
+
+```tsx [CreateWalletButton.tsx]
+import React, { useCallback } from "react";
+import { useConnect } from "wagmi";
+import { CoinbaseWalletLogo } from "./CoinbaseWalletLogo";
+
+const buttonStyles = {
+  background: "transparent",
+  border: "1px solid transparent",
+  display: "flex",
+  alignItems: "center",
+  fontFamily: "Arial, sans-serif",
+  fontWeight: "bold",
+  fontSize: 18,
+  backgroundColor: "#0052FF",
+  padding: "7px 14px",
+  borderRadius: 10,
+};
+
+export function WagmiCreateWalletButton() {
+  const { connectors, connect, data } = useConnect();
+
+  const connectCoinbaseWallet = useCallback(() => {
+    const coinbaseWalletConnector = connectors.find(
+      (connector) => connector.id === "coinbaseWalletSDK"
+    );
+    if (coinbaseWalletConnector) {
+      connect({ connector: coinbaseWalletConnector });
+    }
+  }, [connectors, connect]);
+  return (
+    <button style={buttonStyles} onClick={connectCoinbaseWallet}>
+      <CoinbaseWalletLogo />
+      Create Wallet
+    </button>
+  );
+}
+```
+
+```tsx twoslash [CoinbaseWalletLogo.tsx]
+import React from "react";
+
+const defaultContainerStyles = {
+  paddingRight: 10,
+  paddingTop: 2,
+};
+
+export function CoinbaseWalletLogo({
+  size = 25,
+  containerStyles = defaultContainerStyles,
+}) {
+  return (
+    <div style={containerStyles}>
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 70 70"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <circle cx="35" cy="35" r="35" fill="#0052FF" />
+        <path
+          fill-rule="evenodd"
+          clip-rule="evenodd"
+          d="M11 35C11 48.2533 21.7467 59 35 59C48.2533 59 59 48.2533 59 35C59 21.7467 48.2533 11 35 11C21.7467 11 11 21.7467 11 35ZM28.8667 27.2667C27.98 27.2667 27.2667 27.98 27.2667 28.8667V41.1333C27.2667 42.02 27.98 42.7333 28.8667 42.7333H41.1333C42.02 42.7333 42.7333 42.02 42.7333 41.1333V28.8667C42.7333 27.98 42.02 27.2667 41.1333 27.2667H28.8667Z"
+          fill="white"
+        />
+      </svg>
+    </div>
+  );
+}
+```
+
+```ts twoslash [wagmi.ts]
+import { http, createConfig } from "wagmi";
+import { baseSepolia } from "wagmi/chains";
+import { coinbaseWallet } from "wagmi/connectors";
+
+export const config = createConfig({
+  chains: [baseSepolia],
+  connectors: [
+    coinbaseWallet({
+      appName: "Create Wagmi",
+      appChainIds: [baseSepolia.id],
+    }),
+  ],
+  transports: {
+    [baseSepolia.id]: http(),
+  },
+});
+
+declare module "wagmi" {
+  interface Register {
+    config: typeof config;
+  }
+}
+```
+
+:::
+
+### Notes
+
+- For more detail, view the [`useConnect` documentation](https://wagmi.sh/react/api/hooks/useConnect).
+- Upon successful connection, account information can be accessed via [data](https://wagmi.sh/react/api/hooks/useConnect#data) 
+returned from `useConnect`, or via [`useAccount`](https://wagmi.sh/react/api/hooks/useAccount).
+
+## Without wagmi
+
+:::code-group
+
+```tsx [CreateWalletButton.tsx]
+import { CoinbaseWalletSDK } from "@coinbase/wallet-sdk";
+import { CoinbaseWalletLogo } from "./CoinbaseWalletLogo";
+
+const buttonStyles = {
+    background: "transparent",
+    border: "1px solid transparent",
+    display: "flex",
+    alignItems: "center",
+    fontFamily: "Arial, sans-serif",
+    fontWeight: "bold",
+    fontSize: 18,
+    backgroundColor: "#0052FF",
+    padding: "7px 14px",
+    borderRadius: 10,
+};
+
+const sdk = new CoinbaseWalletSDK({
+    appName: "My Dapp",
+    appLogoUrl: "https://example.com/logo.png",
+    appChainIds: [84532],
+});
+
+const provider = sdk.makeWeb3Provider();
+
+interface CreateWalletButtonProps {
+    handleSuccess: (res: any) => void;
+    handleError: (error: any) => void;
+}
+
+export function CreateWalletButton({
+    handleSuccess,
+    handleError,
+}: CreateWalletButtonProps) {
+    const connectToSmartWallet = async () => {
+        try {
+            const [address] = await provider.request<string[]>({
+                method: "eth_requestAccounts",
+            });
+            handleSuccess(address);
+        } catch (error) {
+            handleError(error);
+        }
+    };
+    return (
+        <button style={buttonStyles} onClick={connectToSmartWallet}>
+            <CoinbaseWalletLogo />
+            Create Wallet
+        </button>
+    );
+}
+```
+
+```tsx twoslash [CoinbaseWalletLogo.tsx]
+import React from "react";
+
+const defaultContainerStyles = {
+  paddingRight: 10,
+  paddingTop: 2,
+};
+
+export function CoinbaseWalletLogo({
+  size = 25,
+  containerStyles = defaultContainerStyles,
+}) {
+  return (
+    <div style={containerStyles}>
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 70 70"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <circle cx="35" cy="35" r="35" fill="#0052FF" />
+        <path
+          fill-rule="evenodd"
+          clip-rule="evenodd"
+          d="M11 35C11 48.2533 21.7467 59 35 59C48.2533 59 59 48.2533 59 35C59 21.7467 48.2533 11 35 11C21.7467 11 11 21.7467 11 35ZM28.8667 27.2667C27.98 27.2667 27.2667 27.98 27.2667 28.8667V41.1333C27.2667 42.02 27.98 42.7333 28.8667 42.7333H41.1333C42.02 42.7333 42.7333 42.02 42.7333 41.1333V28.8667C42.7333 27.98 42.02 27.2667 41.1333 27.2667H28.8667Z"
+          fill="white"
+        />
+      </svg>
+    </div>
+  );
+}
+```
+
+```ts twoslash [wagmi.ts]
+import { http, createConfig } from "wagmi";
+import { baseSepolia } from "wagmi/chains";
+import { coinbaseWallet } from "wagmi/connectors";
+
+export const config = createConfig({
+  chains: [baseSepolia],
+  connectors: [
+    coinbaseWallet({
+      appName: "Create Wagmi",
+      appChainIds: [baseSepolia.id],
+    }),
+  ],
+  transports: {
+    [baseSepolia.id]: http(),
+  },
+});
+
+declare module "wagmi" {
+  interface Register {
+    config: typeof config;
+  }
+}
+```
+
+:::
