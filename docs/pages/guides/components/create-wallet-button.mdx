@@ -8,7 +8,7 @@ Copy-pasteable code to quickly add a Create Wallet button to your app.
 
 :::code-group
 
-```tsx [CreateWalletButton.tsx]
+```tsx twoslash [CreateWalletButton.tsx] filename="CreateWalletButton.tsx"
 import React, { useCallback } from "react";
 import { useConnect } from "wagmi";
 import { CoinbaseWalletLogo } from "./CoinbaseWalletLogo";
@@ -46,7 +46,7 @@ export function WagmiCreateWalletButton() {
 }
 ```
 
-```tsx twoslash [CoinbaseWalletLogo.tsx]
+```tsx twoslash [CoinbaseWalletLogo.tsx] filename="CoinbaseWalletLogo.tsx"
 import React from "react";
 
 const defaultContainerStyles = {
@@ -117,10 +117,10 @@ declare module "wagmi" {
 
 :::code-group
 
-```tsx [CreateWalletButton.tsx]
+```tsx twoslash [CreateWalletButton.tsx] filename="CreateWalletButton.tsx"
+import React, { useCallback } from "react";
 import { CoinbaseWalletSDK } from "@coinbase/wallet-sdk";
 import { CoinbaseWalletLogo } from "./CoinbaseWalletLogo";
-import { useCallback } from "react";
 
 const buttonStyles = {
   background: "transparent",
@@ -143,19 +143,14 @@ const sdk = new CoinbaseWalletSDK({
 
 const provider = sdk.makeWeb3Provider();
 
-interface CreateWalletButtonProps {
-  handleSuccess: (res: any) => void;
-  handleError: (error: any) => void;
-}
-
 export function CreateWalletButton({
   handleSuccess,
   handleError,
-}: CreateWalletButtonProps) {
+}) {
 
   const createWallet = useCallback(async () => {
     try {
-      const [address] = await provider.request<string[]>({
+      const [address] = await provider.request({
         method: "eth_requestAccounts",
       });
       handleSuccess(address);
@@ -171,9 +166,10 @@ export function CreateWalletButton({
     </button>
   );
 }
+
 ```
 
-```tsx twoslash [CoinbaseWalletLogo.tsx]
+```tsx twoslash [CoinbaseWalletLogo.tsx] filename="CoinbaseWalletLogo.tsx"
 import React from "react";
 
 const defaultContainerStyles = {
@@ -205,6 +201,7 @@ export function CoinbaseWalletLogo({
     </div>
   );
 }
+
 ```
 
 ```ts twoslash [wagmi.ts]
@@ -230,6 +227,7 @@ declare module "wagmi" {
     config: typeof config;
   }
 }
+
 ```
 
 :::
