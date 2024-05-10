@@ -4,10 +4,11 @@ With Smart Wallet, you can send multiple onchain calls in a single transaction. 
 
 You can submit batch transactions by using new `wallet_sendCalls` RPC, defined [here](https://eip5792.xyz/reference/sendCalls).
 
-## Using Wagmi + Viem
+## Using Wagmi
 
-:::info
-The actions below are experimental and not supported in most wallets. It is recommended to have a fallback mechanism if using this in production.
+:::warning
+The `useWriteContracts` and `useCapabilities` hooks used below rely on new wallet RPC and are not yet supported in most wallets. 
+It is recommended to have a fallback function if your app supports wallets other than Smart Wallet. 
 :::
 
 ### 1. (Optional) Check for atomic batching support
