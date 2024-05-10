@@ -1,9 +1,10 @@
 import { useEffect } from 'react';
+import { Analytics } from "@vercel/analytics/react"
 
 export default function Redirect() {
   useEffect(() => {
     window.location.href = "/why";
   }, []);
 
-  return null;
+  return <Analytics/>;
 }
