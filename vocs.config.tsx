@@ -1,11 +1,7 @@
-import { inject } from "@vercel/analytics";
 import { defineConfig } from "vocs";
 
-inject({
-  mode: process.env.VERCEL_ENV == "production" ? "production" : "development",
-});
-
 export default defineConfig({
+  head: <script defer src="https://cdn.vercel-insights.com/v1/script.debug.js"></script>,
   theme: {
     colorScheme: "system",
     variables: {
