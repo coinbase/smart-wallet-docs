@@ -1,10 +1,32 @@
-# Add a Create Wallet button to your app
+# Simplify user onboarding with “preferred placement”
 
-Copy-pasteable code to quickly add a Create Wallet button to your app.
+## Overview 
+For the best onboarding experience, we recommend adding a highly visible ‘Create’ or ‘Create Wallet’ button to your dapp’s homepage (referred to as “**preferred placement**” - _see example images below_).
 
-![Create Wallet Button](/createWalletButton.png)
+<div style={{ display: "flex", justifyContent: "center" }}>
+  ![Create Wallet Button](/examplePlacement.png)
+</div>
 
-## With wagmi
+For new users, navigating through “Connect” in order to get started is unintuitive, and requires them to understand that they do not need a Coinbase Wallet yet to create one.
+
+This difficulty can be prevented by streamlining the onboarding experience and adding 'preferred placement' aka 'create wallet' button to a page. This simplifies the choices for a new user and gets them ready to use your dapp in a few seconds. Plus, we're offering additional incentives to dapps who implement this new approach.
+
+We recommend two paths for implementation:
+
+1. Match our branded Create Wallet button
+1. Match your own apps look and feel in the Create button
+
+Example:
+
+<div style={{ width: 150 }}>![Create Wallet Button](/createWalletButtonBlue.png)</div>
+
+![Create Wallet Button](/slimExamplePlacement.png)
+
+## Implementation
+
+### With wagmi
+
+To implement the Create Wallet button with wagmi, all you need to do to trigger the create is call `connect`.
 
 :::code-group
 
@@ -107,13 +129,15 @@ declare module "wagmi" {
 
 :::
 
-### Notes
+#### Notes
 
 - For more detail, view the [`useConnect` documentation](https://wagmi.sh/react/api/hooks/useConnect).
 - Upon successful connection, account information can be accessed via [data](https://wagmi.sh/react/api/hooks/useConnect#data)
   returned from `useConnect`, or via [`useAccount`](https://wagmi.sh/react/api/hooks/useAccount).
 
-## With CoinbaseWalletSDK only
+### With CoinbaseWalletSDK only
+
+To implement the Create Wallet button using only the SDK, all you need to do is send an `eth_requestAccounts` request.
 
 :::code-group
 
@@ -143,11 +167,7 @@ const sdk = new CoinbaseWalletSDK({
 
 const provider = sdk.makeWeb3Provider();
 
-export function CreateWalletButton({
-  handleSuccess,
-  handleError,
-}) {
-
+export function CreateWalletButton({ handleSuccess, handleError }) {
   const createWallet = useCallback(async () => {
     try {
       const [address] = await provider.request({
@@ -166,7 +186,6 @@ export function CreateWalletButton({
     </button>
   );
 }
-
 ```
 
 ```tsx twoslash [CoinbaseWalletLogo.tsx] filename="CoinbaseWalletLogo.tsx"
@@ -201,7 +220,6 @@ export function CoinbaseWalletLogo({
     </div>
   );
 }
-
 ```
 
 ```ts twoslash [wagmi.ts]
@@ -227,7 +245,18 @@ declare module "wagmi" {
     config: typeof config;
   }
 }
-
 ```
 
 :::
+
+## Benefits for you:
+
+By integrating a create wallet button on the front page of your app, you are eligible for:
+
+- Increased volume of gas credits via our Cloud paymaster
+- Comarketing and promotional opportunities with Coinbase
+- Featured placement in our dapp listings on homebase.coinbase.com
+
+For more information, please
+[fill out the form](https://docs.google.com/forms/d/e/1FAIpQLSdmTnSjbI-wkkf2TzmuSEv3iYzkbZBsY08xPdK-54J0Ipt4PA/viewform)
+on [coinbase.com/smart-wallet](http://coinbase.com/smart-wallet) so our team can get in touch with you.
