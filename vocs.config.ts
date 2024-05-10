@@ -1,4 +1,9 @@
+import { inject } from "@vercel/analytics";
 import { defineConfig } from "vocs";
+
+inject({
+  mode: process.env.VERCEL_ENV == "production" ? "production" : "development",
+});
 
 export default defineConfig({
   theme: {
