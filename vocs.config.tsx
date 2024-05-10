@@ -63,6 +63,10 @@ export default defineConfig({
           link: "/guides/update-existing-app",
         },
         {
+          text: "Create Wallet button",
+          link: "/guides/components/create-wallet-button",
+        },
+        {
           text: "Signature Verification",
           link: "/guides/signature-verification",
         },
@@ -99,6 +103,10 @@ export default defineConfig({
         {
           text: "makeWeb3Provider",
           link: "/sdk/makeWeb3Provider",
+        },
+        {
+          text: "Upgrading from 3.x",
+          link: "/sdk/v3-to-v4-changes",
         },
       ],
     },
