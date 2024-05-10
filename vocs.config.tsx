@@ -1,7 +1,7 @@
 import { defineConfig } from "vocs";
 
 export default defineConfig({
-  head: <script defer src="https://cdn.vercel-insights.com/v1/script.debug.js"></script>,
+  head: <script defer src={process.env.VERCEL_ENV == "production" ? "/_vercel/insights/script.js" : ""}></script>,
   theme: {
     colorScheme: "system",
     variables: {
