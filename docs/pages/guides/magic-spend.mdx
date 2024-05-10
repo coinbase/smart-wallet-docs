@@ -6,11 +6,7 @@ This also means that apps might not have all the balance information typically a
 
 If your app supports Smart Wallet, it should not assume it knows the full balances available to a user if the `auxiliaryFunds` capability is present on a given chain.
 
-## Using Wagmi + Viem
-
-:::info
-The actions below are experimental and not supported in most wallets. It is recommended to have a fallback mechanism if using this in production.
-:::
+## Using Wagmi
 
 ```ts twoslash [App.tsx]
 // @filename: App.tsx
@@ -32,4 +28,6 @@ function App() {
 }
 ```
 
-If your app supports Smart Wallet and sees that the `auxiliaryFunds` capability is supported on a given chain, it means that a user might have funds available for use onchain on Coinbase. As a result, your app should not block user actions on the basis of balance checks.
+If your app supports Smart Wallet and sees that the `auxiliaryFunds` capability is supported on a given chain, 
+it means that a user might have funds available for use onchain on Coinbase. 
+As a result, your app should not block user actions on the basis of balance checks.
