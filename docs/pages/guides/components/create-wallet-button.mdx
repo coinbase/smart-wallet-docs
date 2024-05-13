@@ -10,12 +10,13 @@ For the best onboarding experience, we recommend adding a highly visible 'Create
 
 Adding a 'Create Wallet' button to a page streamlines the onboarding experience for a new user and gets them ready to use your dapp in a few seconds. Plus, we're offering additional incentives to dapps who implement this new approach.
 
-We recommend two paths for implementation:
+**We recommend two paths for implementation:**
 
 1. Match our branded Create Wallet button
 1. Match your own apps look and feel in the Create button
 
 Example:
+
 <div style={{ width: 200 }}>
   <div style={{ paddingBottom: 10 }}>
     ![Create Wallet Button](/createWalletButtonBlack.png)
@@ -32,6 +33,48 @@ Example:
 To implement the Create Wallet button with Wagmi, all you need to do to trigger the create is call `connect`.
 
 :::code-group
+
+```tsx twoslash [BlueCreateWalletButton.tsx] filename="BlueCreateWalletButton.tsx"
+import React, { useCallback } from "react";
+import { useConnect } from "wagmi";
+import { CoinbaseWalletLogo } from "./CoinbaseWalletLogo";
+
+const buttonStyles = {
+  background: "transparent",
+  border: "1px solid transparent",
+  boxSizing: "border-box",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  width: 200,
+  fontFamily: "Arial, sans-serif",
+  fontWeight: "bold",
+  fontSize: 18,
+  backgroundColor: "#0052FF",
+  paddingLeft: 15,
+  paddingRight: 30,
+  borderRadius: 10,
+};
+
+export function BlueCreateWalletButton() {
+  const { connectors, connect, data } = useConnect();
+
+  const createWallet = useCallback(() => {
+    const coinbaseWalletConnector = connectors.find(
+      (connector) => connector.id === "coinbaseWalletSDK"
+    );
+    if (coinbaseWalletConnector) {
+      connect({ connector: coinbaseWalletConnector });
+    }
+  }, [connectors, connect]);
+  return (
+    <button style={buttonStyles} onClick={createWallet}>
+      <CoinbaseWalletLogo />
+      Create Wallet
+    </button>
+  );
+}
+```
 
 ```tsx twoslash [BlackCreateWalletButton.tsx] filename="BlackCreateWalletButton.tsx"
 import React, { useCallback, useEffect, useMemo, useState } from "react";
@@ -159,48 +202,6 @@ export function BlackCreateWalletButton({ height = 66, width = 200 }) {
 }
 ```
 
-```tsx twoslash [BlueCreateWalletButton.tsx] filename="BlueCreateWalletButton.tsx"
-import React, { useCallback } from "react";
-import { useConnect } from "wagmi";
-import { CoinbaseWalletLogo } from "./CoinbaseWalletLogo";
-
-const buttonStyles = {
-  background: "transparent",
-  border: "1px solid transparent",
-  boxSizing: "border-box",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  width: 200,
-  fontFamily: "Arial, sans-serif",
-  fontWeight: "bold",
-  fontSize: 18,
-  backgroundColor: "#0052FF",
-  paddingLeft: 15,
-  paddingRight: 30,
-  borderRadius: 10,
-};
-
-export function BlueCreateWalletButton() {
-  const { connectors, connect, data } = useConnect();
-
-  const createWallet = useCallback(() => {
-    const coinbaseWalletConnector = connectors.find(
-      (connector) => connector.id === "coinbaseWalletSDK"
-    );
-    if (coinbaseWalletConnector) {
-      connect({ connector: coinbaseWalletConnector });
-    }
-  }, [connectors, connect]);
-  return (
-    <button style={buttonStyles} onClick={createWallet}>
-      <CoinbaseWalletLogo />
-      Create Wallet
-    </button>
-  );
-}
-```
-
 ```tsx twoslash [CoinbaseWalletLogo.tsx] filename="CoinbaseWalletLogo.tsx"
 import React from "react";
 
@@ -269,6 +270,57 @@ declare module "wagmi" {
 To implement the Create Wallet button using only the SDK, all you need to do is send an `eth_requestAccounts` request.
 
 :::code-group
+
+```tsx twoslash [BlueCreateWalletButton.tsx] filename="BlueCreateWalletButton.tsx"
+import React, { useCallback } from "react";
+import { CoinbaseWalletSDK } from "@coinbase/wallet-sdk";
+import { CoinbaseWalletLogo } from "./CoinbaseWalletLogo";
+
+const buttonStyles = {
+  background: "transparent",
+  border: "1px solid transparent",
+  boxSizing: "border-box",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  width: 200,
+  fontFamily: "Arial, sans-serif",
+  fontWeight: "bold",
+  fontSize: 18,
+  backgroundColor: "#0052FF",
+  paddingLeft: 15,
+  paddingRight: 30,
+  borderRadius: 10,
+};
+
+const sdk = new CoinbaseWalletSDK({
+  appName: "My Dapp",
+  appLogoUrl: "https://example.com/logo.png",
+  appChainIds: [84532],
+});
+
+const provider = sdk.makeWeb3Provider();
+
+export function BlueCreateWalletButton({ handleSuccess, handleError }) {
+  const createWallet = useCallback(async () => {
+    try {
+      const [address] = await provider.request({
+        method: "eth_requestAccounts",
+      });
+      handleSuccess(address);
+    } catch (error) {
+      handleError(error);
+    }
+  }, [handleSuccess, handleError]);
+
+  return (
+    <button style={buttonStyles} onClick={createWallet}>
+      <CoinbaseWalletLogo />
+      Create Wallet
+    </button>
+  );
+}
+```
 
 ```tsx twoslash [BlackCreateWalletButton.tsx] filename="BlackCreateWalletButton.tsx"
 import React, { useCallback, useEffect, useMemo, useState } from "react";
@@ -399,57 +451,6 @@ export function BlackCreateWalletButton({ height = 66, width = 200 }) {
           </div>
         </Gradient>
       </div>
-    </button>
-  );
-}
-```
-
-```tsx twoslash [BlueCreateWalletButton.tsx] filename="BlueCreateWalletButton.tsx"
-import React, { useCallback } from "react";
-import { CoinbaseWalletSDK } from "@coinbase/wallet-sdk";
-import { CoinbaseWalletLogo } from "./CoinbaseWalletLogo";
-
-const buttonStyles = {
-  background: "transparent",
-  border: "1px solid transparent",
-  boxSizing: "border-box",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  width: 200,
-  fontFamily: "Arial, sans-serif",
-  fontWeight: "bold",
-  fontSize: 18,
-  backgroundColor: "#0052FF",
-  paddingLeft: 15,
-  paddingRight: 30,
-  borderRadius: 10,
-};
-
-const sdk = new CoinbaseWalletSDK({
-  appName: "My Dapp",
-  appLogoUrl: "https://example.com/logo.png",
-  appChainIds: [84532],
-});
-
-const provider = sdk.makeWeb3Provider();
-
-export function BlueCreateWalletButton({ handleSuccess, handleError }) {
-  const createWallet = useCallback(async () => {
-    try {
-      const [address] = await provider.request({
-        method: "eth_requestAccounts",
-      });
-      handleSuccess(address);
-    } catch (error) {
-      handleError(error);
-    }
-  }, [handleSuccess, handleError]);
-
-  return (
-    <button style={buttonStyles} onClick={createWallet}>
-      <CoinbaseWalletLogo />
-      Create Wallet
     </button>
   );
 }
