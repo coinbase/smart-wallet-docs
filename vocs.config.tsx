@@ -107,7 +107,7 @@ export default defineConfig({
           link: "/sdk/makeWeb3Provider",
         },
         {
-          text: "Upgrading from 3.x",
+          text: "Upgrading From 3.x",
           link: "/sdk/v3-to-v4-changes",
         },
       ],
