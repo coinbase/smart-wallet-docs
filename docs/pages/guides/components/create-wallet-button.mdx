@@ -20,7 +20,7 @@ We recommend two paths for implementation:
 Example:
 <div style={{ width: 200 }}>
   <div style={{ paddingBottom: 10 }}>
-    ![Create Wallet Button](/createWalletButtonRainbow.png)
+    ![Create Wallet Button](/createWalletButtonBlack.png)
   </div>
   <div>![Create Wallet Button](/createWalletButtonBlue.png)</div>
 </div>
@@ -35,7 +35,7 @@ To implement the Create Wallet button with wagmi, all you need to do to trigger 
 
 :::code-group
 
-```tsx twoslash [RainbowCreateWalletButton.tsx] filename="RainbowCreateWalletButton.tsx"
+```tsx twoslash [BlackCreateWalletButton.tsx] filename="BlackCreateWalletButton.tsx"
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useConnect } from "wagmi";
 import { CoinbaseWalletLogo } from "./CoinbaseWalletLogo";
@@ -88,7 +88,7 @@ function Gradient({ children, style, isAnimationDisabled = false }) {
   );
 }
 
-export function RainbowCreateWalletButton({ height = 66, width = 200 }) {
+export function BlackCreateWalletButton({ height = 66, width = 200 }) {
   const { connectors, connect } = useConnect();
 
   const minButtonHeight = 48;
@@ -272,7 +272,7 @@ To implement the Create Wallet button using only the SDK, all you need to do is 
 
 :::code-group
 
-```tsx twoslash [RainbowCreateWalletButton.tsx] filename="RainbowCreateWalletButton.tsx"
+```tsx twoslash [BlackCreateWalletButton.tsx] filename="BlackCreateWalletButton.tsx"
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { CoinbaseWalletSDK } from "@coinbase/wallet-sdk";
 import { CoinbaseWalletLogo } from "./CoinbaseWalletLogo";
@@ -333,7 +333,7 @@ const sdk = new CoinbaseWalletSDK({
 
 const provider = sdk.makeWeb3Provider();
 
-export function RainbowCreateWalletButton({ height = 66, width = 200 }) {
+export function BlackCreateWalletButton({ height = 66, width = 200 }) {
   const minButtonHeight = 48;
   const minButtonWidth = 200;
   const buttonHeight = Math.max(minButtonHeight, height);
