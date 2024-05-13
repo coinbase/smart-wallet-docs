@@ -54,18 +54,18 @@ export default defineConfig({
       collapsed: false,
       items: [
         {
-          text: "Create a new app",
+          text: "Create a New App",
           items: [
             { text: "Using Build Onchain Template", link: "/guides/create-app/using-boat" },
             { text: "Using Wagmi Template", link: "/guides/create-app/using-wagmi" },
           ],
         },
         {
-          text: "Update an existing app",
+          text: "Update an Existing App",
           link: "/guides/update-existing-app",
         },
         {
-          text: "Create Wallet button",
+          text: "Create Wallet Button",
           link: "/guides/components/create-wallet-button",
         },
         {
@@ -77,15 +77,15 @@ export default defineConfig({
           link: "/guides/siwe",
         },
         {
-          text: "Batch transactions",
+          text: "Batch Transactions",
           link: "/guides/batch-transactions",
         },
         {
-          text: "Paymasters (sponsored transactions)",
+          text: "Paymasters (Sponsored Transactions)",
           link: "/guides/paymasters",
         },
         {
-          text: "Magic Spend support",
+          text: "Magic Spend Support",
           link: "/guides/magic-spend",
         },
       ],
