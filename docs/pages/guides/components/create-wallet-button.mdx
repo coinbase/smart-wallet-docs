@@ -51,7 +51,7 @@ To implement the Create Wallet button with Wagmi, all you need to do is call `co
 
 ```tsx twoslash [BlueCreateWalletButton.tsx] filename="BlueCreateWalletButton.tsx"
 import React, { useCallback } from "react";
-import { useConnect } from "wagmi";
+import { useChainId, useConnect } from "wagmi";
 import { CoinbaseWalletLogo } from "./CoinbaseWalletLogo";
 
 const buttonStyles = {
@@ -73,13 +73,14 @@ const buttonStyles = {
 
 export function BlueCreateWalletButton() {
   const { connectors, connect, data } = useConnect();
+  const chainId = useChainId()
 
   const createWallet = useCallback(() => {
     const coinbaseWalletConnector = connectors.find(
       (connector) => connector.id === "coinbaseWalletSDK"
     );
     if (coinbaseWalletConnector) {
-      connect({ connector: coinbaseWalletConnector });
+      connect({ connector: coinbaseWalletConnector, chainId });
     }
   }, [connectors, connect]);
   return (
@@ -93,7 +94,7 @@ export function BlueCreateWalletButton() {
 
 ```tsx twoslash [BlackCreateWalletButton.tsx] filename="BlackCreateWalletButton.tsx"
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { useConnect } from "wagmi";
+import { useChainId, useConnect } from "wagmi";
 import { CoinbaseWalletLogo } from "./CoinbaseWalletLogo";
 
 const GRADIENT_BORDER_WIDTH = 2;
@@ -146,6 +147,7 @@ function Gradient({ children, style, isAnimationDisabled = false }) {
 
 export function BlackCreateWalletButton({ height = 66, width = 200 }) {
   const { connectors, connect } = useConnect();
+  const chainId = useChainId()
 
   const minButtonHeight = 48;
   const minButtonWidth = 200;
@@ -198,7 +200,7 @@ export function BlackCreateWalletButton({ height = 66, width = 200 }) {
       (connector) => connector.id === "coinbaseWalletSDK"
     );
     if (coinbaseWalletConnector) {
-      connect({ connector: coinbaseWalletConnector });
+      connect({ connector: coinbaseWalletConnector, chainId });
     }
   }, [connectors, connect]);
 
