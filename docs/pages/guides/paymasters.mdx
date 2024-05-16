@@ -47,6 +47,7 @@ import { baseSepolia } from "viem/chains";
 import {client} from "./config"
 import {
   coinbaseSmartWalletABI,
+  coinbaseSmartWalletFactoryAddress,
   coinbaseSmartWalletProxyBytecode,
   coinbaseSmartWalletV1Implementation,
   erc1967ProxyImplementationSlot,
@@ -70,22 +71,32 @@ export async function willSponsor({
   try {
     // check the userOp.sender is a proxy with the expected bytecode
     const code = await client.getBytecode({ address: userOp.sender });
-    if (code != coinbaseSmartWalletProxyBytecode) return false;
 
-    // check that userOp.sender proxies to expected implementation
-    const implementation = await client.request<{
-      Parameters: [Address, Hex, BlockTag];
-      ReturnType: Hex;
-    }>({
-      method: "eth_getStorageAt",
-      params: [userOp.sender, erc1967ProxyImplementationSlot, "latest"],
-    });
-    const implementationAddress = decodeAbiParameters(
-      [{ type: "address" }],
-      implementation,
-    )[0];
-    if (implementationAddress != coinbaseSmartWalletV1Implementation)
-      return false;
+    if (code === "0x") {
+      // no code at address, check that the initCode is deploying a Coinbase Smart Wallet
+      // factory address is first 20 bytes of initCode after '0x'
+      const factoryAddress = userOp.initCode.slice(0, 42);
+      if (factoryAddress.toLowerCase() !== coinbaseSmartWalletFactoryAddress.toLowerCase())
+        return false;
+    } else {
+      // code at address, check that it is a proxy to the expected implementation
+      if (code != coinbaseSmartWalletProxyBytecode) return false;
+
+      // check that userOp.sender proxies to expected implementation
+      const implementation = await client.request<{
+        Parameters: [Address, Hex, BlockTag];
+        ReturnType: Hex;
+      }>({
+        method: "eth_getStorageAt",
+        params: [userOp.sender, erc1967ProxyImplementationSlot, "latest"],
+      });
+      const implementationAddress = decodeAbiParameters(
+        [{ type: "address" }],
+        implementation
+      )[0];
+      if (implementationAddress != coinbaseSmartWalletV1Implementation)
+        return false;
+    }
 
     // check that userOp.callData is making a call we want to sponsor
     const calldata = decodeFunctionData({
@@ -137,6 +148,8 @@ export const coinbaseSmartWalletProxyBytecode =
   "0x363d3d373d3d363d7f360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc545af43d6000803e6038573d6000fd5b3d6000f3";
 export const coinbaseSmartWalletV1Implementation =
   "0x000100abaad02f1cfC8Bbe32bD5a564817339E72";
+export const coinbaseSmartWalletFactoryAddress =
+  "0x0BA5ED0c6AA8c49038F819E587E2633c4A9F428a";
 export const magicSpendAddress = "0x011A61C07DbF256A68256B1cB51A5e246730aB92";
 export const erc1967ProxyImplementationSlot =
   "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc";
