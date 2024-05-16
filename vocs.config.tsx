@@ -50,6 +50,10 @@ export default defineConfig({
       link: "/wallet-library-support",
     },
     {
+      text: "Base Gasless Campaign",
+      link: "/base-gasless-campaign",
+    },
+    {
       text: "Guides",
       collapsed: false,
       items: [
