@@ -1,12 +1,5 @@
 # Getting Started with Wagmi Template
 This guide covers creating a new Wagmi template project that uses Smart Wallet. 
-We use [pnpm](https://pnpm.io/) or [bun](https://bun.sh/) for Node package manager 
-as these have superior `resolutions` support. 
-:::info
-Note, the instructions in this guide are only needed while Smart Wallet is in beta.
-After mainnet launch, Wagmi and others will have full support and the template will work
-as is. 
-:::
 
 ### 1. Run the following command and proceed through the prompts. 
 
@@ -46,7 +39,7 @@ bun install && bun run dev
    export const config = createConfig({
      chains: [baseSepolia],
      connectors: [
-       coinbaseWallet({ appName: 'Create Wagmi' }),
+       coinbaseWallet({ appName: 'Create Wagmi', preference: 'smartWalletOnly' }),
      ],
      transports: {
        [baseSepolia.id]: http(),
