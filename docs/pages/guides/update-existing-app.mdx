@@ -1,7 +1,16 @@
 # Update an existing project
 
+## Direct dependency 
+Follow the [installation instructions](/sdk/install).
+
 ## Wagmi 
-If your project is using wagmi, simply upgrade wagmi to version `2.9.0` or higher. Smart Wallet is available out of the box.
+
+1. Upgrade wagmi to version `2.9.0` or higher. 
+1. Prior to mainnet launch:
+  - Smart Wallet will be available for use with Base Sepolia only.
+  - Smart Wallet will only be available on the `keys.coinbase.com` popup if `preference: 'smartWalletOnly'` is used. [Example](/guides/create-app/using-wagmi#4-update-the-wagmi-config-and-coinbasewallet-connector-to-use-basesepolia)
+
+
 
 ## Transitive dependency
 If your project or its dependencies are already using 
