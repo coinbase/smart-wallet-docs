@@ -92,6 +92,10 @@ export default defineConfig({
           text: "Magic Spend Support",
           link: "/guides/magic-spend",
         },
+        {
+          text: "Inspect Transaction Simulation",
+          link: "/guides/inspect-txn-simulation",
+        },
       ],
     },
     {
