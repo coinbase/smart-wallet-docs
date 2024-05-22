@@ -93,8 +93,17 @@ export default defineConfig({
           link: "/guides/magic-spend",
         },
         {
-          text: "Inspect Transaction Simulation",
-          link: "/guides/inspect-txn-simulation",
+          text: "Tips & Tricks",
+          items: [
+            {
+              text: "Inspect Transaction Simulation",
+              link: "/guides/tips/inspect-txn-simulation",
+            },
+            {
+              text: "Popup Tips",
+              link: "/guides/tips/popup-tips",
+            },
+          ],
         },
       ],
     },
