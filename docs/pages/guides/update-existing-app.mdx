@@ -1,4 +1,4 @@
-# Update an existing project
+# Update an Existing Project
 
 ## Direct dependency 
 Follow the [installation instructions](/sdk/install).
@@ -8,21 +8,3 @@ Follow the [installation instructions](/sdk/install).
 1. Prior to mainnet launch:
   - Smart Wallet will be available for use with Base Sepolia and Sepolia only.
   - Smart Wallet will only be available on the `keys.coinbase.com` popup  if `preference: 'smartWalletOnly'` is passed to the `coinbaseWallet` connector. [Example](/guides/create-app/using-wagmi#4-update-the-wagmi-config-and-coinbasewallet-connector-to-use-basesepolia)
-
-
-## Transitive dependency
-If your project or its dependencies are already using 
-Coinbase Wallet SDK, just add the following to `package.json`.
-```json
-"resolutions": {
-  "@coinbase/wallet-sdk": "npm:@coinbase/wallet-sdk@4.0.0-beta.14"
-}
-```
-After doing so, remember to run `install` with your package manager, e.g. `pnpm install`. 
-Then, rebuild your project, and when you click to connect Coinbase Wallet, you will see a new 
-popup window with a Smart Wallet option. 
-
-:::info
-Note, if you are having trouble and are using `yarn` or `npm`, you may need to use [force resolutions](https://www.npmjs.com/package/npm-force-resolutions).
-We recommend using [pnpm](https://pnpm.io/) or [bun](https://bun.sh/), when possible.
-:::
