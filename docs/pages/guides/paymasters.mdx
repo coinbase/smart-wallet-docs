@@ -245,6 +245,8 @@ export async function POST(r: Request) {
 
 ```
 ```ts twoslash [config.ts] filename="config.ts"
+const process = { env: { PAYMASTER_SERVICE_URL: '' } }
+// ---cut---
 import { createClient, http } from "viem";
 import { baseSepolia } from "viem/chains";
 import { ENTRYPOINT_ADDRESS_V06 } from "permissionless";
@@ -255,7 +257,7 @@ const paymasterService = process.env.PAYMASTER_SERVICE_URL!;
 export const paymasterClient = createClient({
   chain: baseSepolia,
   transport: http(paymasterService),
-}).extend(paymasterActionsEip7677({ entryPoint: ENTRYPOINT_ADDRESS_V06 }));
+}).extend(paymasterActionsEip7677(ENTRYPOINT_ADDRESS_V06));
 ```
 :::
 
