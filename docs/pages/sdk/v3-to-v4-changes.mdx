@@ -55,15 +55,13 @@ type CoinbaseWalletSDKOptions = {
       ```ts
       interface Preference {
         options: 'all' | 'smartWalletOnly' | 'eoaOnly';
-        keysUrl?: string;
       }
       ```
       - `options`
         - `'all'` (default) show both smart wallet and EOA options
         - `'smartWalletOnly'` only show smart wallet option
         - `'eoaOnly'` only show EOA option
-      - `keysUrl`
-        - You probably don't need this. Use only if you'd like to use a frontend other than `"https://keys.coinbase.com/connect"` as your connection popup.
+
 #### Return type
       ```ts
       export interface ProviderInterface extends EventEmitter {
