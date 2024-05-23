@@ -15,7 +15,7 @@ as browsers might perceive the request as programmatically initiated.
 - If logic is unavoidable, keep it minimal and test thoroughly in all supported browsers.
 
 ## `Cross-Origin-Opener-Policy` 
-If the Smart Wallet popup does not opening, it may be due to the dapp's `Cross-Origin-Opener-Policy` header being set to `same-origin`.
+If the Smart Wallet popup fails to open, it may be due to the dapp's `Cross-Origin-Opener-Policy`. Be sure to use a directive that allows the Smart Wallet popup to open. 
 
 - ✅ Allows Smart Wallet Popup to open.
   - `unsafe-none` (default)
