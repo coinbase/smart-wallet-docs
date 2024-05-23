@@ -29,33 +29,8 @@ bun i @coinbase/wallet-sdk
 ```
 :::
 
-- Intended for production environments.
 - Before public mainnet launch
   - Will *only* show Smart Wallet option on `keys.coinbase.com` popup when `'smartWalletOnly'` is used.
     - [Wagmi example](/guides/create-app/using-wagmi#4-update-the-wagmi-config-and-coinbasewallet-connector-to-use-basesepolia) 
     - [Direct dependency example](/sdk/makeWeb3Provider#usage)
   - Will allow Smart Wallet usage on Base Sepolia and Sepolia only. 
-
-## Beta
-:::code-group
-
-```bash [npm]
-npm i @coinbase/wallet-sdk@4.0.0-beta.14
-```
-
-```bash [pnpm]
-pnpm i @coinbase/wallet-sdk@4.0.0-beta.14
-```
-
-```bash [yarn]
-yarn add @coinbase/wallet-sdk@4.0.0-beta.14
-```
-
-```bash [bun]
-bun i @coinbase/wallet-sdk@4.0.0-beta.14
-```
-:::
-
-- Intended for local testing or demo testnet apps. 
-- Based on [config](/sdk/setup), can show Smart Wallet option on `keys.coinbase.com` popup.
-- Only allows using Smart Wallet on testnets (currently Base Sepolia and Sepolia).
