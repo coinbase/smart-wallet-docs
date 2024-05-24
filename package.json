@@ -19,15 +19,13 @@
   },
   "devDependencies": {
     "dprint": "^0.45.1",
+    "permissionless": "^0.1.29",
     "simple-git-hooks": "^2.11.1",
     "siwe": "^2.3.2",
     "viem": "^2.9.28",
-    "wagmi": "^2.8.1"
+    "wagmi": "^2.9.0"
   },
   "simple-git-hooks": {
     "pre-commit": "bun dprint check"
-  },
-  "resolutions": {
-    "@coinbase/wallet-sdk": "npm:@coinbase/wallet-sdk@4.0.0-beta.12"
   }
 }

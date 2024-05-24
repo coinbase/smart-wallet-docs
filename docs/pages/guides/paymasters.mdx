@@ -14,14 +14,8 @@ It is recommended to have a fallback function if your app supports wallets other
 
 As a prerequisite, you'll need to obtain a paymaster service URL from a paymaster service provider. To be compatible with Smart Wallet, the paymaster provider you choose must be ERC-7677-compliant.
 
-We recommend the [Coinbase Developer Platform](https://www.coinbase.com/developer-platform) paymaster. You can find a full list of ERC-7677-compliant paymaster services [here](https://www.erc7677.xyz/ecosystem/paymasters).
-
-:::info
-[Coinbase Developer Platform](https://www.coinbase.com/developer-platform) is currently offering the following Base gas credit promotions in their Paymaster product
-- $100 upon signup (phone and email only; takes less than 2min)
-- $500 for adding a credit card
-- $3,000 - $15,000 for supporting the Coinbase Smart Wallet. [Apply today](https://docs.google.com/forms/d/1yPnBFW0bVUNLUN_w3ctCqYM9sjdIQO3Typ53KXlsS5g/viewform).
-:::
+We recommend the [Coinbase Developer Platform](https://www.coinbase.com/developer-platform) paymaster, currently offering up to $15k in gas credits as part of the [Base Gasless Campaign](/base-gasless-campaign).
+You can find a full list of ERC-7677-compliant paymaster services [here](https://www.erc7677.xyz/ecosystem/paymasters).
 
 Once you choose a paymaster service provider and obtain a paymaster service URL, you can proceed to integration.
 
@@ -53,6 +47,7 @@ import { baseSepolia } from "viem/chains";
 import {client} from "./config"
 import {
   coinbaseSmartWalletABI,
+  coinbaseSmartWalletFactoryAddress,
   coinbaseSmartWalletProxyBytecode,
   coinbaseSmartWalletV1Implementation,
   erc1967ProxyImplementationSlot,
@@ -76,22 +71,32 @@ export async function willSponsor({
   try {
     // check the userOp.sender is a proxy with the expected bytecode
     const code = await client.getBytecode({ address: userOp.sender });
-    if (code != coinbaseSmartWalletProxyBytecode) return false;
 
-    // check that userOp.sender proxies to expected implementation
-    const implementation = await client.request<{
-      Parameters: [Address, Hex, BlockTag];
-      ReturnType: Hex;
-    }>({
-      method: "eth_getStorageAt",
-      params: [userOp.sender, erc1967ProxyImplementationSlot, "latest"],
-    });
-    const implementationAddress = decodeAbiParameters(
-      [{ type: "address" }],
-      implementation,
-    )[0];
-    if (implementationAddress != coinbaseSmartWalletV1Implementation)
-      return false;
+    if (!code) {
+      // no code at address, check that the initCode is deploying a Coinbase Smart Wallet
+      // factory address is first 20 bytes of initCode after '0x'
+      const factoryAddress = userOp.initCode.slice(0, 42);
+      if (factoryAddress.toLowerCase() !== coinbaseSmartWalletFactoryAddress.toLowerCase())
+        return false;
+    } else {
+      // code at address, check that it is a proxy to the expected implementation
+      if (code != coinbaseSmartWalletProxyBytecode) return false;
+
+      // check that userOp.sender proxies to expected implementation
+      const implementation = await client.request<{
+        Parameters: [Address, Hex, BlockTag];
+        ReturnType: Hex;
+      }>({
+        method: "eth_getStorageAt",
+        params: [userOp.sender, erc1967ProxyImplementationSlot, "latest"],
+      });
+      const implementationAddress = decodeAbiParameters(
+        [{ type: "address" }],
+        implementation
+      )[0];
+      if (implementationAddress != coinbaseSmartWalletV1Implementation)
+        return false;
+    }
 
     // check that userOp.callData is making a call we want to sponsor
     const calldata = decodeFunctionData({
@@ -143,6 +148,8 @@ export const coinbaseSmartWalletProxyBytecode =
   "0x363d3d373d3d363d7f360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc545af43d6000803e6038573d6000fd5b3d6000f3";
 export const coinbaseSmartWalletV1Implementation =
   "0x000100abaad02f1cfC8Bbe32bD5a564817339E72";
+export const coinbaseSmartWalletFactoryAddress =
+  "0x0BA5ED0c6AA8c49038F819E587E2633c4A9F428a";
 export const magicSpendAddress = "0x011A61C07DbF256A68256B1cB51A5e246730aB92";
 export const erc1967ProxyImplementationSlot =
   "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc";
@@ -238,6 +245,8 @@ export async function POST(r: Request) {
 
 ```
 ```ts twoslash [config.ts] filename="config.ts"
+const process = { env: { PAYMASTER_SERVICE_URL: '' } }
+// ---cut---
 import { createClient, http } from "viem";
 import { baseSepolia } from "viem/chains";
 import { ENTRYPOINT_ADDRESS_V06 } from "permissionless";
@@ -248,7 +257,7 @@ const paymasterService = process.env.PAYMASTER_SERVICE_URL!;
 export const paymasterClient = createClient({
   chain: baseSepolia,
   transport: http(paymasterService),
-}).extend(paymasterActionsEip7677({ entryPoint: ENTRYPOINT_ADDRESS_V06 }));
+}).extend(paymasterActionsEip7677(ENTRYPOINT_ADDRESS_V06));
 ```
 :::
 

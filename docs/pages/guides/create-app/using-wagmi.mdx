@@ -1,13 +1,6 @@
 # Getting Started with Wagmi Template
 
 This guide covers creating a new Wagmi template project that uses Smart Wallet.
-We use [pnpm](https://pnpm.io/) or [bun](https://bun.sh/) for Node package manager
-as these have superior `resolutions` support.
-:::info
-Note, the instructions in this guide are only needed while Smart Wallet is in beta.
-After mainnet launch, Wagmi and others will have full support and the template will work
-as is.
-:::
 
 ### 1. Run the following command and proceed through the prompts.
 
@@ -22,14 +15,6 @@ bun create wagmi
 ```
 
 :::
-
-### 2. In your new project directory, add the following to `package.json`.
-
-```json
-"resolutions": {
-  "@coinbase/wallet-sdk": "npm:@coinbase/wallet-sdk@4.0.0-beta.12"
-}
-```
 
 ### 3. Install packages and run dev.
 
@@ -50,25 +35,23 @@ bun install && bun dev
 `src/wagmi.ts` should look something like this:
 
 ```ts twoslash
-import { http, createConfig } from 'wagmi'
-import { baseSepolia } from 'wagmi/chains'
-import { coinbaseWallet } from 'wagmi/connectors'
+import { http, createConfig } from 'wagmi';
+import { baseSepolia } from 'wagmi/chains';
+import { coinbaseWallet } from 'wagmi/connectors';
 
 export const config = createConfig({
   chains: [baseSepolia],
   connectors: [
-    coinbaseWallet({
-      appName: 'Create Wagmi',
-    }),
+    coinbaseWallet({ appName: 'Create Wagmi', preference: 'smartWalletOnly' }),
   ],
   transports: {
     [baseSepolia.id]: http(),
   },
-})
+});
 
 declare module 'wagmi' {
   interface Register {
-    config: typeof config
+    config: typeof config;
   }
 }
 ```

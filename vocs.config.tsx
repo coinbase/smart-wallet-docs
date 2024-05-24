@@ -50,6 +50,10 @@ export default defineConfig({
       link: "/wallet-library-support",
     },
     {
+      text: "Base Gasless Campaign",
+      link: "/base-gasless-campaign",
+    },
+    {
       text: "Guides",
       collapsed: false,
       items: [
@@ -87,6 +91,19 @@ export default defineConfig({
         {
           text: "Magic Spend Support",
           link: "/guides/magic-spend",
+        },
+        {
+          text: "Tips & Tricks",
+          items: [
+            {
+              text: "Inspect Transaction Simulation",
+              link: "/guides/tips/inspect-txn-simulation",
+            },
+            {
+              text: "Popup Tips",
+              link: "/guides/tips/popup-tips",
+            },
+          ],
         },
       ],
     },
