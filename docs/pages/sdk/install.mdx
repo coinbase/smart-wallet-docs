@@ -1,32 +1,35 @@
-# Install 
-
-Smart Wallet is accessible to developers through the [Coinbase Wallet SDK](https://github.com/coinbase/coinbase-wallet-sdk), versions `4.0` and later. 
-
-:::code-group
- 
-```bash [npm]
-npm i @coinbase/wallet-sdk@4.0.0
-```
- 
-```bash [pnpm]
-pnpm i @coinbase/wallet-sdk@4.0.0
-```
-
-```bash [yarn]
-yarn add @coinbase/wallet-sdk@4.0.0
-```
- 
-```bash [bun]
-bun i @coinbase/wallet-sdk@4.0.0
-```
-:::
-
+# Install
 
 :::warning
 **IMPORTANT** 
 
-Smart Wallet is not yet publicly launched on mainnet networks. Read about the current SDK versions below 
-and reach out on [Discord](https://discord.com/invite/cdp/) in the `#smart-wallet` channel if you have questions. 
+Smart Wallet is not yet publicly launched on mainnet networks. Reach out on [Discord](https://discord.com/invite/cdp/) in the `#smart-wallet` channel if you have questions. 
 
 Public mainnet launch is expected to occur by early June.
 :::
+
+## Command 
+:::code-group
+
+```bash [npm]
+npm i @coinbase/wallet-sdk
+```
+
+```bash [pnpm]
+pnpm i @coinbase/wallet-sdk
+```
+
+```bash [yarn]
+yarn add @coinbase/wallet-sdk
+```
+
+```bash [bun]
+bun i @coinbase/wallet-sdk
+```
+:::
+
+## Pre-launch behavior
+  - Will allow Smart Wallet usage on Base Sepolia and Sepolia only. 
+  - Will *only* show Smart Wallet option on `keys.coinbase.com` popup when `'smartWalletOnly'` is used.
+    - [Wagmi example](/guides/create-app/using-wagmi#4-update-the-wagmi-config-and-coinbasewallet-connector-to-use-basesepolia) 
+    - [Direct dependency example](/sdk/makeWeb3Provider#usage)
