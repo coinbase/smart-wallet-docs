@@ -87,6 +87,12 @@ interface ProviderConnectInfo { readonly chainId: string; }
 on(event: 'connect', listener: (info: ProviderConnectInfo) => void): this; 
 ```
 
+### `eth_accounts` when disconnected
+- v3 returned an empty array.
+- v4 throws an error.
+  - `Error: Must call 'eth_requestAccounts' before other methods`
+
+
 
 ### Deprecated functionality
 
