@@ -10,7 +10,8 @@ The `useWriteContracts` and `useCapabilities` hooks used below rely on new walle
 It is recommended to have a fallback function if your app supports wallets other than Smart Wallet. 
 :::
 
-### 1. Choose a paymaster service provider
+::::steps
+### Choose a paymaster service provider
 
 As a prerequisite, you'll need to obtain a paymaster service URL from a paymaster service provider. To be compatible with Smart Wallet, the paymaster provider you choose must be ERC-7677-compliant.
 
@@ -19,7 +20,7 @@ You can find a full list of ERC-7677-compliant paymaster services [here](https:/
 
 Once you choose a paymaster service provider and obtain a paymaster service URL, you can proceed to integration.
 
-### 2. (Recommended) Setup your paymaster proxy
+### (Recommended) Setup your paymaster proxy
 
 Creating an API to proxy calls to your paymaster service is important for two reasons. 
 1. Allows you to protect any API secret. 
@@ -261,7 +262,7 @@ export const paymasterClient = createClient({
 ```
 :::
 
-### 3. Send EIP-5792 requests with a paymaster service capability
+### Send EIP-5792 requests with a paymaster service capability
 
 Once you have your paymaster service set up, you can now pass its URL along to Wagmi's `useWriteContracts` hook.
 
@@ -346,3 +347,5 @@ export const myNFTAddress = "0x119Ea671030FBf79AB93b436D2E20af6ea469a19";
 
 That's it! Smart Wallet will handle the rest. If your paymaster service is able to sponsor the transaction, 
 in the UI Smart Wallet will indicate to your user that the transaction is sponsored. 
+
+::::
