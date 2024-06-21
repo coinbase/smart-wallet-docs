@@ -1,1 +1,7 @@
-This is a [Vocs](https://vocs.dev) project bootstrapped with the Vocs CLI.
+Documentation site for [Smart Wallet](https://github.com/coinbase/smart-wallet).
+
+### Running locally 
+```bash
+bun install 
+bun run dev
+```
