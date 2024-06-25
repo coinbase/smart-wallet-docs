@@ -27,6 +27,10 @@ Creating an API to proxy calls to your paymaster service is important for two re
 2. Allows you to add extra validation on what requests you want to sponsor. 
 
 #### Validate UserOperation
+:::info 
+`willSponsor` can be simplified or removed entirely if your paymaster service supports allowlisting which 
+contracts and function calls should be sponsored. [Coinbase Developer Platform](https://www.coinbase.com/developer-platform) supports this. 
+:::
 Before we write our proxy, let's write a `willSponsor` function to add some extra validation.
 The policies on many paymaster services are quite simple and limited. As your API will be exposed on the web, 
 you want to make sure in cannot abused: called to sponsor transaction you do not want to fund. The checks below 
@@ -225,8 +229,8 @@ export async function POST(r: Request) {
   const req = await r.json();
   const method = req.method;
   const [userOp, entrypoint, chainId] = req.params;
-  console.log(req.params);
-  if (!willSponsor({ chainId: parseInt(chainId), entrypoint, userOp })) {
+  const sponsorable = await willSponsor({ chainId, entrypoint, userOp });
+  if (!sponsorable) {
     return Response.json({ error: "Not a sponsorable operation" });
   }
 
