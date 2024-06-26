@@ -1,0 +1,57 @@
+# Getting Started With Vanilla JavaScript
+
+:::steps
+## Initialize the SDK
+
+```javascript twoslash
+import { CoinbaseWalletSDK } from '@coinbase/wallet-sdk';
+
+const sdk = new CoinbaseWalletSDK({
+  appName: 'My Dapp',
+  appLogoUrl: 'https://example.com/logo.png',
+  appChainIds: [84532],
+});
+```
+[`CoinbaseWalletSDK` Parameter Details ](/sdk/setup)
+
+## Create a Provider
+```javascript
+const provider = sdk.makeWeb3Provider();
+```
+[`makeWeb3Provider` Parameter Details](/sdk/makeWeb3Provider)
+
+## Request Accounts
+Making an `eth_requestAccounts` request will open the Coinbase Smart Wallet frontend (keys.coinbase.com)
+in a popup window and allow the user to connect via their preferred method.
+
+Usually this happens in response to a user action, like clicking a 'Connect Wallet' button.
+
+```javascript
+const requestAccounts = async () => {
+  try {
+    const accounts = await provider.request({ method: 'eth_requestAccounts' });
+    // do something with accounts
+  } catch (error) {
+    // handle error
+  }
+};
+```
+
+## Make a Signing Request
+Now that a wallet is connected, you can request a signature with `personal_sign`.
+
+```javascript
+   const personalSign = async () => {
+    try {
+      const [address] = await provider.request({ method: 'eth_accounts' });
+      const signature = await provider.request({
+        method: 'personal_sign',
+        params: ['test message', address],
+      });
+      // do something with signature
+    } catch (error) {
+      // handle error
+    }
+  };
+```
+:::
