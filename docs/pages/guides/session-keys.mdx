@@ -14,6 +14,8 @@ These unlock experiences that keep all of the unique properties of wallets (eg s
 2. High-frequency transactions (eg gaming, social)
 3. Background transactions (eg subscriptions, automated trading)
 
+## Grant Permissions
+
 Session Keys are built on top of [EIP-7715](https://eip.tools/eip/7715) which introduces a new RPC for apps to request permissions from wallets, `wallet_grantPermissions`.
 
 A permission is defined by:
@@ -27,6 +29,7 @@ A permission is defined by:
 To enable Session Keys on your app, we recommend using our experimental `useGrantPermissions` hook in `wagmi` like so:
 
 ```tsx
+import { useState } from "react";
 import { useAccount } from "wagmi";
 import { baseSepolia } from "wagmi/chains";
 import { useGrantPermissions } from "wagmi/experimental";
@@ -34,11 +37,12 @@ import { useGrantPermissions } from "wagmi/experimental";
 function Component() {
   const account = useAccount();
   const { grantPermissions } = useGrantPermissions();
+  const [permissionsContext, setPermissionsContext] = useState<Hex>();
 
   return (
     <button
       onClick={() => {
-        grantPermissions([
+        const grantedPermissions = grantPermissions([
           {
             account: account.address,
             chainId: baseSepolia.chainId, // only available on base sepolia for now
@@ -47,7 +51,7 @@ function Component() {
             permission: {
               type: "call-with-permission",
               data: {
-                allowedContract: "0x...",
+                allowedContract: "0x...", // only contract allowed to be called using this permission
                 permissionArgs: "0x...", // hex-encoded arguments to be used for onchain validation, set as "0x" if not needed
               },
             },
@@ -61,9 +65,65 @@ function Component() {
             ],
           },
         ]);
+        setPermissionsContext(grantedPermissions?.[0]?.context);
       }}
     >
       Grant Permission
+    </button>
+  );
+}
+```
+
+## Contract Integration
+
+> For the purpose of quickly getting started, you can start testing with [this contract](https://sepolia.basescan.org/address/0x67c97d1fb8184f038592b2109f854dfb09c77c75) deployed on Base Sepolia.
+
+The first type of permission available to Session Keys is `'call-with-permission'`.
+
+It's goal is to enable a permissionless way for apps to add Session Key support while reducing risk of users approving malicious sessions.
+
+It works by only allowing interactions with contracts that implement the following function:
+
+```solidity
+function callWithPermission(bytes32 permissionHash, bytes calldata permissionArgs, bytes calldata call) external payable returns (bytes memory);
+```
+
+We recognize that this puts a new burden on smart contract developers, but believe it is in the best interest of users to force intentional adoption of Session Keys from the contract layer to prevent attacks like phishing.
+
+## Submit Transaction
+
+After you have granted permissions to a contract that implements our dedicated `callWithPermission` function, you can now submit Session Key transactions using `useSendCalls`.
+
+```tsx
+import { useWriteContracts } from "wagmi/experimental";
+import { clickAbi } from "abis/Click.ts";
+
+function Component() {
+  const { writeContracts } = useWriteContracts();
+  // state set by grantPermissions step
+  const [permissionsContext, setPermissionsContext] = useState<Hex>();
+
+  return (
+    <button
+      onClick={() => {
+        writeContracts({
+          capabilities: {
+            permissions: {
+              context: permissionsContext
+            }
+          }
+          contracts: [
+            {
+              address: "0x...", // allowedContract requested in grantPermissions
+              abi: clickAbi,
+              functionName: "click",
+              args: [],
+            },
+          ],
+        });
+      }}
+    >
+      Click
     </button>
   );
 }
