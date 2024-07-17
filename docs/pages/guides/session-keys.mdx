@@ -45,7 +45,9 @@ A permission is defined by:
 - `permission`: The allowed interactions this signer can make for the account
 - `policies`: Additional permission-agnostic constraints on transaction submission
 
-To enable Session Keys on your app, we recommend using our experimental `useGrantPermissions` hook in `wagmi` like so:
+To enable Session Keys on your app, we recommend using our experimental `useGrantPermissions` hook in `wagmi`.
+
+Because we'd like to save the returned `permissionsContext` in state, we recommend placing all code samples within your page:
 
 ```tsx
 import { useState } from "react";
@@ -53,21 +55,21 @@ import { Hex, parseUnits } from "viem";
 import { useAccount } from "wagmi";
 import { baseSepolia } from "wagmi/chains";
 import { useGrantPermissions } from "wagmi/experimental";
-import { clickAddress } from "abis/Click";
+import { clickAddress } from "abi/Click";
 
-function Component() {
+export function Page() {
   const account = useAccount();
   const { grantPermissionsAsync } = useGrantPermissions();
-  const [permissionsContext, setPermissionsContext] = useState<Hex>();
+  const [permissionsContext, setPermissionsContext] = useState<string>();
 
   return (
     <button
-      onClick={() => {
-        const result = grantPermissionsAsync({
+      onClick={async () => {
+        const result = await grantPermissionsAsync({
           permissions: [
             {
               account: account.address,
-              chainId: baseSepolia.chainId, // only available on base sepolia for now
+              chainId: baseSepolia.id, // only available on base sepolia for now
               expiry: Date.now() / 1000 + 3600, // one hour from now
               signer: { type: "wallet" }, // let Coinbase Smart Wallet manage the signer via an in-browser key
               permission: {
@@ -119,7 +121,7 @@ After you have granted permissions to a contract that implements our dedicated `
 
 ```tsx
 import { useWriteContracts } from "wagmi/experimental";
-import { clickAbi, clickAddress } from "abis/Click";
+import { clickAbi, clickAddress } from "abi/Click";
 
 function Component() {
   const { writeContracts } = useWriteContracts();
