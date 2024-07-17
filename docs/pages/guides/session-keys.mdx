@@ -30,6 +30,7 @@ To enable Session Keys on your app, we recommend using our experimental `useGran
 
 ```tsx
 import { useState } from "react";
+import { Hex } from "viem";
 import { useAccount } from "wagmi";
 import { baseSepolia } from "wagmi/chains";
 import { useGrantPermissions } from "wagmi/experimental";
@@ -38,6 +39,7 @@ function Component() {
   const account = useAccount();
   const { grantPermissions } = useGrantPermissions();
   const [permissionsContext, setPermissionsContext] = useState<Hex>();
+  const [lastUserOpHash, setLastUserOpHash] = useState<Hex>();
 
   return (
     <button
@@ -47,7 +49,7 @@ function Component() {
             account: account.address,
             chainId: baseSepolia.chainId, // only available on base sepolia for now
             expiry: Date.now() / 1000 + 3600, // one hour from now
-            signer: { type: "wallet" }, // let Coinbase Smart Wallet manage the signer via a in-browser key
+            signer: { type: "wallet" }, // let Coinbase Smart Wallet manage the signer via an in-browser key
             permission: {
               type: "call-with-permission",
               data: {
@@ -88,7 +90,7 @@ It works by only allowing interactions with contracts that implement the followi
 function callWithPermission(bytes32 permissionHash, bytes calldata permissionArgs, bytes calldata call) external payable returns (bytes memory);
 ```
 
-We recognize that this puts a new burden on smart contract developers, but believe it is in the best interest of users to force intentional adoption of Session Keys from the contract layer to prevent attacks like phishing.
+We recognize that this puts a new burden on smart contract developers, but believe it is in the best interest of users to force intentional adoption of Session Keys from the contract layer to help mitigate attacks like phishing.
 
 ## Submit Transaction
 
@@ -120,11 +122,29 @@ function Component() {
               args: [],
             },
           ],
+          onSuccess: (data) => {
+            const [userOpHash] = decodeAbiParameters(
+              [
+                { name: "userOpHash", type: "bytes32" },
+                { name: "chainId", type: "uint256" },
+              ],
+              data as Hex
+            );
+            setLastUserOpHash(userOpHash);
+          }
         });
       }}
     >
       Click
     </button>
+    {lastUserOpHash && (
+      <a
+        href={`https://base-sepolia.blockscout.com/op/${lastUserOpHash}`}
+        target="_blank"
+      >
+        View transaction
+      </a>
+    )}
   );
 }
 ```
