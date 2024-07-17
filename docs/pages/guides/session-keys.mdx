@@ -37,12 +37,13 @@ Additionally, you will need to add custom package resolutions to your `package.j
 Session Keys are built on top of [EIP-7715](https://eip.tools/eip/7715) which introduces a new RPC for apps to request permissions from wallets, `wallet_grantPermissions`.
 
 A permission is defined by:
-`account`: Address of the wallet seeking to automate transactions for
-`chainId`: Chain of the account
-`expiry`: When the permission can be used until
-`signer`: The new "session key" that can sign user operations
-`permission`: The allowed interactions this signer can make for the account
-`policies`: Additional permission-agnostic constraints on transaction submission
+
+- `account`: Address of the wallet seeking to automate transactions for
+- `chainId`: Chain of the account
+- `expiry`: When the permission can be used until
+- `signer`: The new "session key" that can sign user operations
+- `permission`: The allowed interactions this signer can make for the account
+- `policies`: Additional permission-agnostic constraints on transaction submission
 
 To enable Session Keys on your app, we recommend using our experimental `useGrantPermissions` hook in `wagmi` like so:
 
@@ -52,8 +53,7 @@ import { Hex, parseUnits } from "viem";
 import { useAccount } from "wagmi";
 import { baseSepolia } from "wagmi/chains";
 import { useGrantPermissions } from "wagmi/experimental";
-
-const clickAddress = "0x67c97D1FB8184F038592b2109F854dfb09C77C75";
+import { clickAddress } from "abis/Click";
 
 function Component() {
   const account = useAccount();
@@ -113,13 +113,11 @@ We recognize that this puts a new burden on smart contract developers, but belie
 
 ## Submit Transaction
 
-After you have granted permissions to a contract that implements our dedicated `callWithPermission` function, you can now submit Session Key transactions using `useSendCalls`.
+After you have granted permissions to a contract that implements our dedicated `callWithPermission` function, you can now submit Session Key transactions using `useWriteContracts`.
 
 ```tsx
 import { useWriteContracts } from "wagmi/experimental";
-import { clickAbi } from "abis/Click.ts";
-
-const clickAddress = "0x67c97D1FB8184F038592b2109F854dfb09C77C75"
+import { clickAbi, clickAddress } from "abis/Click";
 
 function Component() {
   const { writeContracts } = useWriteContracts();
