@@ -1,1 +1,70 @@
 # Session Keys
+
+Session Keys enable apps to submit transactions on behalf of users.
+
+Session Key transactions can avoid typical user friction in web3 apps like:
+
+1. Wallet popup windows
+2. Passkey biometric scans
+3. User presence in-app
+
+These unlock experiences that keep all of the unique properties of wallets (eg self-custody, data portability) without sacrificng on user experience compared to web2:
+
+1. Sign-in and never see mention of a wallet again
+2. High-frequency transactions (eg gaming, social)
+3. Background transactions (eg subscriptions, automated trading)
+
+Session Keys are built on top of [EIP-7715](https://eip.tools/eip/7715) which introduces a new RPC for apps to request permissions from wallets, `wallet_grantPermissions`.
+
+A permission is defined by:
+`account`: Address of the wallet seeking to automate transactions for
+`chainId`: Chain of the account
+`expiry`: When the permission can be used until
+`signer`: The new "session key" that can sign user operations
+`permission`: The allowed interactions this signer can make for the account
+`policies`: Additional permission-agnostic constraints on transaction submission
+
+To enable Session Keys on your app, we recommend using our experimental `useGrantPermissions` hook in `wagmi` like so:
+
+```tsx
+import { useAccount } from "wagmi";
+import { baseSepolia } from "wagmi/chains";
+import { useGrantPermissions } from "wagmi/experimental";
+
+function Component() {
+  const account = useAccount();
+  const { grantPermissions } = useGrantPermissions();
+
+  return (
+    <button
+      onClick={() => {
+        grantPermissions([
+          {
+            account: account.address,
+            chainId: baseSepolia.chainId, // only available on base sepolia for now
+            expiry: Date.now() / 1000 + 3600, // one hour from now
+            signer: { type: "wallet" }, // let Coinbase Smart Wallet manage the signer via a in-browser key
+            permission: {
+              type: "call-with-permission",
+              data: {
+                allowedContract: "0x...",
+                permissionArgs: "0x...", // hex-encoded arguments to be used for onchain validation, set as "0x" if not needed
+              },
+            },
+            policies: [
+              {
+                type: "native-token-spend-limit",
+                data: {
+                  allowance: "0x...", // hex-encoded uint256 value for allowed ETH spend
+                },
+              },
+            ],
+          },
+        ]);
+      }}
+    >
+      Grant Permission
+    </button>
+  );
+}
+```
