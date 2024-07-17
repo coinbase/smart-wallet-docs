@@ -63,29 +63,31 @@ function Component() {
   return (
     <button
       onClick={() => {
-        const result = grantPermissionsAsync([
-          {
-            account: account.address,
-            chainId: baseSepolia.chainId, // only available on base sepolia for now
-            expiry: Date.now() / 1000 + 3600, // one hour from now
-            signer: { type: "wallet" }, // let Coinbase Smart Wallet manage the signer via an in-browser key
-            permission: {
-              type: "call-with-permission",
-              data: {
-                allowedContract: clickAddress, // only contract allowed to be called using this permission
-                permissionArgs: "0x", // hex-encoded arguments to be used for onchain validation, set default as "0x"
-              },
-            },
-            policies: [
-              {
-                type: "native-token-spend-limit",
+        const result = grantPermissionsAsync({
+          permissions: [
+            {
+              account: account.address,
+              chainId: baseSepolia.chainId, // only available on base sepolia for now
+              expiry: Date.now() / 1000 + 3600, // one hour from now
+              signer: { type: "wallet" }, // let Coinbase Smart Wallet manage the signer via an in-browser key
+              permission: {
+                type: "call-with-permission",
                 data: {
-                  allowance: parseUnits("0", 18), // uint256 value for allowed ETH spend
+                  allowedContract: clickAddress, // only contract allowed to be called using this permission
+                  permissionArgs: "0x", // hex-encoded arguments to be used for onchain validation, set default as "0x"
                 },
               },
-            ],
-          },
-        ]);
+              policies: [
+                {
+                  type: "native-token-spend-limit",
+                  data: {
+                    allowance: parseUnits("0", 18), // uint256 value for allowed ETH spend
+                  },
+                },
+              ],
+            },
+          ],
+        });
         setPermissionsContext(result?.context);
       }}
     >
