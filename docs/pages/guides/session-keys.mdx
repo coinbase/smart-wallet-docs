@@ -30,21 +30,22 @@ To enable Session Keys on your app, we recommend using our experimental `useGran
 
 ```tsx
 import { useState } from "react";
-import { Hex } from "viem";
+import { Hex, parseUnits } from "viem";
 import { useAccount } from "wagmi";
 import { baseSepolia } from "wagmi/chains";
 import { useGrantPermissions } from "wagmi/experimental";
 
+const clickAddress = "0x67c97D1FB8184F038592b2109F854dfb09C77C75";
+
 function Component() {
   const account = useAccount();
-  const { grantPermissions } = useGrantPermissions();
+  const { grantPermissionsAsync } = useGrantPermissions();
   const [permissionsContext, setPermissionsContext] = useState<Hex>();
-  const [lastUserOpHash, setLastUserOpHash] = useState<Hex>();
 
   return (
     <button
       onClick={() => {
-        const grantedPermissions = grantPermissions([
+        const result = grantPermissionsAsync([
           {
             account: account.address,
             chainId: baseSepolia.chainId, // only available on base sepolia for now
@@ -53,21 +54,21 @@ function Component() {
             permission: {
               type: "call-with-permission",
               data: {
-                allowedContract: "0x...", // only contract allowed to be called using this permission
-                permissionArgs: "0x...", // hex-encoded arguments to be used for onchain validation, set as "0x" if not needed
+                allowedContract: clickAddress, // only contract allowed to be called using this permission
+                permissionArgs: "0x", // hex-encoded arguments to be used for onchain validation, set default as "0x"
               },
             },
             policies: [
               {
                 type: "native-token-spend-limit",
                 data: {
-                  allowance: "0x...", // hex-encoded uint256 value for allowed ETH spend
+                  allowance: parseUnits("0", 18), // uint256 value for allowed ETH spend
                 },
               },
             ],
           },
         ]);
-        setPermissionsContext(grantedPermissions?.[0]?.context);
+        setPermissionsContext(result?.context);
       }}
     >
       Grant Permission
@@ -100,46 +101,54 @@ After you have granted permissions to a contract that implements our dedicated `
 import { useWriteContracts } from "wagmi/experimental";
 import { clickAbi } from "abis/Click.ts";
 
+const clickAddress = "0x67c97D1FB8184F038592b2109F854dfb09C77C75"
+
 function Component() {
   const { writeContracts } = useWriteContracts();
   // state set by grantPermissions step
   const [permissionsContext, setPermissionsContext] = useState<Hex>();
+  const [lastCallsId, setLastCallsId] = useState<string>();
+
+  const { data: callsStatus } = useCallsStatus({
+    id: lastCallsId,
+    query: {
+      refetchInterval: (data) =>
+        data.state.data?.status === "CONFIRMED" ? false : 1000, // refetch every second until complete
+    },
+  });
 
   return (
     <button
       onClick={() => {
-        writeContracts({
-          capabilities: {
-            permissions: {
-              context: permissionsContext
-            }
-          }
-          contracts: [
-            {
-              address: "0x...", // allowedContract requested in grantPermissions
-              abi: clickAbi,
-              functionName: "click",
-              args: [],
+        writeContracts(
+          {
+            capabilities: {
+              permissions: {
+                context: permissionsContext,
+              },
             },
-          ],
-          onSuccess: (data) => {
-            const [userOpHash] = decodeAbiParameters(
-              [
-                { name: "userOpHash", type: "bytes32" },
-                { name: "chainId", type: "uint256" },
-              ],
-              data as Hex
-            );
-            setLastUserOpHash(userOpHash);
+            contracts: [
+              {
+                address: clickAddress, // allowedContract requested in grantPermissions
+                abi: clickAbi,
+                functionName: "click",
+                args: [],
+              },
+            ],
+          },
+          {
+            onSuccess: (data) => {
+              setLastCallsId(data);
+            },
           }
-        });
+        );
       }}
     >
       Click
     </button>
-    {lastUserOpHash && (
+    {callsStatus?.status === "CONFIRMED" && callsStatus.receipts?.[0] && (
       <a
-        href={`https://base-sepolia.blockscout.com/op/${lastUserOpHash}`}
+        href={`https://sepolia.basescan.org/tx/${callsStatus.receipts[0].transactionHash}`}
         target="_blank"
       >
         View transaction
