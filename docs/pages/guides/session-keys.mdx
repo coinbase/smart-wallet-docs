@@ -14,6 +14,24 @@ These unlock experiences that keep all of the unique properties of wallets (eg s
 2. High-frequency transactions (eg gaming, social)
 3. Background transactions (eg subscriptions, automated trading)
 
+## Getting Started
+
+Currently only web is supported. Apps will need to have the following packages installed:
+
+```bash
+npm i viem wagmi @coinbase/wallet-sdk
+```
+
+Additionally, you will need to add custom package resolutions to your `package.json`
+
+```
+"resolutions": {
+  "@coinbase/wallet-sdk": "npm:@lukasrosario/wallet-sdk@4.0.4-permissionedkeysalpha.4",
+  "wagmi": "npm:@lukasrosario/wagmi@2.11.1-permissionedkeysalpha.2",
+  "viem": "npm:@lukasrosario/viem@2.17.4-permissionedkeysalpha.2"
+}
+```
+
 ## Grant Permissions
 
 Session Keys are built on top of [EIP-7715](https://eip.tools/eip/7715) which introduces a new RPC for apps to request permissions from wallets, `wallet_grantPermissions`.
@@ -112,8 +130,9 @@ function Component() {
   const { data: callsStatus } = useCallsStatus({
     id: lastCallsId,
     query: {
+      enabled: !!lastCallsId,
       refetchInterval: (data) =>
-        data.state.data?.status === "CONFIRMED" ? false : 1000, // refetch every second until complete
+        data.state.data?.status === "CONFIRMED" ? false : 100, // refetch every 100ms until complete
     },
   });
 
