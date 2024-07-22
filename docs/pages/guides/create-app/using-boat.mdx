@@ -1,24 +1,32 @@
-# Getting started with Build Onchain Apps Template 
+# Getting started with Build Onchain Apps Template
+
 This guide uses [Build Onchain Apps Template](https://buildonchainapps.xyz/).
 ::::steps
+
 ## Create project
-Run the command below and proceed through the following steps, choosing "yes" 
+
+Run the command below and proceed through the following steps, choosing "yes"
 when asked "Do you want to use Smart Wallet?".
+
 ```bash
 npx @coinbase/build-onchain-apps@latest create
 ```
 
-## Setup project 
+## Setup project
+
 Open your newly created project, and create a new `.env` file in the `web` folder. Add the following to this file.
+
 ```bash
 NEXT_PUBLIC_RPC_URL=https://sepolia.base.org
 ENVIRONMENT=localhost
 ```
 
-## Install dependencies and run dev 
+## Install dependencies and run dev
+
 ```bash
 yarn install && yarn dev
 ```
+
 Visit your site locally and click the "Connect Wallet" button. You'll see a popup window with a Smart Wallet
 connection option.
 ::::

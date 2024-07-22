@@ -1,5 +1,6 @@
-# Setup 
-Create a new `CoinbaseWalletSDK` instance. 
+# Setup
+
+Create a new `CoinbaseWalletSDK` instance.
 
 ```ts twoslash
 import { CoinbaseWalletSDK } from '@coinbase/wallet-sdk'
@@ -10,21 +11,24 @@ const sdk = new CoinbaseWalletSDK({
 });
 ```
 
-## Parameters 
+## Parameters
+
 ### appName (optional)
-- Type: `string`
+
+* Type: `string`
 
 The app name. This will be displayed to users on connection, transacting, and signing requests.
 
 ### appChainIds (optional)
-- Type: `number[]`
+
+* Type: `number[]`
 
 Array of chain IDs your app supports. Default value is `[1]`.
 
 [What networks are supported?](/FAQ#what-networks-are-supported)
 
 ### appLogoUrl (optional)
-- Type: `string`
+
+* Type: `string`
 
 App logo image URL. Favicon is used if unspecified.
-

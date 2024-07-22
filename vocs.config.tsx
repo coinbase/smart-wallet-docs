@@ -127,6 +127,18 @@ export default defineConfig({
           text: "Upgrading from 3.x",
           link: "/sdk/v3-to-v4-changes",
         },
+        {
+          text: "CoinbaseWalletProvider",
+          items: [
+            { text: "Overview", link: "/sdk/CoinbaseWalletProvider/overview" },
+            {
+              text: "request",
+              items: [
+                { text: "eth_requestAccounts", link: "/sdk/CoinbaseWalletProvider/request/eth_requestAccounts" },
+              ],
+            },
+          ],
+        },
       ],
     },
     {

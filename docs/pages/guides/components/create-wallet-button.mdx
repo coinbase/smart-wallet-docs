@@ -12,18 +12,17 @@ For the best onboarding experience, we recommend adding a highly visible 'Create
 
 Adding a 'Create Wallet' button to a page streamlines the onboarding experience for a new user and gets them ready to use your dapp in a few seconds.
 
-<Callout type="info" >
-We're offering additional incentives to dapps who implement this new approach. By integrating a create wallet button on the front page of your app, you are eligible for:
+<Callout type="info">
+  We're offering additional incentives to dapps who implement this new approach. By integrating a create wallet button on the front page of your app, you are eligible for:
 
-- Increased volume of gas credits via our Cloud paymaster
-- Comarketing and promotional opportunities with Coinbase
-- Featured placement in our dapp listings on homebase.coinbase.com
+  * Increased volume of gas credits via our Cloud paymaster
+  * Comarketing and promotional opportunities with Coinbase
+  * Featured placement in our dapp listings on homebase.coinbase.com
 
-For more information, please [fill out the
-form](https://docs.google.com/forms/d/e/1FAIpQLSdmTnSjbI-wkkf2TzmuSEv3iYzkbZBsY08xPdK-54J0Ipt4PA/viewform)
-on [coinbase.com/smart-wallet](http://coinbase.com/smart-wallet) so our team can get
-in touch with you.
-
+  For more information, please [fill out the
+  form](https://docs.google.com/forms/d/e/1FAIpQLSdmTnSjbI-wkkf2TzmuSEv3iYzkbZBsY08xPdK-54J0Ipt4PA/viewform)
+  on [coinbase.com/smart-wallet](http://coinbase.com/smart-wallet) so our team can get
+  in touch with you.
 </Callout>
 
 ## Implementation
@@ -31,7 +30,7 @@ in touch with you.
 **We recommend two paths for implementation:**
 
 1. Match our branded Create Wallet button
-1. Match your own apps look and feel in the Create button
+2. Match your own apps look and feel in the Create button
 
 Example:
 
@@ -39,6 +38,7 @@ Example:
   <div style={{ paddingBottom: 10 }}>
     ![Create Wallet Button](/createWalletButtonBlack.png)
   </div>
+
   <div>![Create Wallet Button](/createWalletButtonBlue.png)</div>
 </div>
 
@@ -277,8 +277,8 @@ declare module 'wagmi' {
 
 #### Notes
 
-- For more detail, view the [`useConnect` documentation](https://wagmi.sh/react/api/hooks/useConnect).
-- Upon successful connection, account information can be accessed via [data](https://wagmi.sh/react/api/hooks/useConnect#data)
+* For more detail, view the [`useConnect` documentation](https://wagmi.sh/react/api/hooks/useConnect).
+* Upon successful connection, account information can be accessed via [data](https://wagmi.sh/react/api/hooks/useConnect#data)
   returned from `useConnect`, or via [`useAccount`](https://wagmi.sh/react/api/hooks/useAccount).
 
 ### With CoinbaseWalletSDK only

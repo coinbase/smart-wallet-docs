@@ -1,8 +1,11 @@
-# makeWeb3Provider 
-Creates a new `CoinbaseWalletProvider` instance using a `CoinbaseWalletSDK` instance. 
+# makeWeb3Provider
+
+Creates a new `CoinbaseWalletProvider` instance using a `CoinbaseWalletSDK` instance.
 
 ## Usage
+
 :::code-group
+
 ```ts twoslash [provider.ts]
 import {sdk} from "./setup";
 
@@ -11,6 +14,7 @@ const provider = sdk.makeWeb3Provider({options: 'smartWalletOnly'});
 // Use provider
 const addresses = provider.request({method: 'eth_requestAccounts'});
 ```
+
 ```ts twoslash [setup.ts] filename="setup.ts"
 import { CoinbaseWalletSDK } from '@coinbase/wallet-sdk'
 
@@ -19,31 +23,36 @@ export const sdk = new CoinbaseWalletSDK({
   appChainIds: [8453]
 });
 ```
+
 :::
 
-## Returns 
+## Returns
+
 A new `CoinbaseWalletProvider` instance, which is an [Ethereum Javascript provider](https://eips.ethereum.org/EIPS/eip-1193) provider.
 
-## Parameters 
+## Parameters
 
 ### options (optional)
-- Type: `'all' | 'smartWalletOnly' | 'eoaOnly'`
 
-Determines which connection options users will see. Defaults to `all`. 
+* Type: `'all' | 'smartWalletOnly' | 'eoaOnly'`
 
+Determines which connection options users will see. Defaults to `all`.
 
 #### `all`
-Users will see Smart Wallet and mobile app connection options. 
+
+Users will see Smart Wallet and mobile app connection options.
 
 :::info
-If a user is using a browser with Coinbase Wallet Extension installed, they will be taken straight to the 
-Coinbase Wallet Extension and not see any choice. 
+If a user is using a browser with Coinbase Wallet Extension installed, they will be taken straight to the
+Coinbase Wallet Extension and not see any choice.
 :::
 
 #### `smartWalletOnly`
-With this option, users will only see an option to create a Smart Wallet or sign into their Smart Wallet. 
+
+With this option, users will only see an option to create a Smart Wallet or sign into their Smart Wallet.
 
 #### `eoaOnly`
-Users will only see the mobile app connection option. If the user is on mobile, they will be taken directly 
-to the Coinbase Wallet app. If the user is using a browser with Coinbase Wallet Extension, they will be taken 
+
+Users will only see the mobile app connection option. If the user is on mobile, they will be taken directly
+to the Coinbase Wallet app. If the user is using a browser with Coinbase Wallet Extension, they will be taken
 directly to the Extension.

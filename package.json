@@ -6,7 +6,7 @@
     "dev": "vocs dev",
     "build": "vocs build",
     "preview": "vocs preview",
-    "format": "dprint fmt",
+    "format": "remark . -qfo && remark . -e mdx -u mdx -qfo",
     "prepare": "bun x simple-git-hooks"
   },
   "dependencies": {
@@ -15,17 +15,20 @@
     "react": "latest",
     "react-dom": "latest",
     "typescript": "latest",
-    "vocs": "latest"
+    "vocs": "^1.0.0-alpha.55"
   },
   "devDependencies": {
     "dprint": "^0.45.1",
     "permissionless": "^0.1.29",
+    "remark": "^15.0.1",
+    "remark-cli": "^12.0.1",
+    "remark-mdx": "^3.0.1",
     "simple-git-hooks": "^2.11.1",
     "siwe": "^2.3.2",
     "viem": "^2.9.28",
     "wagmi": "^2.9.0"
   },
   "simple-git-hooks": {
-    "pre-commit": "bun dprint check"
+    "pre-commit": "bun format"
   }
 }
