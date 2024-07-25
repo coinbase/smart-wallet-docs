@@ -10,6 +10,8 @@
     "prepare": "bun x simple-git-hooks"
   },
   "dependencies": {
+    "@codesandbox/sandpack-react": "^2.18.0",
+    "@codesandbox/sandpack-themes": "^2.0.21",
     "@types/react": "latest",
     "@vercel/analytics": "^1.2.2",
     "react": "latest",
