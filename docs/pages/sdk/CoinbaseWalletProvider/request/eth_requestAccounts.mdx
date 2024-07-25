@@ -1,0 +1,31 @@
+import RequestAccountsReact from '../../../../components/sandpack/react/RequestAccountsReact';
+import RequestAccountsHTML from '../../../../components/sandpack/static/RequestAccountsButton';
+
+# eth_requestAccounts
+Defined in [EIP-1102](https://eips.ethereum.org/EIPS/eip-1102)
+> Calling this method MAY trigger a user interface that allows the user to approve or reject account access for a given app.
+
+
+## Returns
+`Array<string>`
+
+An array of Ethereum addresses, which the connected user presumably controls.
+
+## Errors 
+| Code | Message |
+| ---- | ------- |
+| 4001 | User denied connection request |
+
+
+
+## Examples
+:::code-group
+
+<div data-title="React">
+  <RequestAccountsReact />
+</div>
+
+<div data-title="HTML + JS">
+  <RequestAccountsHTML/>
+</div>
+:::
