@@ -16,16 +16,15 @@ export const requestAccountsHTML = `<!DOCTYPE html>
 </html>`;
 
 export const requestAccountsJS = `document.addEventListener('DOMContentLoaded', () => {
-  // Initialize the Coinbase Wallet SDK
+  const baseSepoliaChainId = 84532;
+
   const coinbaseWallet = new CoinbaseWalletSDK({
     appName: "My App Name",
-    appChainIds: [8453] // Replace with your chain IDs if needed
+    appChainIds: [baseSepoliaChainId] // Replace with your chain IDs if needed
   });
 
-  // Create a Web3 provider
   const provider = coinbaseWallet.makeWeb3Provider({ options: "smartWalletOnly" });
 
-  // Get DOM elements
   const connectButton = document.getElementById('connectButton');
   const connectedAddressParagraph = document.getElementById('connectedAddress');
   const addressSpan = document.getElementById('address');
