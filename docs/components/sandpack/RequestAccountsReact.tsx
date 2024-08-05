@@ -1,8 +1,5 @@
-"use client";
 import { Sandpack } from "@codesandbox/sandpack-react";
-
-import config from "../../../codeStrings/react/config";
-import requestAccountsApp from "../../../codeStrings/react/requestAccounts";
+import { reactConfig, reactRequestAccounts } from "../../../generated/sandpackFiles";
 
 export default function RequestAccountsReact() {
   return (
@@ -14,8 +11,8 @@ export default function RequestAccountsReact() {
         },
       }}
       files={{
-        "/App.js": requestAccountsApp,
-        "/config.js": config,
+        "App.js": reactRequestAccounts,
+        "config.js": reactConfig,
       }}
     />
   );

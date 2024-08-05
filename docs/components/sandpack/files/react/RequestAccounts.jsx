@@ -1,5 +1,5 @@
-const requestAccountsApp = `import {sdk} from "./config";
-import {useState} from "react";
+import { useState } from "react";
+import { sdk } from "./config";
 
 export default function App() {
   const [address, setAddress] = useState(undefined);
@@ -8,18 +8,18 @@ export default function App() {
   const handleClick = async () => {
     const accounts = await provider.request({ method: "eth_requestAccounts" });
     setAddress(accounts[0]);
-  }
+  };
 
   return (
-  <>
-    {!address && <button
-      onClick={handleClick}
-    >
-      Connect
-    </button>}
-    {address && <p>Connected address: {address}</p>}
-  </>
+    <>
+      {!address && (
+        <button
+          onClick={handleClick}
+        >
+          Connect
+        </button>
+      )}
+      {address && <p>Connected address: {address}</p>}
+    </>
   );
-}`;
-
-export default requestAccountsApp;
+}

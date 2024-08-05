@@ -3,8 +3,9 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vocs dev",
-    "build": "vocs build",
+    "generate": "bun generateSandpackFiles.js",
+    "dev": "bun generate && vocs dev",
+    "build": "bun generate && vocs build",
     "preview": "vocs preview",
     "format": "dprint fmt",
     "prepare": "bun x simple-git-hooks"
