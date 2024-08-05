@@ -4,8 +4,7 @@ export const requestAccountsHTML = `<!DOCTYPE html>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Connect to Coinbase Wallet</title>
-  <script src="https://unpkg.com/@coinbase/wallet-sdk@latest/dist/coinbasewallet-sdk.min.js"></script>
-  <script src="app.js" defer></script>
+  <script src="app.js" type="module"></script>
 </head>
 <body>
   <div id="app">
@@ -15,7 +14,9 @@ export const requestAccountsHTML = `<!DOCTYPE html>
 </body>
 </html>`;
 
-export const requestAccountsJS = `document.addEventListener('DOMContentLoaded', () => {
+export const requestAccountsJS = `import CoinbaseWalletSDK from 'https://esm.sh/@coinbase/wallet-sdk';
+
+document.addEventListener('DOMContentLoaded', () => {
   const baseSepoliaChainId = 84532;
 
   const coinbaseWallet = new CoinbaseWalletSDK({
