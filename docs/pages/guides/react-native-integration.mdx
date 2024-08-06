@@ -1,6 +1,6 @@
 # Create a React Native App
 
-This guide will walk you through adding support for Smart Wallet into a React Native app by integrating the Wallet SDK.
+This guide will walk you through adding support for Smart Wallet into a React Native app by integrating the [Mobile Wallet Protocol Client](https://www.npmjs.com/package/@mobile-wallet-protocol/client).
 
 ::::steps
 ## Prerequisites
@@ -11,16 +11,23 @@ Opening https<span/>://your-app.example.com<b>/coinbase-wallet-sdk</b> should op
 You can see more detailed instructions on setting up deeplinks in the [Expo docs](https://docs.expo.dev/guides/deep-linking/).
 
 ### Install peer dependencies
-The Wallet SDK library requires the [Expo WebBrowser](https://docs.expo.dev/versions/latest/sdk/webbrowser/) and [Async Storage](https://react-native-async-storage.github.io/async-storage/docs/install) packages to be installed.
+The Mobile Wallet Protocol Client library requires the [Expo WebBrowser](https://docs.expo.dev/versions/latest/sdk/webbrowser/) and [Async Storage](https://react-native-async-storage.github.io/async-storage/docs/install) packages to be installed.
 Follow the instructions on the respective pages for any additional setup.
 ```zsh
 npm i expo-web-browser @react-native-async-storage/async-storage
 ```
 
 ### Polyfills
-Wallet SDK requires `crypto.randomUUID`, `crypto.getRandomValues`, and `URL` to be polyfilled globally since they are not available in the React Native environment.
-```zsh
+Mobile Wallet Protocol Client requires `crypto.randomUUID`, `crypto.getRandomValues`, and `URL` to be polyfilled globally since they are not available in the React Native environment.
+
+:::code-group
+
+```zsh [npm]
 npm i expo-crypto expo-standard-web-crypto react-native-url-polyfill
+```
+
+```zsh [yarn]
+yarn add expo-crypto expo-standard-web-crypto react-native-url-polyfill
 ```
 
 :::code-group
@@ -35,9 +42,9 @@ crypto.randomUUID = randomUUID
 ```
 
 ```tsx [App.tsx]
-import './polyfills' // import before @coinbase/wallet-sdk
+import './polyfills' // import before @mobile-wallet-protocol/client
 
-import { CoinbaseWalletSDK } from '@coinbase/wallet-sdk'
+import { CoinbaseWalletSDK } from '@mobile-wallet-protocol/client'
 
 /// ...
 ```
@@ -46,18 +53,26 @@ import { CoinbaseWalletSDK } from '@coinbase/wallet-sdk'
 
 ## Setup
 
-### Install Wallet SDK
-Add the latest `canary` version of Wallet SDK to your project.
-```zsh
-npm i @coinbase/wallet-sdk@canary
+### Install Mobile Wallet Protocol Client
+Add the latest version of Mobile Wallet Protocol Client to your project.
+
+:::code-group
+
+```zsh [npm]
+npm i @mobile-wallet-protocol/client@latest
 ```
 
+```zsh [yarn]
+yarn add @mobile-wallet-protocol/client@latest
+```
+
+
 ### Configuration
-Next, set up your app to pass in deeplinks coming from Smart Wallet to Wallet SDK so that it can handle responses to the requests you make.
+Next, set up your app to pass in deeplinks coming from Smart Wallet to Mobile Wallet Protocol Client so that it can handle responses to the requests you make.
 In your app, this might look something like the following.
 
 ```tsx [App.tsx]
-import { handleResponse } from '@coinbase/wallet-sdk'
+import { handleResponse } from '@mobile-wallet-protocol/client/dist/core/communicator/handleResponse'
 import * as Linking from 'expo-linking'
 
 // ...
@@ -75,12 +90,14 @@ useEffect(() => {
 ```
 
 ## Usage
+Note that we are iterating on the Mobile Wallet Protocol Client and the API may change. 
+
 Create a new `CoinbaseWalletSDK` instance and use the `makeWeb3Provider` function to create an EIP-1193 compliant provider.
 
-The `appDeeplinkUrl` is required and should match the deeplink URL you set up earlier. Refer to the [Wallet SDK](/sdk/makeWeb3Provider) documentation for more information.
+The `appDeeplinkUrl` is required and should match the deeplink URL you set up earlier. 
 
 ```tsx [App.tsx]
-import { CoinbaseWalletSDK } from '@coinbase/wallet-sdk'
+import { CoinbaseWalletSDK } from '@mobile-wallet-protocol/client'
 
 // 1. Create SDK instance
 const sdk = new CoinbaseWalletSDK({
@@ -97,9 +114,13 @@ const provider = sdk.makeWeb3Provider()
 
 // 3. Use the provider
 const addresses = await provider.request({method: 'eth_requestAccounts'})
+const signedData = await provider.request({
+  method: "personal_sign",
+  params: ["0x48656c6c6f20776f726c6421", addresses[0]],
+})
 ```
 
 ## Give feedback!
-Send us feedback on the [Coinbase Developer Platform](https://discord.com/invite/cdp/) Discord or create a new issue on the [coinbase/coinbase-wallet-sdk](https://github.com/coinbase/coinbase-wallet-sdk/issues) repository.
+Send us feedback on the [Coinbase Developer Platform](https://discord.com/invite/cdp/) Discord or create a new issue on the [MobileWalletProtocol/react-native-client](https://github.com/MobileWalletProtocol/react-native-client/issues) repository.
 
 ::::
