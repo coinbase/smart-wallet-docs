@@ -1,5 +1,7 @@
 # Create a React Native App
 
+This guide will walk you through adding support for Smart Wallet into a React Native app by integrating the Wallet SDK.
+
 ::::steps
 ## Prerequisites
 
@@ -73,29 +75,31 @@ useEffect(() => {
 ```
 
 ## Usage
-Create a new `CoinbaseWalletSDK` instance and use create and use an EIP-1193 compliant provider.
-Refer to the [Wallet SDK](/sdk/makeWeb3Provider) documentation for more information.
+Create a new `CoinbaseWalletSDK` instance and use the `makeWeb3Provider` function to create an EIP-1193 compliant provider.
+
+The `appDeeplinkUrl` is required and should match the deeplink URL you set up earlier. Refer to the [Wallet SDK](/sdk/makeWeb3Provider) documentation for more information.
 
 ```tsx [App.tsx]
 import { CoinbaseWalletSDK } from '@coinbase/wallet-sdk'
 
+// 1. Create SDK instance
 const sdk = new CoinbaseWalletSDK({
-  appDeeplinkUrl: 'https://your-app.example.com',
+  appDeeplinkUrl: 'https://your-app.example.com', // required
   appName: 'My App Name',
   appChainIds: [8453],
   appLogoUrl: 'https://example.com/logo.png'
 })
 
-// Create provider
+// 2. Create EIP-1193 provider
 const provider = sdk.makeWeb3Provider()
 
 // ...
 
-// Use provider
+// 3. Use the provider
 const addresses = await provider.request({method: 'eth_requestAccounts'})
 ```
 
-## Give feedback
+## Give feedback!
 Send us feedback on the [Coinbase Developer Platform](https://discord.com/invite/cdp/) Discord or create a new issue on the [coinbase/coinbase-wallet-sdk](https://github.com/coinbase/coinbase-wallet-sdk/issues) repository.
 
 ::::
