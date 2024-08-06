@@ -13,9 +13,18 @@ You can see more detailed instructions on setting up deeplinks in the [Expo docs
 ### Install peer dependencies
 The Mobile Wallet Protocol Client library requires the [Expo WebBrowser](https://docs.expo.dev/versions/latest/sdk/webbrowser/) and [Async Storage](https://react-native-async-storage.github.io/async-storage/docs/install) packages to be installed.
 Follow the instructions on the respective pages for any additional setup.
-```zsh
+
+:::code-group
+
+```zsh [npm]
 npm i expo-web-browser @react-native-async-storage/async-storage
 ```
+
+```zsh [yarn]
+yarn add expo-web-browser @react-native-async-storage/async-storage
+```
+
+:::
 
 ### Polyfills
 Mobile Wallet Protocol Client requires `crypto.randomUUID`, `crypto.getRandomValues`, and `URL` to be polyfilled globally since they are not available in the React Native environment.
