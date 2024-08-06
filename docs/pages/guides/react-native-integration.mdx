@@ -1,0 +1,101 @@
+# Create a React Native App
+
+::::steps
+## Prerequisites
+
+### Deeplink handling
+Your app needs to be able to handle Universal Links (iOS) and App Links (Android). 
+Opening https<span/>://your-app.example.com<b>/coinbase-wallet-sdk</b> should open up your app. 
+You can see more detailed instructions on setting up deeplinks in the [Expo docs](https://docs.expo.dev/guides/deep-linking/).
+
+### Install peer dependencies
+The Wallet SDK library requires the [Expo WebBrowser](https://docs.expo.dev/versions/latest/sdk/webbrowser/) and [Async Storage](https://react-native-async-storage.github.io/async-storage/docs/install) packages to be installed.
+Follow the instructions on the respective pages for any additional setup.
+```zsh
+npm i expo-web-browser @react-native-async-storage/async-storage
+```
+
+### Polyfills
+Wallet SDK requires `crypto.randomUUID`, `crypto.getRandomValues`, and `URL` to be polyfilled globally since they are not available in the React Native environment.
+```zsh
+npm i expo-crypto expo-standard-web-crypto react-native-url-polyfill
+```
+
+:::code-group
+
+```js [polyfills.js]
+import 'react-native-url-polyfill/auto'
+import { polyfillWebCrypto } from 'expo-standard-web-crypto'
+import { randomUUID } from "expo-crypto"
+
+polyfillWebCrypto()
+crypto.randomUUID = randomUUID
+```
+
+```tsx [App.tsx]
+import './polyfills' // import before @coinbase/wallet-sdk
+
+import { CoinbaseWalletSDK } from '@coinbase/wallet-sdk'
+
+/// ...
+```
+:::
+
+
+## Setup
+
+### Install Wallet SDK
+Add the latest `canary` version of Wallet SDK to your project.
+```zsh
+npm i @coinbase/wallet-sdk@canary
+```
+
+### Configuration
+Next, set up your app to pass in deeplinks coming from Smart Wallet to Wallet SDK so that it can handle responses to the requests you make.
+In your app, this might look something like the following.
+
+```tsx [App.tsx]
+import { handleResponse } from '@coinbase/wallet-sdk'
+import * as Linking from 'expo-linking'
+
+// ...
+
+useEffect(() => {
+  const subscription = Linking.addEventListener('url', ({ url }) => {
+    const handled = handleResponse(url)
+    if (!handled) {
+      // handle other deeplinks
+    }
+  })
+
+  return () => subscription.remove()
+}, [])
+```
+
+## Usage
+Create a new `CoinbaseWalletSDK` instance and use create and use an EIP-1193 compliant provider.
+Refer to the [Wallet SDK](/sdk/makeWeb3Provider) documentation for more information.
+
+```tsx [App.tsx]
+import { CoinbaseWalletSDK } from '@coinbase/wallet-sdk'
+
+const sdk = new CoinbaseWalletSDK({
+  appDeeplinkUrl: 'https://your-app.example.com',
+  appName: 'My App Name',
+  appChainIds: [8453],
+  appLogoUrl: 'https://example.com/logo.png'
+})
+
+// Create provider
+const provider = sdk.makeWeb3Provider()
+
+// ...
+
+// Use provider
+const addresses = await provider.request({method: 'eth_requestAccounts'})
+```
+
+## Give feedback
+Send us feedback on the [Coinbase Developer Platform](https://discord.com/invite/cdp/) Discord or create a new issue on the [coinbase/coinbase-wallet-sdk](https://github.com/coinbase/coinbase-wallet-sdk/issues) repository.
+
+::::
