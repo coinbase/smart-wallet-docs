@@ -69,6 +69,10 @@ export default defineConfig({
           link: "/guides/update-existing-app",
         },
         {
+          text: "Create a React Native App",
+          link: "/guides/react-native-integration",
+        },
+        {
           text: "Create Wallet Button",
           link: "/guides/components/create-wallet-button",
         },
