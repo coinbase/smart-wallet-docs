@@ -60,7 +60,7 @@ export default defineConfig({
         {
           text: "Create a New App",
           items: [
-            { text: "Using Build Onchain Template", link: "/guides/create-app/using-boat" },
+            { text: "Using Onchain App Template", link: "/guides/create-app/using-onchain-app-template" },
             { text: "Using Wagmi Template", link: "/guides/create-app/using-wagmi" },
           ],
         },
