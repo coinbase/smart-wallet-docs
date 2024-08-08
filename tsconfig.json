@@ -20,5 +20,11 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["**/*.ts", "**/*.tsx"]
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "generateSandpackFiles.js",
+    "docs/components/sandpack/files/react/config.js",
+    "docs/components/sandpack/files/react/RequestAccounts.jsx"
+  ]
 }
