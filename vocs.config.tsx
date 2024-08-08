@@ -134,6 +134,7 @@ export default defineConfig({
             {
               text: "request",
               items: [
+                { text: "Overview", link: "/sdk/CoinbaseWalletProvider/request/overview" },
                 { text: "eth_requestAccounts", link: "/sdk/CoinbaseWalletProvider/request/eth_requestAccounts" },
               ],
             },
