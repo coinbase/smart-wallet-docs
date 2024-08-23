@@ -1,4 +1,4 @@
-# Getting Started With Vanilla JavaScript
+# Getting Started With JavaScript
 
 :::steps
 ## Initialize the SDK
@@ -41,12 +41,18 @@ const requestAccounts = async () => {
 Now that a wallet is connected, you can request a signature with `personal_sign`.
 
 ```javascript
+  const toHexString = (str) =>
+    "0x" +
+    Array.from(str, (char) =>
+      char.charCodeAt(0).toString(16).padStart(2, "0")
+    ).join("");
+
    const personalSign = async () => {
     try {
       const [address] = await provider.request({ method: 'eth_accounts' });
       const signature = await provider.request({
-        method: 'personal_sign',
-        params: ['test message', address],
+        method: "personal_sign",
+        params: [toHexString("Please sign this test message!"), address],
       });
       // do something with signature
     } catch (error) {

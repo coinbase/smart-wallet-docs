@@ -73,8 +73,8 @@ export default defineConfig({
           link: "/guides/react-native-integration",
         },
         {
-          text: "Vanilla JavaScript",
-          link: "/guides/vanilla-js",
+          text: "JavaScript",
+          link: "/guides/javascript",
         },
         {
           text: "Create Wallet Button",
