@@ -101,19 +101,19 @@ export function Page() {
 
 ## Contract Integration
 
-> For the purpose of quickly getting started, you can start testing with [this contract](https://sepolia.basescan.org/address/0x67c97d1fb8184f038592b2109f854dfb09c77c75) deployed on Base Sepolia.
+> For the purpose of quickly getting started, you can start testing with [this contract](https://sepolia.basescan.org/address/0x8af2fa0c32891f1b32a75422ed3c9a8b22951f2f) deployed on Base Sepolia.
 
-The first type of permission available to Session Keys is `'call-with-permission'`.
+For our v1 launch, Session Keys can only call contracts that implement [IPermissionCallable](https://github.com/coinbase/smart-wallet-permissions/blob/main/src/interfaces/IPermissionCallable.sol).
 
 It's goal is to enable a permissionless way for apps to add Session Key support while reducing risk of users approving malicious sessions.
 
 It works by only allowing interactions with contracts that implement the following function:
 
 ```solidity
-function callWithPermission(bytes32 permissionHash, bytes calldata permissionArgs, bytes calldata call) external payable returns (bytes memory);
+function permissionedCall(bytes calldata call) external payable returns (bytes memory);
 ```
 
-We recognize that this puts a new burden on smart contract developers, but believe it is in the best interest of users to force intentional adoption of Session Keys from the contract layer to help mitigate attacks like phishing.
+You can easily add support for this selector by following our contract integration guide [here](https://github.com/coinbase/smart-wallet-permissions/tree/main/docs/examples).
 
 ## Submit Transaction
 
