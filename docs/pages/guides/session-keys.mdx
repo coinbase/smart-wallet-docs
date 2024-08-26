@@ -14,94 +14,68 @@ These unlock experiences that keep all of the unique properties of wallets (eg s
 2. High-frequency transactions (eg gaming, social)
 3. Background transactions (eg subscriptions, automated trading)
 
-## Getting Started
+## Using Wagmi
 
-Currently only web is supported. Apps will need to have the following packages installed:
+:::warning
+This feature is in progress and the flow outlined below is incomplete. Specifically, it is missing fetching previously granted permissions for an address. The new wagmi hooks used are experimental and it is possible that their APIs change in the future.
+:::
 
-```bash
-npm i viem wagmi @coinbase/wallet-sdk
+::::steps
+### Install Dependencies
+
+Currently only web is supported. Apps will need to have the following packages installed at the specified versions:
+
+:::code-group
+```bash [pnpm]
+pnpm install viem@npm:@lukasrosario/viem@2.17.4-sessionkeys.1 wagmi@npm:@lukasrosario/wagmi@2.11.1-sessionkeys.2 @coinbase/wallet-sdk
 ```
 
-Additionally, you will need to add custom package resolutions to your `package.json`
-
+```bash [bun]
+bun install viem@npm:@lukasrosario/viem@2.17.4-sessionkeys.1 wagmi@npm:@lukasrosario/wagmi@2.11.1-sessionkeys.2 @coinbase/wallet-sdk
 ```
-"resolutions": {
-  "@coinbase/wallet-sdk": "npm:@lukasrosario/wallet-sdk@4.0.4-permissionedkeysalpha.4",
-  "wagmi": "npm:@lukasrosario/wagmi@2.11.1-permissionedkeysalpha.2",
-  "viem": "npm:@lukasrosario/viem@2.17.4-permissionedkeysalpha.2"
+
+```bash [yarn]
+yarn add viem@npm:@lukasrosario/viem@2.17.4-sessionkeys.1 wagmi@npm:@lukasrosario/wagmi@2.11.1-sessionkeys.2 @coinbase/wallet-sdk
+```
+
+```bash [npm]
+pnpm install viem@npm:@lukasrosario/viem@2.17.4-sessionkeys.1 wagmi@npm:@lukasrosario/wagmi@2.11.1-sessionkeys.2 @coinbase/wallet-sdk
+```
+:::
+
+Additionally, if you don't already have a key management system you plan on using for session keys, we recommend the following version of wevm's `webauthn-p256`. You can use this package to create P-256 key pairs with non-exportable private keys you can use and store in the browser. The rest of this guide will use this package, but you can use any other key management system with EOA or P-256 keys you might already have set up.
+
+:::code-group
+```bash [pnpm]
+pnpm install webauthn-p256@npm:@lukasrosario/webauthn-p256@0.0.10-sessionkeys.2
+```
+
+```bash [bun]
+bun install webauthn-p256@npm:@lukasrosario/webauthn-p256@0.0.10-sessionkeys.2
+```
+
+```bash [yarn]
+yarn add webauthn-p256@npm:@lukasrosario/webauthn-p256@0.0.10-sessionkeys.2
+```
+
+```bash [npm]
+pnpm install webauthn-p256@npm:@lukasrosario/webauthn-p256@0.0.10-sessionkeys.2
+```
+:::
+
+After installing the requirements, your `package.json` should have the following dependencies:
+
+```json [package.json]
+"dependencies": {
+  "viem": "npm:@lukasrosario/viem@2.17.4-sessionkeys.1",
+  "wagmi": "npm:@lukasrosario/wagmi@2.11.1-sessionkeys.2",
+  "webauthn-p256": "npm:@lukasrosario/webauthn-p256@0.0.10-sessionkeys.2"
 }
 ```
 
-## Grant Permissions
+### Contract Integration
 
-Session Keys are built on top of [EIP-7715](https://eip.tools/eip/7715) which introduces a new RPC for apps to request permissions from wallets, `wallet_grantPermissions`.
-
-A permission is defined by:
-
-- `account`: Address of the wallet seeking to automate transactions for
-- `chainId`: Chain of the account
-- `expiry`: When the permission can be used until
-- `signer`: The new "session key" that can sign user operations
-- `permission`: The allowed interactions this signer can make for the account
-- `policies`: Additional permission-agnostic constraints on transaction submission
-
-To enable Session Keys on your app, we recommend using our experimental `useGrantPermissions` hook in `wagmi`.
-
-Because we'd like to save the returned `permissionsContext` in state, we recommend placing all code samples within your page:
-
-```tsx
-import { useState } from "react";
-import { Hex, parseUnits } from "viem";
-import { useAccount } from "wagmi";
-import { baseSepolia } from "wagmi/chains";
-import { useGrantPermissions } from "wagmi/experimental";
-import { clickAddress } from "abi/Click";
-
-export function Page() {
-  const account = useAccount();
-  const { grantPermissionsAsync } = useGrantPermissions();
-  const [permissionsContext, setPermissionsContext] = useState<string>();
-
-  return (
-    <button
-      onClick={async () => {
-        const result = await grantPermissionsAsync({
-          permissions: [
-            {
-              account: account.address,
-              chainId: baseSepolia.id, // only available on base sepolia for now
-              expiry: Date.now() / 1000 + 3600, // one hour from now
-              signer: { type: "wallet" }, // let Coinbase Smart Wallet manage the signer via an in-browser key
-              permission: {
-                type: "call-with-permission",
-                data: {
-                  allowedContract: clickAddress, // only contract allowed to be called using this permission
-                  permissionArgs: "0x", // hex-encoded arguments to be used for onchain validation, set default as "0x"
-                },
-              },
-              policies: [
-                {
-                  type: "native-token-spend-limit",
-                  data: {
-                    allowance: parseUnits("0", 18), // uint256 value for allowed ETH spend
-                  },
-                },
-              ],
-            },
-          ],
-        });
-        setPermissionsContext(result?.context);
-      }}
-    >
-      Grant Permission
-    </button>
-  );
-}
-```
-
-## Contract Integration
-
-> For the purpose of quickly getting started, you can start testing with [this contract](https://sepolia.basescan.org/address/0x8af2fa0c32891f1b32a75422ed3c9a8b22951f2f) deployed on Base Sepolia.
+For the purpose of quickly getting started, you can start testing with [this contract](https://sepolia.basescan.org/address/0x8af2fa0c32891f1b32a75422ed3c9a8b22951f2f) deployed on Base Sepolia.
 
 For our v1 launch, Session Keys can only call contracts that implement [IPermissionCallable](https://github.com/coinbase/smart-wallet-permissions/blob/main/src/interfaces/IPermissionCallable.sol).
 
@@ -115,66 +89,382 @@ function permissionedCall(bytes calldata call) external payable returns (bytes m
 
 You can easily add support for this selector by following our contract integration guide [here](https://github.com/coinbase/smart-wallet-permissions/tree/main/docs/examples).
 
-## Submit Transaction
+### Grant Permissions
 
-After you have granted permissions to a contract that implements our dedicated `callWithPermission` function, you can now submit Session Key transactions using `useWriteContracts`.
+Session Keys are built on top of [EIP-7715](https://eip.tools/eip/7715) which introduces a new RPC for apps to request permissions from wallets, `wallet_grantPermissions`.
 
-```tsx
-import { useWriteContracts } from "wagmi/experimental";
-import { clickAbi, clickAddress } from "abi/Click";
+A permission is defined by:
 
-function Component() {
-  const { writeContracts } = useWriteContracts();
-  // state set by grantPermissions step
-  const [permissionsContext, setPermissionsContext] = useState<Hex>();
-  const [lastCallsId, setLastCallsId] = useState<string>();
+- `account`: Address of the wallet seeking to automate transactions for
+- `chainId`: Chain of the account / the chain the permissions are valid on
+- `expiry`: When the permission can be used until
+- `signer`: The new "session key" that can sign user operations
+- `permissions`: Composable interactions this signer can make for the account
 
-  const { data: callsStatus } = useCallsStatus({
-    id: lastCallsId,
-    query: {
-      enabled: !!lastCallsId,
-      refetchInterval: (data) =>
-        data.state.data?.status === "CONFIRMED" ? false : 100, // refetch every 100ms until complete
-    },
-  });
+To enable Session Keys on your app, we recommend using our experimental `useGrantPermissions` hook in `wagmi`.
+
+The following example also shows how you can `webauthn-p256` to create a P-256 key pair that you can store in the browser (using IndexedDB).
+
+:::code-group
+```tsx [App.tsx]
+import { useState } from "react";
+import { Hex, parseEther } from "viem";
+import { useAccount } from "wagmi";
+import { baseSepolia } from "wagmi/chains";
+import { useGrantPermissions } from "wagmi/experimental";
+import { createCredential, P256Credential } from "webauthn-p256";
+import { clickAddress } from "./click";
+
+export function App() {
+  const account = useAccount();
+  const { grantPermissionsAsync } = useGrantPermissions();
+  const [permissionsContext, setPermissionsContext] = useState<
+    Hex | undefined
+  >();
+  const [credential, setCredential] = useState<
+    undefined | P256Credential<"cryptokey">
+  >();
+
+  const grantPermission = async () => {
+    const newCredential = await createCredential({ type: "cryptoKey" });
+
+    const result = await grantPermissionsAsync({
+      permissions: [
+        {
+          account: account.address,
+          chainId: baseSepolia.id, // only available on base sepolia for now
+          expiry: Date.now() / 1000 + 604800, // one week from now
+          signer: {
+            type: "p256",
+            data: {
+              publicKey: newCredential.publicKey, // The public key of the credential we just created with webauthn-p256
+            },
+          },
+          permissions: [
+            {
+              type: "native-token-recurring-allowance",
+              data: {
+                allowance: parseEther("1"), // 1 ETH
+                period: 86400, // per day
+                start: Math.floor(Date.now() / 1000), // starting now
+              },
+            },
+            {
+              type: "allowed-contract-selector",
+              data: {
+                contract: clickAddress, // only contract allowed to be called using this permission
+                selector: toFunctionSelector( // the only function selector that can be called with this permission
+                  "permissionedCall(bytes calldata call)",
+                ),
+              },
+            },
+          ],
+        },
+      ],
+    });
+    
+    const context = response[0].context as Hex;
+    setPermissionsContext(context);
+    setCredential(newCredential);
+  }
 
   return (
     <button
-      onClick={() => {
-        writeContracts(
-          {
-            capabilities: {
-              permissions: {
-                context: permissionsContext,
-              },
-            },
-            contracts: [
-              {
-                address: clickAddress, // allowedContract requested in grantPermissions
-                abi: clickAbi,
-                functionName: "click",
-                args: [],
-              },
-            ],
-          },
-          {
-            onSuccess: (data) => {
-              setLastCallsId(data);
-            },
-          }
-        );
-      }}
+      type="button"
+      onClick={grantPermissions}
     >
-      Click
+      Grant Permission
     </button>
-    {callsStatus?.status === "CONFIRMED" && callsStatus.receipts?.[0] && (
-      <a
-        href={`https://sepolia.basescan.org/tx/${callsStatus.receipts[0].transactionHash}`}
-        target="_blank"
-      >
-        View transaction
-      </a>
-    )}
   );
 }
 ```
+
+```ts [click.ts]
+const clickAddress = "0x8Af2FA0c32891F1b32A75422eD3c9a8B22951f2F";
+```
+:::
+
+### Submit Transaction
+
+After you have granted permissions to a contract that implements our dedicated `permissionedCall` function, you can now submit Session Key transactions using `useSendCalls`.
+
+:::code-group
+```tsx [App.tsx]
+import { useState } from "react";
+import { Hex, parseEther } from "viem";
+import { useAccount } from "wagmi";
+import { baseSepolia } from "wagmi/chains";
+import { useGrantPermissions, useSendCalls } from "wagmi/experimental";
+import { createCredential, P256Credential } from "webauthn-p256";
+import { clickAddress, clickAbi } from "./click";
+
+export function App() {
+  const account = useAccount();
+  const { grantPermissionsAsync } = useGrantPermissions();
+  const [permissionsContext, setPermissionsContext] = useState<
+    Hex | undefined
+  >();
+  const [credential, setCredential] = useState<
+    undefined | P256Credential<"cryptokey">
+  >();
+  const [callsId, setCallsId] = useState<string>();
+  const [submitted, setSubmitted] = useState(false);
+  const { sendCallsAsync } = useSendCalls();
+  const { data: callsStatus } = useCallsStatus({
+    id: callsId as string,
+    query: {
+      enabled: !!callsId,
+      refetchInterval: (data) =>
+        data.state.data?.status === "PENDING" ? 500 : false,
+    },
+  });
+
+  const grantPermission = async () => {
+    const newCredential = await createCredential({ type: "cryptoKey" });
+
+    const result = await grantPermissionsAsync({
+      permissions: [
+        {
+          account: account.address,
+          chainId: baseSepolia.id, // only available on base sepolia for now
+          expiry: Date.now() / 1000 + 604800, // one week from now
+          signer: {
+            type: "p256",
+            data: {
+              publicKey: newCredential.publicKey, // The public key of the credential we just created with webauthn-p256
+            },
+          },
+          permissions: [
+            {
+              type: "native-token-recurring-allowance",
+              data: {
+                allowance: parseEther("1"), // 1 ETH
+                period: 86400, // per day
+                start: Math.floor(Date.now() / 1000), // starting now
+              },
+            },
+            {
+              type: "allowed-contract-selector",
+              data: {
+                contract: clickAddress, // only contract allowed to be called using this permission
+                selector: toFunctionSelector( // the only function selector that can be called with this permission
+                  "permissionedCall(bytes calldata call)",
+                ),
+              },
+            },
+          ],
+        },
+      ],
+    });
+    
+    const context = response[0].context as Hex;
+    setPermissionsContext(context);
+    setCredential(newCredential);
+  }
+
+  const click = async () => {
+    if (account.address && permissionsContext && credential && walletClient) {
+      setSubmitted(true);
+      setCallsId(undefined);
+      try {
+        const callsId = await sendCallsAsync({
+          calls: [
+            {
+              to: clickAddress,
+              value: BigInt(0),
+              data: encodeFunctionData({
+                abi: clickAbi,
+                functionName: "click",
+                args: []
+              }),
+            },
+          ],
+          capabilities: {
+            permissions: {
+              context: permissionsContext,
+            },
+          },
+          prepareAndSign: true,
+          sign: credential.sign,
+          signatureData: {
+            type: "permissions",
+            values: {
+              context: permissionsContext,
+            },
+          },
+        });
+
+        setCallsId(callsId);
+      } catch (e: any) {
+        console.error(e);
+      }
+      setSubmitted(false);
+    }
+  }
+
+  return (
+    <>
+      {!permissionsContext ? (
+        <button
+          type="button"
+          onClick={grantPermissions}
+        >
+          Grant Permission
+        </button>
+      ) : (
+        <button
+          type="button"
+          onClick={click}
+        >
+          Click
+        </button>
+      )}
+
+      {callsStatus && callsStatus.status === "CONFIRMED" && (
+        <a
+          href={`https://base-sepolia.blockscout.com/tx/${callsStatus.receipts?.[0].transactionHash}`}
+          target="_blank"
+          className="absolute top-8 hover:underline"
+        >
+          View transaction
+        </a>
+      )}
+    </>
+  );
+}
+```
+
+```ts [click.ts]
+const clickAddress = "0x8Af2FA0c32891F1b32A75422eD3c9a8B22951f2F";
+export const clickAbi = [
+  {
+    type: "constructor",
+    inputs: [
+      { name: "initialOwner", type: "address", internalType: "address" },
+    ],
+    stateMutability: "nonpayable",
+  },
+  {
+    type: "function",
+    name: "click",
+    inputs: [],
+    outputs: [],
+    stateMutability: "payable",
+  },
+  {
+    type: "function",
+    name: "getRequestAuthorization",
+    inputs: [
+      { name: "hash", type: "bytes32", internalType: "bytes32" },
+      { name: "signature", type: "bytes", internalType: "bytes" },
+    ],
+    outputs: [
+      {
+        name: "",
+        type: "uint8",
+        internalType: "enum IOffchainAuthorization.Authorization",
+      },
+    ],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "owner",
+    inputs: [],
+    outputs: [{ name: "", type: "address", internalType: "address" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "permissionedCall",
+    inputs: [{ name: "call", type: "bytes", internalType: "bytes" }],
+    outputs: [{ name: "res", type: "bytes", internalType: "bytes" }],
+    stateMutability: "payable",
+  },
+  {
+    type: "function",
+    name: "renounceOwnership",
+    inputs: [],
+    outputs: [],
+    stateMutability: "nonpayable",
+  },
+  {
+    type: "function",
+    name: "supportsPermissionedCallSelector",
+    inputs: [{ name: "", type: "bytes4", internalType: "bytes4" }],
+    outputs: [{ name: "", type: "bool", internalType: "bool" }],
+    stateMutability: "pure",
+  },
+  {
+    type: "function",
+    name: "transferOwnership",
+    inputs: [{ name: "newOwner", type: "address", internalType: "address" }],
+    outputs: [],
+    stateMutability: "nonpayable",
+  },
+  {
+    type: "event",
+    name: "Clicked",
+    inputs: [
+      {
+        name: "account",
+        type: "address",
+        indexed: true,
+        internalType: "address",
+      },
+    ],
+    anonymous: false,
+  },
+  {
+    type: "event",
+    name: "OwnershipTransferred",
+    inputs: [
+      {
+        name: "previousOwner",
+        type: "address",
+        indexed: true,
+        internalType: "address",
+      },
+      {
+        name: "newOwner",
+        type: "address",
+        indexed: true,
+        internalType: "address",
+      },
+    ],
+    anonymous: false,
+  },
+  {
+    type: "error",
+    name: "AddressEmptyCode",
+    inputs: [{ name: "target", type: "address", internalType: "address" }],
+  },
+  { type: "error", name: "FailedCall", inputs: [] },
+  {
+    type: "error",
+    name: "NotPermissionCallable",
+    inputs: [{ name: "selector", type: "bytes4", internalType: "bytes4" }],
+  },
+  {
+    type: "error",
+    name: "OwnableInvalidOwner",
+    inputs: [{ name: "owner", type: "address", internalType: "address" }],
+  },
+  {
+    type: "error",
+    name: "OwnableUnauthorizedAccount",
+    inputs: [{ name: "account", type: "address", internalType: "address" }],
+  },
+];
+```
+:::
+
+The `click` function will call the `sendCallsAsync` function from the experimental `useSendCalls` wagmi hook. Since we are calling `sendCallsAsync` with `prepareAndSign` set to `true`, the function will make new RPC requests to the wallet server instead of opening the popup. Specifically, it will:
+1. Send a `wallet_prepareCalls` request to the wallet server. This sends the usual EIP-5792 `calls` and `capabilities` to the wallet server, which responds with the hash the session key needs to sign along with the data that resulted in that hash (in the case of Coinbase Smart Wallet, a `user-operation-v06`) for the signer to verify if they want.
+2. The `sendCallsAsync` function will then use the provided `sign` parameter to sign the hash returned by the wallet server in response to the `wallet_prepareCalls` request. In this example, we pass the `sign` method from the `P256Credential` we created with `webauthn-p256`. This can by any async function that accepts a `0x${string}` and returns a `Promise<Hex>` though. For example, this could be an API call to your app's backend, which might have a key management system set up.
+3. Finally, the function sends a `wallet_sendPreparedCalls` request to the wallet server. This request sends the prepared calls and the session key signature back to the wallet server to be submitted onchain.
+
+### Fetch Permissions
+
+Coming soon
+::::
