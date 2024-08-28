@@ -14,76 +14,23 @@ These unlock experiences that keep all of the unique properties of wallets (eg s
 2. High-frequency transactions (eg gaming, social)
 3. Background transactions (eg subscriptions, automated trading)
 
-## Using Wagmi
+## Using Wagmi + Vite + React
 
 :::warning
-This feature is in progress and the flow outlined below is incomplete. Specifically, it is missing fetching previously granted permissions for an address. The new wagmi hooks used are experimental and it is possible that their APIs change in the future.
+This feature is in progress and the flow outlined below is incomplete. Specifically, it is missing fetching previously granted permissions for an address. This means that session keys won't persist across browser sessions. That said, you can still follow the guide below to set up your contracts and app for creating session keys and submitting session key transactions.
+:::
+
+:::warning
+The new wagmi hooks used below are experimental and it is possible that their APIs change in the future.
 :::
 
 ::::steps
 
-### Setup Your Paymaster
+### Set Up Your Paymaster
 
 To use session keys, you'll need to use a paymaster. We recommend the [Coinbase Developer Platform](https://www.coinbase.com/developer-platform) paymaster, currently offering up to $15k in gas credits as part of the [Base Gasless Campaign](/base-gasless-campaign).
 
 We also recommend setting up a paymaster proxy, which you can read more about in our [guide on paymasters](/guides/paymasters#recommended-setup-your-paymaster-proxy).
-
-
-### Install Dependencies
-
-Currently only web is supported. Apps will need to have the following packages installed at the specified versions:
-
-:::code-group
-
-```bash [pnpm]
-pnpm install viem@npm:@lukasrosario/viem@2.17.4-sessionkeys.5 wagmi@npm:@lukasrosario/wagmi@2.11.1-sessionkeys.5 @coinbase/wallet-sdk
-```
-
-```bash [bun]
-bun install viem@npm:@lukasrosario/viem@2.17.4-sessionkeys.5 wagmi@npm:@lukasrosario/wagmi@2.11.1-sessionkeys.5 @coinbase/wallet-sdk
-```
-
-```bash [yarn]
-yarn add viem@npm:@lukasrosario/viem@2.17.4-sessionkeys.5 wagmi@npm:@lukasrosario/wagmi@2.11.1-sessionkeys.5 @coinbase/wallet-sdk
-```
-
-```bash [npm]
-pnpm install viem@npm:@lukasrosario/viem@2.17.4-sessionkeys.5 wagmi@npm:@lukasrosario/wagmi@2.11.1-sessionkeys.5 @coinbase/wallet-sdk
-```
-
-:::
-
-Additionally, if you don't already have a key management system you plan on using for session keys, we recommend the following version of wevm's `webauthn-p256`. You can use this package to create P-256 key pairs with non-exportable private keys you can sign with and store in the browser (self-custodial). The rest of this guide will use this package, but you can use any other key management system with EOA or P-256 keys you might already have set up.
-
-:::code-group
-
-```bash [pnpm]
-pnpm install webauthn-p256@npm:@lukasrosario/webauthn-p256@0.0.10-sessionkeys.6
-```
-
-```bash [bun]
-bun install webauthn-p256@npm:@lukasrosario/webauthn-p256@0.0.10-sessionkeys.6
-```
-
-```bash [yarn]
-yarn add webauthn-p256@npm:@lukasrosario/webauthn-p256@0.0.10-sessionkeys.6
-```
-
-```bash [npm]
-pnpm install webauthn-p256@npm:@lukasrosario/webauthn-p256@0.0.10-sessionkeys.6
-```
-
-:::
-
-After installing the requirements, your `package.json` should have the following dependencies:
-
-```json [package.json]
-"dependencies": {
-  "viem": "npm:@lukasrosario/viem@2.17.4-sessionkeys.5",
-  "wagmi": "npm:@lukasrosario/wagmi@2.11.1-sessionkeys.5",
-  "webauthn-p256": "npm:@lukasrosario/webauthn-p256@0.0.10-sessionkeys.6"
-}
-```
 
 ### Contract Integration
 
@@ -101,6 +48,132 @@ function permissionedCall(bytes calldata call) external payable returns (bytes m
 
 We have a template implementation which your contracts can inherit in this [integration guide](https://github.com/coinbase/smart-wallet-permissions/tree/main/docs/examples).
 
+### Set Up Your App
+
+In this tutorial we'll use Vite + React to scaffold an app.
+
+```bash
+pnpm create vite
+```
+
+
+### Install Dependencies
+
+Currently only web is supported. Apps will need to have the following packages installed at the specified versions:
+
+```bash
+cd <your-app-directory> && pnpm install viem@npm:@lukasrosario/viem@2.17.4-sessionkeys.5 wagmi@npm:@lukasrosario/wagmi@2.11.1-sessionkeys.5 @tanstack/react-query@5.0.5 buffer
+```
+
+Additionally, if you don't already have a key management system you plan on using for session keys, we recommend the following version of wevm's `webauthn-p256`. You can use this package to create P256 key pairs with non-exportable private keys you can sign with and store in the browser (self-custodial). The rest of this guide will use this package, but you can use any other key management system with EOA or P256 keys you might already have set up.
+
+```bash
+pnpm install webauthn-p256@npm:@lukasrosario/webauthn-p256@0.0.10-sessionkeys.6
+```
+
+After installing the requirements, your `package.json` should have the following dependencies:
+
+```json [package.json]
+"dependencies": {
+  "@tanstack/react-query": "5.0.5",
+  "viem": "npm:@lukasrosario/viem@2.17.4-sessionkeys.5",
+  "wagmi": "npm:@lukasrosario/wagmi@2.11.1-sessionkeys.5",
+  "webauthn-p256": "npm:@lukasrosario/webauthn-p256@0.0.10-sessionkeys.6"
+}
+```
+
+### Set Up Your Wagmi Provider
+
+Now that you have your dependencies installed, you'll need to set up your wagmi provider.
+
+:::code-group
+
+```tsx [main.tsx]
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Buffer } from "buffer";
+import React from "react";
+import ReactDOM from "react-dom/client";
+import { WagmiProvider } from "wagmi";
+
+import App from "./App.tsx";
+import { config } from "./wagmi.ts";
+
+import "./index.css";
+
+globalThis.Buffer = Buffer;
+
+const queryClient = new QueryClient();
+
+ReactDOM.createRoot(document.getElementById("root")!).render(
+  <React.StrictMode>
+    <WagmiProvider config={config}>
+      <QueryClientProvider client={queryClient}>
+        <App />
+      </QueryClientProvider>
+    </WagmiProvider>
+  </React.StrictMode>
+);
+```
+
+```tsx [wagmi.ts]
+import { http, createConfig } from "wagmi";
+import { baseSepolia } from "wagmi/chains";
+import { coinbaseWallet } from "wagmi/connectors";
+
+export const config = createConfig({
+  chains: [baseSepolia],
+  connectors: [
+    coinbaseWallet({
+      appName: "Session Key Example",
+      preference: "smartWalletOnly",
+    }),
+  ],
+  transports: {
+    [baseSepolia.id]: http(),
+  },
+});
+
+declare module "wagmi" {
+  interface Register {
+    config: typeof config;
+  }
+}
+```
+
+:::
+
+### Connect Your Smart Wallet
+
+Before you can request permissions from your wallet, you'll need to connect your Smart Wallet to your app.
+
+```tsx [App.tsx]
+import { useAccount, useConnect } from "wagmi";
+
+function App() {
+  const account = useAccount();
+  const { connectors, connect } = useConnect();
+
+  const login = async () => {
+    connect({ connector: connectors[0] });
+  };
+
+  return (
+    <div>
+      <div>
+        {account.address && <span>{account.address}</span>}
+        {!account.address && (
+          <button onClick={login} type="button">
+            Log in
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export default App;
+```
+
 ### Grant Permissions
 
 Session Keys are built on top of [ERC-7715](https://eip.tools/eip/7715) which introduces a new RPC for apps to request permissions from wallets, `wallet_grantPermissions`.
@@ -113,9 +186,9 @@ A permission is defined by:
 - `signer`: The entity that has limited control of `account` in the permission (i.e. the "session key").
 - `permissions`: Composable scopes this signer can take action for the account.
 
-To enable Session Keys on your web app, we recommend using our experimental `useGrantPermissions` hook in `wagmi`.
+Once you've connected your Smart Wallet to your app, we recommend using our experimental `useGrantPermissions` hook in `wagmi`.
 
-The following example also shows how you can `webauthn-p256` to create a P-256 key pair that you can store in the browser (using local state).
+The following example also shows how you can `webauthn-p256` to create a P256 key pair that you can store in the browser (using local state).
 
 :::info
 For Session Keys to span across multiple browser sessions, we recommend storing these keys in [IndexedDB](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API).
@@ -125,16 +198,13 @@ For Session Keys to span across multiple browser sessions, we recommend storing 
 
 ```tsx [App.tsx]
 import { useState } from "react";
-import { Hex, parseEther } from "viem";
-import { useAccount } from "wagmi";
-import { baseSepolia } from "wagmi/chains";
+import { useAccount, useConnect } from "wagmi";
+import { Hex, parseEther, toFunctionSelector } from "viem";
 import { useGrantPermissions } from "wagmi/experimental";
 import { createCredential, P256Credential } from "webauthn-p256";
-import { clickAddress } from "./click";
+import { clickAddress } from "./click.ts";
 
-export function App() {
-  const account = useAccount();
-  const { grantPermissionsAsync } = useGrantPermissions();
+function App() {
   const [permissionsContext, setPermissionsContext] = useState<
     Hex | undefined
   >();
@@ -142,60 +212,84 @@ export function App() {
     undefined | P256Credential<"cryptokey">
   >();
 
-  const grantPermission = async () => {
-    const newCredential = await createCredential({ type: "cryptoKey" });
+  const account = useAccount();
+  const { connectors, connect } = useConnect();
+  const { grantPermissionsAsync } = useGrantPermissions();
 
-    const result = await grantPermissionsAsync({
-      permissions: [
-        {
-          account: account.address,
-          chainId: baseSepolia.id, // only available on base sepolia for now
-          expiry: Date.now() / 1000 + 604800, // one week from now
-          signer: {
-            type: "p256",
-            data: {
-              publicKey: newCredential.publicKey, // The public key of the credential we just created with webauthn-p256
+  const login = async () => {
+    connect({ connector: connectors[0] });
+  };
+
+  const grantPermissions = async () => {
+    if (account.address) {
+      const newCredential = await createCredential({ type: "cryptoKey" });
+      const response = await grantPermissionsAsync({
+        permissions: [
+          {
+            address: account.address,
+            chainId: 84532,
+            expiry: 17218875770,
+            signer: {
+              type: "p256",
+              data: {
+                publicKey: newCredential.publicKey,
+              },
             },
+            permissions: [
+              {
+                type: "native-token-recurring-allowance",
+                data: {
+                  allowance: parseEther("0.1"),
+                  start: Math.floor(Date.now() / 1000),
+                  period: 86400,
+                },
+              },
+              {
+                type: "allowed-contract-selector",
+                data: {
+                  contract: clickAddress,
+                  selector: toFunctionSelector(
+                    "permissionedCall(bytes calldata call)"
+                  ),
+                },
+              },
+            ],
           },
-          permissions: [
-            {
-              type: "native-token-recurring-allowance",
-              data: {
-                allowance: parseEther("1"), // 1 ETH
-                period: 86400, // per day
-                start: Math.floor(Date.now() / 1000), // starting now
-              },
-            },
-            {
-              type: "allowed-contract-selector",
-              data: {
-                contract: clickAddress, // only contract allowed to be called using this permission
-                selector: toFunctionSelector(
-                  // the only function selector that can be called with this permission
-                  "permissionedCall(bytes)"
-                ),
-              },
-            },
-          ],
-        },
-      ],
-    });
-
-    const context = response[0].context as Hex;
-    setPermissionsContext(context);
-    setCredential(newCredential);
+        ],
+      });
+      const context = response[0].context as Hex;
+      setPermissionsContext(context);
+      setCredential(newCredential);
+    }
   };
 
   return (
-    <button type="button" onClick={grantPermissions}>
-      Grant Permission
-    </button>
+    <div>
+      <div>
+        {account.address && <span>{account.address}</span>}
+        {!account.address && (
+          <button onClick={login} type="button">
+            Log in
+          </button>
+        )}
+      </div>
+
+      <div>
+        {account.address && (
+          <button type="button" onClick={grantPermissions}>
+            Grant Permissions
+          </button>
+        )}
+      </div>
+    </div>
   );
 }
+
+export default App;
 ```
 
 ```ts [click.ts]
-const clickAddress = "0x8Af2FA0c32891F1b32A75422eD3c9a8B22951f2F";
+export const clickAddress = "0x8Af2FA0c32891F1b32A75422eD3c9a8B22951f2F";
 ```
 
 :::
@@ -208,10 +302,13 @@ After you have granted permissions to a contract that implements our dedicated `
 
 ```tsx [App.tsx]
 import { useState } from "react";
-import { Hex, parseEther } from "viem";
-import { useAccount } from "wagmi";
-import { baseSepolia } from "wagmi/chains";
-import { useGrantPermissions, useSendCalls } from "wagmi/experimental";
+import { encodeFunctionData, Hex, parseEther, toFunctionSelector } from "viem";
+import { useAccount, useConnect, useWalletClient } from "wagmi";
+import {
+  useCallsStatus,
+  useGrantPermissions,
+  useSendCalls,
+} from "wagmi/experimental";
 import {
   createCredential,
   P256Credential,
@@ -220,8 +317,6 @@ import {
 import { clickAddress, clickAbi } from "./click";
 
 export function App() {
-  const account = useAccount();
-  const { grantPermissionsAsync } = useGrantPermissions();
   const [permissionsContext, setPermissionsContext] = useState<
     Hex | undefined
   >();
@@ -230,6 +325,11 @@ export function App() {
   >();
   const [callsId, setCallsId] = useState<string>();
   const [submitted, setSubmitted] = useState(false);
+
+  const account = useAccount();
+  const { connectors, connect } = useConnect();
+  const { grantPermissionsAsync } = useGrantPermissions();
+  const { data: walletClient } = useWalletClient({ chainId: 84532 });
   const { sendCallsAsync } = useSendCalls();
   const { data: callsStatus } = useCallsStatus({
     id: callsId as string,
@@ -240,45 +340,51 @@ export function App() {
     },
   });
 
-  const grantPermission = async () => {
-    const newCredential = await createCredential({ type: "cryptoKey" });
+  const login = async () => {
+    connect({ connector: connectors[0] });
+  };
 
-    const response = await grantPermissionsAsync({
-      permissions: [
-        {
-          address: account.address,
-          chainId: 84532,
-          expiry: 17218875770,
-          signer: {
-            type: "p256",
-            data: {
-              publicKey: newCredential.publicKey,
+  const grantPermissions = async () => {
+    if (account.address) {
+      const newCredential = await createCredential({ type: "cryptoKey" });
+      const response = await grantPermissionsAsync({
+        permissions: [
+          {
+            address: account.address,
+            chainId: 84532,
+            expiry: 17218875770,
+            signer: {
+              type: "p256",
+              data: {
+                publicKey: newCredential.publicKey,
+              },
             },
+            permissions: [
+              {
+                type: "native-token-recurring-allowance",
+                data: {
+                  allowance: parseEther("0.1"),
+                  start: Math.floor(Date.now() / 1000),
+                  period: 86400,
+                },
+              },
+              {
+                type: "allowed-contract-selector",
+                data: {
+                  contract: clickAddress,
+                  selector: toFunctionSelector(
+                    "permissionedCall(bytes calldata call)"
+                  ),
+                },
+              },
+            ],
           },
-          permissions: [
-            {
-              type: "native-token-recurring-allowance",
-              data: {
-                allowance: parseEther("0.1"),
-                start: Math.floor(Date.now() / 1000),
-                period: 86400,
-              },
-            },
-            {
-              type: "allowed-contract-selector",
-              data: {
-                contract: clickAddress,
-                selector: toFunctionSelector("permissionedCall(bytes)"),
-              },
-            },
-          ],
-        },
-      ],
-    });
-
-    const context = response[0].context as Hex;
-    setPermissionsContext(context);
-    setCredential(newCredential);
+        ],
+      });
+      const context = response[0].context as Hex;
+      setPermissionsContext(context);
+      setCredential(newCredential);
+    }
   };
 
   const click = async () => {
@@ -303,14 +409,14 @@ export function App() {
               context: permissionsContext,
             },
             paymasterService: {
-              url: "https://..." // Your paymaster service URL
-            }
+              url: "https://...", // Your paymaster service URL
+            },
           },
           signatureOverride: signWithCredential(credential),
         });
 
         setCallsId(callsId);
-      } catch (e: any) {
+      } catch (e: unknown) {
         console.error(e);
       }
       setSubmitted(false);
@@ -318,39 +424,57 @@ export function App() {
   };
 
   return (
-    <>
-      {!permissionsContext ? (
-        <button type="button" onClick={grantPermissions}>
-          Grant Permission
-        </button>
-      ) : (
-        <button
-          type="button"
-          onClick={click}
-          disabled={
-            submitted || (!!callsId && !(callsStatus?.status === "CONFIRMED"))
-          }
-        >
-          Click
-        </button>
-      )}
+    <div>
+      <div>
+        {account.address && <span>{account.address}</span>}
+        {!account.address && (
+          <button onClick={login} type="button">
+            Log in
+          </button>
+        )}
+      </div>
 
-      {callsStatus && callsStatus.status === "CONFIRMED" && (
-        <a
-          href={`https://base-sepolia.blockscout.com/tx/${callsStatus.receipts?.[0].transactionHash}`}
-          target="_blank"
-          className="absolute top-8 hover:underline"
-        >
-          View transaction
-        </a>
-      )}
-    </>
+      <div>
+        {account.address &&
+          (permissionsContext ? (
+            <button
+              type="button"
+              onClick={click}
+              disabled={
+                submitted ||
+                (!!callsId && !(callsStatus?.status === "CONFIRMED"))
+              }
+            >
+              Click
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={grantPermissions}
+              disabled={submitted}
+            >
+              Grant Permission
+            </button>
+          ))}
+        {callsStatus && callsStatus.status === "CONFIRMED" && (
+          <a
+            href={`https://base-sepolia.blockscout.com/tx/${callsStatus.receipts?.[0].transactionHash}`}
+            target="_blank"
+            className="absolute top-8 hover:underline"
+          >
+            View transaction
+          </a>
+        )}
+      </div>
+    </div>
   );
 }
+
+export default App;
 ```
 
 ```ts [click.ts]
-const clickAddress = "0x8Af2FA0c32891F1b32A75422eD3c9a8B22951f2F";
+export const clickAddress = "0x8Af2FA0c32891F1b32A75422eD3c9a8B22951f2F";
 export const clickAbi = [
   {
     type: "constructor",
