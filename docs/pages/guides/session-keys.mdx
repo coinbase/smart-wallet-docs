@@ -21,6 +21,14 @@ This feature is in progress and the flow outlined below is incomplete. Specifica
 :::
 
 ::::steps
+
+### Setup Your Paymaster
+
+To use session keys, you'll need to use a paymaster. We recommend the [Coinbase Developer Platform](https://www.coinbase.com/developer-platform) paymaster, currently offering up to $15k in gas credits as part of the [Base Gasless Campaign](/base-gasless-campaign).
+
+We also recommend setting up a paymaster proxy, which you can read more about in our [guide on paymasters](/guides/paymasters#recommended-setup-your-paymaster-proxy).
+
+
 ### Install Dependencies
 
 Currently only web is supported. Apps will need to have the following packages installed at the specified versions:
@@ -283,6 +291,9 @@ export function App() {
             permissions: {
               context: permissionsContext,
             },
+            paymasterService: {
+              url: "https://..." // Your paymaster service URL
+            }
           },
           signatureOverride: signWithCredential(credential),
         });
