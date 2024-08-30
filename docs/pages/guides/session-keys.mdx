@@ -66,7 +66,7 @@ This will scaffold a Vite + React template app for you with necessary dependenci
 Currently only web is supported. Apps will need to have the following packages installed at the specified versions:
 
 ```bash
-cd <your-app-directory> && pnpm install viem@npm:@lukasrosario/viem@2.17.4-sessionkeys.5 wagmi@npm:@lukasrosario/wagmi@2.11.1-sessionkeys.5 @tanstack/react-query@5.0.5 buffer@6.0.3
+cd <your-app-directory> && pnpm install viem@npm:@lukasrosario/viem@2.17.4-sessionkeys.7 wagmi@npm:@lukasrosario/wagmi@2.11.1-sessionkeys.6 @tanstack/react-query@5.0.5 buffer@6.0.3
 ```
 
 Additionally, if you don't already have a key management system you plan on using for session keys, we recommend the following version of wevm's `webauthn-p256`. You can use this package to create P256 key pairs with non-exportable private keys you can sign with and store in the browser (self-custodial). The rest of this guide will use this package, but you can use any other key management system with EOA or P256 keys you might already have set up.
@@ -80,8 +80,8 @@ After installing the additional requirements, your `package.json` should have th
 ```json [package.json]
 "dependencies": {
   "@tanstack/react-query": "5.0.5",
-  "viem": "npm:@lukasrosario/viem@2.17.4-sessionkeys.5",
-  "wagmi": "npm:@lukasrosario/wagmi@2.11.1-sessionkeys.5",
+  "viem": "npm:@lukasrosario/viem@2.17.4-sessionkeys.7",
+  "wagmi": "npm:@lukasrosario/wagmi@2.11.1-sessionkeys.6",
   "webauthn-p256": "npm:@lukasrosario/webauthn-p256@0.0.10-sessionkeys.6",
   "buffer": "6.0.3"
 }
