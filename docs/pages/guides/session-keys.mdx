@@ -245,8 +245,9 @@ function App() {
             chainId: 84532, // [!code hl]
             expiry: 17218875770, // [!code hl]
             signer: { // [!code hl]
-              type: "p256", // [!code hl]
+              type: "key", // [!code hl]
               data: { // [!code hl]
+                type: "secp256r1", // [!code hl]
                 publicKey: newCredential.publicKey, // [!code hl]
               }, // [!code hl]
             }, // [!code hl]
@@ -374,8 +375,9 @@ export function App() {
             chainId: 84532,
             expiry: 17218875770,
             signer: {
-              type: "p256",
+              type: "key",
               data: {
+                type: "secp256r1",
                 publicKey: newCredential.publicKey,
               },
             },
