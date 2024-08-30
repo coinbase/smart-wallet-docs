@@ -159,8 +159,8 @@ export default defineConfig({
           link: "https://github.com/coinbase/smart-wallet",
         },
         {
-          text: "Smart Wallet Periphery",
-          link: "https://github.com/coinbase/smart-wallet-periphery",
+          text: "Smart Wallet Permissions",
+          link: "https://github.com/coinbase/smart-wallet-perimssions",
         },
         {
           text: "Magic Spend",
