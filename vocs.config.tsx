@@ -69,11 +69,11 @@ export default defineConfig({
       collapsed: false,
       items: [
         {
-          text: "Create a New App",
+          text: "Create a New Web App",
           items: [
             {
-              text: "Using Build Onchain Template",
-              link: "/guides/create-app/using-boat",
+              text: "Using Onchain App Template",
+              link: "/guides/create-app/using-onchain-app-template",
             },
             {
               text: "Using Wagmi Template",
@@ -82,8 +82,12 @@ export default defineConfig({
           ],
         },
         {
-          text: "Update an Existing App",
+          text: "Update an Existing Web App",
           link: "/guides/update-existing-app",
+        },
+        {
+          text: "Integrate with a React Native App",
+          link: "/guides/react-native-integration",
         },
         {
           text: "Create Wallet Button",
