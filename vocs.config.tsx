@@ -160,7 +160,7 @@ export default defineConfig({
         },
         {
           text: "Smart Wallet Permissions",
-          link: "https://github.com/coinbase/smart-wallet-perimssions",
+          link: "https://github.com/coinbase/smart-wallet-permissions",
         },
         {
           text: "Magic Spend",
