@@ -2,7 +2,15 @@ import { defineConfig } from "vocs";
 
 export default defineConfig({
   head() {
-    return <script defer src={process.env.VERCEL_ENV == "production" ? "/_vercel/insights/script.js" : ""}></script>;
+    return (
+      <script
+        defer
+        src={process.env.VERCEL_ENV == "production"
+          ? "/_vercel/insights/script.js"
+          : ""}
+      >
+      </script>
+    );
   },
   theme: {
     colorScheme: "system",
@@ -24,7 +32,10 @@ export default defineConfig({
   iconUrl: "/logo.svg",
   topNav: [
     { text: "Demo", link: "https://smart-wallet.xyz/" },
-    { text: "SDK Playground", link: "https://coinbase.github.io/coinbase-wallet-sdk/" },
+    {
+      text: "SDK Playground",
+      link: "https://coinbase.github.io/coinbase-wallet-sdk/",
+    },
     { text: "Github", link: "https://github.com/coinbase/coinbase-wallet-sdk" },
     { text: "Discord", link: "https://discord.com/invite/cdp/" },
   ],
@@ -60,8 +71,14 @@ export default defineConfig({
         {
           text: "Create a New Web App",
           items: [
-            { text: "Using Onchain App Template", link: "/guides/create-app/using-onchain-app-template" },
-            { text: "Using Wagmi Template", link: "/guides/create-app/using-wagmi" },
+            {
+              text: "Using Onchain App Template",
+              link: "/guides/create-app/using-onchain-app-template",
+            },
+            {
+              text: "Using Wagmi Template",
+              link: "/guides/create-app/using-wagmi",
+            },
           ],
         },
         {
@@ -87,6 +104,10 @@ export default defineConfig({
         {
           text: "Batch Transactions",
           link: "/guides/batch-transactions",
+        },
+        {
+          text: "Session Keys",
+          link: "/guides/session-keys",
         },
         {
           text: "Paymasters (Sponsored Transactions)",
@@ -137,8 +158,18 @@ export default defineConfig({
       text: "Smart Contracts",
       collapsed: false,
       items: [
-        { text: "Smart Wallet", link: "https://github.com/coinbase/smart-wallet" },
-        { text: "Magic Spend", link: "https://github.com/coinbase/magic-spend" },
+        {
+          text: "Smart Wallet",
+          link: "https://github.com/coinbase/smart-wallet",
+        },
+        {
+          text: "Smart Wallet Permissions",
+          link: "https://github.com/coinbase/smart-wallet-permissions",
+        },
+        {
+          text: "Magic Spend",
+          link: "https://github.com/coinbase/magic-spend",
+        },
       ],
     },
   ],

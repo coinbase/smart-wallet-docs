@@ -1,0 +1,637 @@
+# Session Keys
+
+:::warning
+This feature is only available on Base Sepolia until further notice.
+:::
+
+Session Keys enable apps to submit transactions on behalf of users.
+
+Session Key transactions can avoid typical user friction in web3 apps like:
+
+1. Wallet popup windows
+2. Passkey biometric scans
+3. User presence in-app
+
+These unlock experiences that keep all of the unique properties of wallets (eg self-custody, data portability) without sacrificng on user experience compared to web2:
+
+1. Sign-in and never see mention of a wallet again
+2. High-frequency transactions (eg gaming, social)
+3. Background transactions (eg subscriptions, automated trading)
+
+## Using Wagmi + Vite + React
+
+:::warning
+This feature is in progress and the flow outlined below is incomplete. Specifically, it is missing fetching previously granted permissions for an address. This means that session keys won't persist across browser sessions. That said, you can still follow the guide below to set up your contracts and app for creating session keys and submitting session key transactions.
+:::
+
+:::warning
+The new wagmi hooks used below are experimental and it is possible that their APIs change in the future.
+:::
+
+::::steps
+
+### Set Up Your Paymaster
+
+To use session keys, you'll need to use a paymaster. We recommend the [Coinbase Developer Platform](https://www.coinbase.com/developer-platform) paymaster, currently offering up to $15k in gas credits as part of the [Base Gasless Campaign](/base-gasless-campaign).
+
+We also recommend setting up a paymaster proxy, which you can read more about in our [guide on paymasters](/guides/paymasters#recommended-setup-your-paymaster-proxy).
+
+### Contract Integration
+
+For the purpose of quickly getting started, you can start testing with [this contract](https://sepolia.basescan.org/address/0x8af2fa0c32891f1b32a75422ed3c9a8b22951f2f) deployed on Base Sepolia.
+
+Session Keys V1 can only call contracts that implement [IPermissionCallable](https://github.com/coinbase/smart-wallet-permissions/blob/main/src/interfaces/IPermissionCallable.sol).
+
+Our goal is to enable apps to permissionlessly add Session Key support, while reducing risk of apps asking users to approve malicious permissions.
+
+It works by only allowing interactions with contracts that implement the following function:
+
+```solidity
+function permissionedCall(bytes calldata call) external payable returns (bytes memory);
+```
+
+We have a template implementation which your contracts can inherit in this [integration guide](https://github.com/coinbase/smart-wallet-permissions/tree/main/docs/examples).
+
+### Set Up Your App
+
+In this tutorial we'll use Vite + React to scaffold an app.
+
+```bash
+pnpm create vite
+```
+
+Select `React` and `Typescript` when prompted.
+
+This will scaffold a Vite + React template app for you with necessary dependencies.
+
+
+### Install Additional Dependencies
+
+Currently only web is supported. Apps will need to have the following packages installed at the specified versions:
+
+```bash
+cd <your-app-directory> && pnpm install viem@npm:@lukasrosario/viem@2.17.4-sessionkeys.7 wagmi@npm:@lukasrosario/wagmi@2.11.1-sessionkeys.6 @tanstack/react-query@5.0.5 buffer@6.0.3
+```
+
+Additionally, if you don't already have a key management system you plan on using for session keys, we recommend the following version of wevm's `webauthn-p256`. You can use this package to create P256 key pairs with non-exportable private keys you can sign with and store in the browser (self-custodial). The rest of this guide will use this package, but you can use any other key management system with EOA or P256 keys you might already have set up.
+
+```bash
+pnpm install webauthn-p256@npm:@lukasrosario/webauthn-p256@0.0.10-sessionkeys.6
+```
+
+After installing the additional requirements, your `package.json` should have the following dependencies:
+
+```json [package.json]
+"dependencies": {
+  "@tanstack/react-query": "5.0.5",
+  "viem": "npm:@lukasrosario/viem@2.17.4-sessionkeys.7",
+  "wagmi": "npm:@lukasrosario/wagmi@2.11.1-sessionkeys.6",
+  "webauthn-p256": "npm:@lukasrosario/webauthn-p256@0.0.10-sessionkeys.6",
+  "buffer": "6.0.3"
+}
+```
+
+At this point you should start your app and make sure you can see the template app page. You can do so by running
+
+```bash
+pnpm dev
+```
+
+### Set Up Your Wagmi Provider
+
+Now that you have your dependencies installed, you'll need to set up your wagmi provider.
+
+:::code-group
+
+```tsx [main.tsx]
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Buffer } from "buffer";
+import React from "react";
+import ReactDOM from "react-dom/client";
+import { WagmiProvider } from "wagmi";
+
+import App from "./App.tsx";
+import { config } from "./wagmi.ts";
+
+import "./index.css";
+
+globalThis.Buffer = Buffer;
+
+const queryClient = new QueryClient();
+
+ReactDOM.createRoot(document.getElementById("root")!).render(
+  <React.StrictMode>
+    <WagmiProvider config={config}>
+      <QueryClientProvider client={queryClient}>
+        <App />
+      </QueryClientProvider>
+    </WagmiProvider>
+  </React.StrictMode>
+);
+```
+
+```tsx [wagmi.ts]
+import { http, createConfig } from "wagmi";
+import { baseSepolia } from "wagmi/chains";
+import { coinbaseWallet } from "wagmi/connectors";
+
+export const config = createConfig({
+  chains: [baseSepolia],
+  connectors: [
+    coinbaseWallet({
+      appName: "Session Key Example",
+      preference: "smartWalletOnly",
+    }),
+  ],
+  transports: {
+    [baseSepolia.id]: http(),
+  },
+});
+
+declare module "wagmi" {
+  interface Register {
+    config: typeof config;
+  }
+}
+```
+
+:::
+
+### Connect Your Smart Wallet
+
+Before you can request permissions from your wallet, you'll need to connect your Smart Wallet to your app. To do so, make the following changes to the `App.tsx` file to create a "Log in" button:
+
+```tsx [App.tsx]
+import { useAccount, useConnect } from "wagmi";
+
+function App() {
+  const account = useAccount();
+  const { connectors, connect } = useConnect();
+
+  const login = async () => {
+    connect({ connector: connectors[0] });
+  };
+
+  return (
+    <div>
+      <div>
+        {account.address && <span>{account.address}</span>}
+        {!account.address && (
+          <button onClick={login} type="button">
+            Log in
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export default App;
+```
+
+At this point, you should see a "Log in" button that prompts you to connect your Smart Wallet to your app when clicked. After doing so, you should see your Smart Wallet's address on the page.
+
+You might need to clear your app's local storage if you have other wallets installed and see an address on the page prior to connecting your Smart Wallet.
+
+### Grant Permissions
+
+Session Keys are built on top of [ERC-7715](https://eip.tools/eip/7715) which introduces a new RPC for apps to request permissions from wallets, `wallet_grantPermissions`.
+
+A permission is defined by:
+
+- `address`: Smart account the permission is valid for.
+- `chainId`: Chain the permision is valid for.
+- `expiry`: Timestamp this permission is valid until (unix seconds).
+- `signer`: The entity that has limited control of `account` in the permission (i.e. the "session key").
+- `permissions`: Composable scopes this signer can take action for the account.
+
+Once you've connected your Smart Wallet to your app, we recommend using our experimental `useGrantPermissions` hook in `wagmi`.
+
+The following example also shows how you can `webauthn-p256` to create a P256 key pair that you can store in the browser (using local state).
+
+:::info
+For Session Keys to span across multiple browser sessions, we recommend storing these keys in [IndexedDB](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API).
+:::
+
+:::code-group
+
+```tsx [App.tsx]
+import { useState } from "react";
+import { useAccount, useConnect } from "wagmi";
+import { Hex, parseEther, toFunctionSelector } from "viem";
+import { useGrantPermissions } from "wagmi/experimental";
+import { createCredential, P256Credential } from "webauthn-p256";
+import { clickAddress } from "./click";
+
+function App() {
+  const [permissionsContext, setPermissionsContext] = useState<
+    Hex | undefined
+  >();
+  const [credential, setCredential] = useState<
+    undefined | P256Credential<"cryptokey">
+  >();
+
+  const account = useAccount();
+  const { connectors, connect } = useConnect();
+  const { grantPermissionsAsync } = useGrantPermissions();
+
+  const login = async () => {
+    connect({ connector: connectors[0] });
+  };
+
+  const grantPermissions = async () => { // [!code hl]
+    if (account.address) { // [!code hl]
+      const newCredential = await createCredential({ type: "cryptoKey" }); // [!code hl]
+      const response = await grantPermissionsAsync({ // [!code hl]
+        permissions: [ // [!code hl]
+          { // [!code hl]
+            address: account.address, // [!code hl]
+            chainId: 84532, // [!code hl]
+            expiry: 17218875770, // [!code hl]
+            signer: { // [!code hl]
+              type: "key", // [!code hl]
+              data: { // [!code hl]
+                type: "secp256r1", // [!code hl]
+                publicKey: newCredential.publicKey, // [!code hl]
+              }, // [!code hl]
+            }, // [!code hl]
+            permissions: [ // [!code hl]
+              { // [!code hl]
+                type: "native-token-recurring-allowance", // [!code hl]
+                data: { // [!code hl]
+                  allowance: parseEther("0.1"), // [!code hl]
+                  start: Math.floor(Date.now() / 1000), // [!code hl]
+                  period: 86400, // [!code hl]
+                }, // [!code hl]
+              }, // [!code hl]
+              { // [!code hl]
+                type: "allowed-contract-selector", // [!code hl]
+                data: { // [!code hl]
+                  contract: clickAddress, // [!code hl]
+                  selector: toFunctionSelector( // [!code hl]
+                    "permissionedCall(bytes calldata call)" // [!code hl]
+                  ), // [!code hl]
+                }, // [!code hl]
+              }, // [!code hl]
+            ], // [!code hl]
+          }, // [!code hl]
+        ], // [!code hl]
+      }); // [!code hl]
+      const context = response[0].context as Hex; // [!code hl]
+      console.log(context) // [!code hl]
+      setPermissionsContext(context); // [!code hl]
+      setCredential(newCredential); // [!code hl]
+    } // [!code hl]
+  }; // [!code hl]
+
+  return (
+    <div>
+      <div>
+        {account.address && <span>{account.address}</span>}
+        {!account.address && (
+          <button onClick={login} type="button">
+            Log in
+          </button>
+        )}
+      </div>
+
+      <div> // [!code hl]
+        {account.address && ( // [!code hl]
+          <button type="button" onClick={grantPermissions}> // [!code hl]
+            Grant Permissions // [!code hl]
+          </button> // [!code hl]
+        )} // [!code hl]
+      </div> // [!code hl]
+    </div>
+  );
+}
+
+export default App;
+```
+
+```ts [click.ts]
+export const clickAddress = "0x8Af2FA0c32891F1b32A75422eD3c9a8B22951f2F";
+```
+
+Once your wallet is connected to your app, you should now see a "Grant Permissions" button. After clicking it and accepting the prompt in your wallet, you should see a console log with the response to the permissions request.
+
+:::
+
+### Submit Transaction
+
+After you have granted permissions to a contract that implements our dedicated `permissionedCall` function, you can now submit Session Key transactions using `useSendCalls`.
+
+As a reminder, you'll need to set up a paymaster service. After doing so, set the corresponding environment variable used below.
+
+:::code-group
+
+```tsx [App.tsx]
+import { useState } from "react";
+import { encodeFunctionData, Hex, parseEther, toFunctionSelector } from "viem";
+import { useAccount, useConnect, useWalletClient } from "wagmi";
+import {
+  useCallsStatus,
+  useGrantPermissions,
+  useSendCalls,
+} from "wagmi/experimental";
+import {
+  createCredential,
+  P256Credential,
+  signWithCredential,
+} from "webauthn-p256";
+import { clickAddress, clickAbi } from "./click";
+
+export function App() {
+  const [permissionsContext, setPermissionsContext] = useState<
+    Hex | undefined
+  >();
+  const [credential, setCredential] = useState<
+    undefined | P256Credential<"cryptokey">
+  >();
+  const [callsId, setCallsId] = useState<string>();
+  const [submitted, setSubmitted] = useState(false);
+
+  const account = useAccount();
+  const { connectors, connect } = useConnect();
+  const { grantPermissionsAsync } = useGrantPermissions();
+  const { data: walletClient } = useWalletClient({ chainId: 84532 });
+  const { sendCallsAsync } = useSendCalls();
+  const { data: callsStatus } = useCallsStatus({
+    id: callsId as string,
+    query: {
+      enabled: !!callsId,
+      refetchInterval: (data) =>
+        data.state.data?.status === "PENDING" ? 500 : false,
+    },
+  });
+
+  const login = async () => {
+    connect({ connector: connectors[0] });
+  };
+
+  const grantPermissions = async () => {
+    if (account.address) {
+      const newCredential = await createCredential({ type: "cryptoKey" });
+      const response = await grantPermissionsAsync({
+        permissions: [
+          {
+            address: account.address,
+            chainId: 84532,
+            expiry: 17218875770,
+            signer: {
+              type: "key",
+              data: {
+                type: "secp256r1",
+                publicKey: newCredential.publicKey,
+              },
+            },
+            permissions: [
+              {
+                type: "native-token-recurring-allowance",
+                data: {
+                  allowance: parseEther("0.1"),
+                  start: Math.floor(Date.now() / 1000),
+                  period: 86400,
+                },
+              },
+              {
+                type: "allowed-contract-selector",
+                data: {
+                  contract: clickAddress,
+                  selector: toFunctionSelector(
+                    "permissionedCall(bytes calldata call)"
+                  ),
+                },
+              },
+            ],
+          },
+        ],
+      });
+      const context = response[0].context as Hex;
+      setPermissionsContext(context);
+      setCredential(newCredential);
+    }
+  };
+
+  const click = async () => { // [!code hl]
+    if (account.address && permissionsContext && credential && walletClient) { // [!code hl]
+      setSubmitted(true); // [!code hl]
+      setCallsId(undefined); // [!code hl]
+      try { // [!code hl]
+        const callsId = await sendCallsAsync({ // [!code hl]
+          calls: [ // [!code hl]
+            { // [!code hl]
+              to: clickAddress, // [!code hl]
+              value: BigInt(0), // [!code hl]
+              data: encodeFunctionData({ // [!code hl]
+                abi: clickAbi, // [!code hl]
+                functionName: "click", // [!code hl]
+                args: [], // [!code hl]
+              }), // [!code hl]
+            }, // [!code hl]
+          ], // [!code hl]
+          capabilities: { // [!code hl]
+            permissions: { // [!code hl]
+              context: permissionsContext, // [!code hl]
+            }, // [!code hl]
+            paymasterService: { // [!code hl]
+              url: import.meta.env.VITE_PAYMASTER_URL, // Your paymaster service URL // [!code hl]
+            }, // [!code hl]
+          }, // [!code hl]
+          signatureOverride: signWithCredential(credential), // [!code hl]
+        }); // [!code hl]
+ // [!code hl]
+        setCallsId(callsId); // [!code hl]
+      } catch (e: unknown) { // [!code hl]
+        console.error(e); // [!code hl]
+      } // [!code hl]
+      setSubmitted(false); // [!code hl]
+    } // [!code hl]
+  }; // [!code hl]
+
+  return (
+    <div>
+      <div>
+        {account.address && <span>{account.address}</span>}
+        {!account.address && (
+          <button onClick={login} type="button">
+            Log in
+          </button>
+        )}
+      </div>
+
+      <div>
+        {account.address && // [!code hl]
+          (permissionsContext ? ( // [!code hl]
+            <button // [!code hl]
+              type="button" // [!code hl]
+              onClick={click} // [!code hl]
+              disabled={ // [!code hl]
+                submitted || // [!code hl]
+                (!!callsId && !(callsStatus?.status === "CONFIRMED")) // [!code hl]
+              } // [!code hl]
+            > // [!code hl]
+              Click // [!code hl]
+            </button> // [!code hl]
+          ) : ( // [!code hl]
+            <button // [!code hl]
+              type="button" // [!code hl]
+              onClick={grantPermissions} // [!code hl]
+              disabled={submitted} // [!code hl]
+            > // [!code hl]
+              Grant Permission // [!code hl]
+            </button> // [!code hl]
+          ))} // [!code hl]
+        {callsStatus && callsStatus.status === "CONFIRMED" && ( // [!code hl]
+          <a // [!code hl]
+            href={`https://base-sepolia.blockscout.com/tx/${callsStatus.receipts?.[0].transactionHash}`} // [!code hl]
+            target="_blank" // [!code hl]
+            className="absolute top-8 hover:underline" // [!code hl]
+          > // [!code hl]
+            View transaction // [!code hl]
+          </a> // [!code hl]
+        )} // [!code hl]
+      </div>
+    </div>
+  );
+}
+
+export default App;
+```
+
+```ts [click.ts]
+export const clickAddress = "0x8Af2FA0c32891F1b32A75422eD3c9a8B22951f2F";
+export const clickAbi = [
+  {
+    type: "constructor",
+    inputs: [
+      { name: "initialOwner", type: "address", internalType: "address" },
+    ],
+    stateMutability: "nonpayable",
+  },
+  {
+    type: "function",
+    name: "click",
+    inputs: [],
+    outputs: [],
+    stateMutability: "payable",
+  },
+  {
+    type: "function",
+    name: "getRequestAuthorization",
+    inputs: [
+      { name: "hash", type: "bytes32", internalType: "bytes32" },
+      { name: "signature", type: "bytes", internalType: "bytes" },
+    ],
+    outputs: [
+      {
+        name: "",
+        type: "uint8",
+        internalType: "enum IOffchainAuthorization.Authorization",
+      },
+    ],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "owner",
+    inputs: [],
+    outputs: [{ name: "", type: "address", internalType: "address" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "permissionedCall",
+    inputs: [{ name: "call", type: "bytes", internalType: "bytes" }],
+    outputs: [{ name: "res", type: "bytes", internalType: "bytes" }],
+    stateMutability: "payable",
+  },
+  {
+    type: "function",
+    name: "renounceOwnership",
+    inputs: [],
+    outputs: [],
+    stateMutability: "nonpayable",
+  },
+  {
+    type: "function",
+    name: "supportsPermissionedCallSelector",
+    inputs: [{ name: "", type: "bytes4", internalType: "bytes4" }],
+    outputs: [{ name: "", type: "bool", internalType: "bool" }],
+    stateMutability: "pure",
+  },
+  {
+    type: "function",
+    name: "transferOwnership",
+    inputs: [{ name: "newOwner", type: "address", internalType: "address" }],
+    outputs: [],
+    stateMutability: "nonpayable",
+  },
+  {
+    type: "event",
+    name: "Clicked",
+    inputs: [
+      {
+        name: "account",
+        type: "address",
+        indexed: true,
+        internalType: "address",
+      },
+    ],
+    anonymous: false,
+  },
+  {
+    type: "event",
+    name: "OwnershipTransferred",
+    inputs: [
+      {
+        name: "previousOwner",
+        type: "address",
+        indexed: true,
+        internalType: "address",
+      },
+      {
+        name: "newOwner",
+        type: "address",
+        indexed: true,
+        internalType: "address",
+      },
+    ],
+    anonymous: false,
+  },
+  {
+    type: "error",
+    name: "AddressEmptyCode",
+    inputs: [{ name: "target", type: "address", internalType: "address" }],
+  },
+  { type: "error", name: "FailedCall", inputs: [] },
+  {
+    type: "error",
+    name: "NotPermissionCallable",
+    inputs: [{ name: "selector", type: "bytes4", internalType: "bytes4" }],
+  },
+  {
+    type: "error",
+    name: "OwnableInvalidOwner",
+    inputs: [{ name: "owner", type: "address", internalType: "address" }],
+  },
+  {
+    type: "error",
+    name: "OwnableUnauthorizedAccount",
+    inputs: [{ name: "account", type: "address", internalType: "address" }],
+  },
+];
+```
+
+```text [.env]
+VITE_PAYMASTER_URL=...
+```
+
+:::
+
+You should now be able to click the "Click" button, which will submit a session key transaction. After a few seconds you should see a link to view the transaction you submitted.
+
+### Fetch Permissions
+
+Coming soon
+::::
