@@ -38,7 +38,7 @@ See our [Sign-In with Ethereum guide](/guides/siwe) for a detailed example.
 For signatures that will be used onchain, such as with [Permit2](https://github.com/Uniswap/permit2) 
 or [Seaport](https://github.com/ProjectOpenSea/seaport) developers will need to inspect the signature offchain 
 and remove unneeded ERC-6492 data, if it is present. 
-We recommend using the [parseErc6492Signature](https://viem.sh/experimental/erc6492/parseErc6492Signature#parseerc6492signature) 
+We recommend using the [parseErc6492Signature](https://viem.sh/docs/utilities/parseErc6492Signature#parseerc6492signature) 
 util from Viem. Abbreviated example below. See full example [here](https://github.com/wilsoncusack/wagmi-scw/blob/main/src/components/Permit2.tsx). 
 
 ```ts [example.tsx]
