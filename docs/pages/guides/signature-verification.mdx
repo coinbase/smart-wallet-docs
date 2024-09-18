@@ -46,7 +46,7 @@ import { useMemo, useState } from "react";
 import type { Hex } from "viem";
 import { useAccount, useReadContract, useSignTypedData } from "wagmi";
 import { useWriteContract } from "wagmi";
-import { parseErc6492Signature } from "viem";
+import { parseErc6492Signature } from "viem/experimental";
 
 export function App() {
   const { writeContract } = useWriteContract();
