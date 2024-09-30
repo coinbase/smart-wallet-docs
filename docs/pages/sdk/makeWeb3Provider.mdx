@@ -9,7 +9,7 @@ import {sdk} from "./setup";
 // Create provider
 const provider = sdk.makeWeb3Provider({options: 'smartWalletOnly'});
 // Use provider
-const addresses = provider.request({method: 'eth_requestAccounts'});
+const addresses = await provider.request({method: 'eth_requestAccounts'});
 ```
 ```ts twoslash [setup.ts] filename="setup.ts"
 import { CoinbaseWalletSDK } from '@coinbase/wallet-sdk'
