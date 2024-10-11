@@ -17,7 +17,7 @@ This guide will walk you through adding support for Smart Wallet into a React Na
 
 ### Deeplink handling
 Your app needs to be able to handle [Universal Links (iOS)](https://developer.apple.com/documentation/xcode/allowing-apps-and-websites-to-link-to-your-content) and [App Links (Android)](https://developer.android.com/training/app-links). 
-Opening `https://your-app.example.com/coinbase-wallet-sdk` should open up your app. 
+Opening `https://your-app.example.com/mobile-wallet-protocol` should open up your app. 
 You can see more detailed instructions on setting up deeplinks in the [Expo docs](https://docs.expo.dev/guides/deep-linking/).
 
 <Callout type="warning" >
@@ -140,7 +140,7 @@ If your app is using wallet aggregator, go straight to **Option 2: Wagmi Connect
 Note that we are iterating on the Mobile Wallet Protocol Client and the API may change. 
 </Callout>
 
-Create a new `CoinbaseWalletSDK` instance and use the `makeWeb3Provider` function to create an EIP-1193 compliant provider.
+Create a new `EIP1193Provider` instance, which is EIP-1193 compliant.
 
 The `appDeeplinkUrl` is required and should match the deeplink URL you set up earlier. 
 
