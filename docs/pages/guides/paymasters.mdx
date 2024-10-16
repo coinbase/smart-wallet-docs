@@ -362,11 +362,38 @@ in the UI Smart Wallet will indicate to your user that the transaction is sponso
 If you are using Coinbase Developer Platform's Paymaster you can sign up for ERC20 by clicking the ERC20 Paymaster tab and going through the steps to add your token. This paymaster is already set up to be fully compatible with smart wallet.
 The CDP Paymaster will allow sponsorship and fallback to accepting ERC20 tokens for gas payment if no sponsorship is provided. 
 
-Otherwise if using a different paymaster provider, it must conform to the following ERC7677 specification to correctly work with Smart Wallet.
+Otherwise if using a different paymaster provider, it must conform to the specification outlined in [ERC20 Compatible Paymasters](##erc20-compatible-paymasters) to correctly work with Smart Wallet.
+
+### App setup 
+
+Once you have a paymaster that is ERC20 compatible, you are only responsible for including the approvals to the the paymaster for your token. It is recommended to periodically top up the allowance once they hit some threshold similar to.
+
+```js
+const usdcDecimals = 6
+const minTokenThreshold = 1 * 10 ** usdcDecimals // 1 USDC
+const paymasterAddress = "0x2FAEB0760D4230Ef2aC21496Bb4F0b47D634FD4c"
+
+// Checks for allowance
+const allowance = await client.readContract({
+  abi: parseAbi(["function allowance(address owner, address spender) returns (uint256)"]),
+  address: tokenAddress,
+  functionName: "allowance",
+  args: [account.address, paymasterAddress],
+})
+
+if (allowance < minTokenThreshold) {
+   // include approval for $20 usdc in calls so that the paymaster will be able to move the token to accept payment
+}
+```
+
+That is it! Smart Wallet will handle the rest as long as it is compatible as outlined below.
+
+### ERC20 Compatible Paymasters
+Coinbase Developer Platform is compatible out of the box and we will be working with other teams to include support soon!
 
 The paymaster must handle the `pm_getPaymasterStubData` and `pm_getPaymasterData` JSON-RPC requests specified by ERC-7677 in addition to `pm_getAcceptedPaymentTokens`. We step through each request and response below. 
 
-### pm_getPaymasterStubData and pm_getPaymasterData
+#### pm_getPaymasterStubData and pm_getPaymasterData
 
 1. The paymaster must use the specified ERC20 for payment if specified in the 7677 context field under `erc20`.
 2. Upon rejection / failure the paymaster should return a `data` field in the JSONRPC response which could be used to approve the paymaster and includes:
@@ -380,7 +407,7 @@ The paymaster must handle the `pm_getPaymasterStubData` and `pm_getPaymasterData
 
 Smart wallet will simulate the transaction to ensure success and accurate information.
 
-#### Request 
+##### Request 
 
 This is a standard V0.6 Entrypoint request example with the additional context for the specified token to be used. 
 
@@ -412,7 +439,7 @@ This is a standard V0.6 Entrypoint request example with the additional context f
 }
 ```
 
-#### Response 
+##### Response 
 
 Successful response:
 
@@ -453,4 +480,32 @@ Rejection response:
 }
 ```
 
+#### pm_getAcceptedPaymentTokens
 
+`pm_getAcceptedPaymentTokens` returns an array of tokens the paymaster will accept for payment. 
+The request contains the entrypoint and the chain id with optional context. 
+
+##### Request 
+```json
+{
+  "jsonrpc": "2.0", "id": 1,
+  "method": "pm_getAcceptedPaymentTokens",
+  "params": [ "0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789", "0x2105", {}]
+}
+```
+
+##### Response 
+```json
+{
+  "id": 1,
+  "jsonrpc": "2.0",
+  "result": {
+    "acceptedTokens": [
+      {
+        "name": "USDC",
+        "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913"
+      }
+    ]
+  }
+}
+```
