@@ -1,6 +1,9 @@
 # Paymasters (Sponsored Transactions)
 
 One of the biggest UX enhancements unlocked by Smart Wallet is the ability for app developers to sponsor their users' transactions. If your app supports Smart Wallet, you can start sponsoring your users' transactions by using [standardized paymaster service communication](https://erc7677.xyz) enabled by [new wallet RPC methods](https://eip5792.xyz).
+
+Paymasters can also accept ERC2-20 tokens for gas payment! Setting up a compatible ERC20 accepting paymaster for your token is outlined in this [section](##erc20-paymasters). Smart wallet will have some universal ERC20 tokens enabled and available for gas usage as well, such as USDC.
+
 The code below is also in our [Wagmi Smart Wallet template](https://github.com/wilsoncusack/wagmi-scw/).
 
 ## Using Wagmi + Permissionless in a Next.js app
@@ -353,3 +356,101 @@ That's it! Smart Wallet will handle the rest. If your paymaster service is able 
 in the UI Smart Wallet will indicate to your user that the transaction is sponsored. 
 
 ::::
+
+## ERC20 Paymasters
+
+If you are using Coinbase Developer Platform's Paymaster you can sign up for ERC20 by clicking the ERC20 Paymaster tab and going through the steps to add your token. This paymaster is already set up to be fully compatible with smart wallet.
+The CDP Paymaster will allow sponsorship and fallback to accepting ERC20 tokens for gas payment if no sponsorship is provided. 
+
+Otherwise if using a different paymaster provider, it must conform to the following ERC7677 specification to correctly work with Smart Wallet.
+
+The paymaster must handle the `pm_getPaymasterStubData` and `pm_getPaymasterData` JSON-RPC requests specified by ERC-7677 in addition to `pm_getAcceptedPaymentTokens`. We step through each request and response below. 
+
+### pm_getPaymasterStubData and pm_getPaymasterData
+
+1. The paymaster must use the specified ERC20 for payment if specified in the 7677 context field under `erc20`.
+2. Upon rejection / failure the paymaster should return a `data` field in the JSONRPC response which could be used to approve the paymaster and includes:
+- `acceptedTokens` array which is a struct including the token address 
+- `paymasterAddress` field which is the paymaster address which will perform the token transfers. 
+3. Upon success the paymaster must return a `tokenPayment` field in the result. This includes: 
+- `tokenAddress` address of the token used for payment
+- `maxFee` the maximum fee to show in the UI
+- `decimals` decimals to use in the UI 
+- `name` name of the token
+
+Smart wallet will simulate the transaction to ensure success and accurate information.
+
+#### Request 
+
+This is a standard V0.6 Entrypoint request example with the additional context for the specified token to be used. 
+
+```json 
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "pm_getPaymasterData",
+  "params": [
+    {
+      "sender": "0xe62B4aD6A7c079F47D77a9b939D5DC67A0dcdC2B",
+      "nonce": "0x4e",
+      "initCode": "0x",
+      "callData": "0xb61d27f60000000000000000000000007746371e8df1d7099a84c20ed72e3335fb016b23000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000600000000000000000000000000000000000000000000000000000000000000000",
+      "callGasLimit": "0x113e10",
+      "verificationGasLimit": "0x113e10",
+      "preVerificationGas": "0x113e10",
+      "maxFeePerGas": "0x113e10",
+      "maxPriorityFeePerGas": "0x113e10",
+      "paymasterAndData": "0x",
+      "signature": "0x5ee079a5dec73fe39c1ce323955fb1158fc1b9a6b2ddbec104cd5cfec740fa5531584f098b0ca95331b6e316bd76091e3ab75a7bc17c12488664d27caf19197e1c"
+    },
+    "0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789",
+    "0x2105",
+    {
+      "erc20": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913"
+    }
+  ]
+}
+```
+
+#### Response 
+
+Successful response:
+
+```json
+{
+  "id": 1,
+  "jsonrpc": "2.0",
+  "result": {
+    "paymasterAndData": "0x2faeb0760d4230ef2ac21496bb4f0b47d634fd4c0000670fdc98000000000000494b3b6e1d074fbca920212019837860000100833589fcd6edb6e08f4c7c32d4f71b54bda029137746371e8df1d7099a84c20ed72e3335fb016b23000000000000000000000000000000000000000000000000000000009b75458400000000697841102cd520d4e0171a58dadc3e6086111a49a90826cb0ad25579f25f1652081f68c17d8652387a33bf8880dc44ecf95be4213e786566d755baa6299f477b0bb21c",
+    "tokenPayment": {
+      "name": "USDC",
+      "address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+      "maxFee": "0xa7c8",
+      "decimals": 6
+    }
+  }
+}
+```
+
+Rejection response:
+
+```json
+{
+  "id": 1,
+  "jsonrpc": "2.0",
+  "error": {
+    "code": -32002,
+    "message": "request denied - no sponsorship and address can not pay with accepted token",
+    "data": {
+      "acceptedTokens": [
+        {
+          "name": "USDC",
+          "address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+        }
+      ]
+    }
+  }
+}
+```
+
+
