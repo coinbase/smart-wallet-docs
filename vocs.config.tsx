@@ -118,7 +118,8 @@ export default defineConfig({
           link: "/guides/erc20-paymasters",
         },
         {
-          text: "Magic Spend Support",
+          text: "MagicSpend Support",
+
           link: "/guides/magic-spend",
         },
         {
@@ -171,7 +172,7 @@ export default defineConfig({
           link: "https://github.com/coinbase/smart-wallet-permissions",
         },
         {
-          text: "Magic Spend",
+          text: "MagicSpend",
           link: "https://github.com/coinbase/magic-spend",
         },
       ],
