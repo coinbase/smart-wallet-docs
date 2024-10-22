@@ -1,0 +1,63 @@
+
+### preference (optional)
+
+- Type `Preference`
+
+```ts twoslash
+type Attribution = {
+    auto: boolean;
+    dataSuffix?: never;
+} | {
+    auto?: never;
+    dataSuffix: `0x${string}`;
+}
+
+type Preference = {
+    options?: 'all' | 'smartWalletOnly' | 'eoaOnly';
+    attribution?: Attribution;
+}
+```
+
+#### `preference.options` (optional)
+- Type: `'all' | 'smartWalletOnly' | 'eoaOnly'`
+
+Determines which connection options users will see. Defaults to `all`.
+
+##### `all`
+Users will see Smart Wallet and mobile app connection options.
+
+:::info
+If a user is using a browser with Coinbase Wallet Extension installed, they will be taken straight to the
+Coinbase Wallet Extension and not see any choice.
+:::
+
+##### `smartWalletOnly`
+With this option, users will only see an option to create a Smart Wallet or sign into their Smart Wallet.
+
+##### `eoaOnly`
+With this option, users will only see an option to connect with their EOA.
+
+#### `preference.attribution` (optional)
+- Type: `Attribution`
+
+This option only applies to Coinbase Smart Wallet. When a valid data suffix is supplied, it is appended to the initCode and executeBatch calldata.
+
+```ts twoslash
+type Attribution = {
+    auto: boolean;
+    dataSuffix?: never;
+} | {
+    auto?: never;
+    dataSuffix: `0x${string}`;
+}
+```
+
+##### `auto` (optional)
+- Type: `boolean`
+
+If auto is true, the Smart Wallet will generate a 16 byte hex string from the apps origin.
+
+##### `dataSuffix` (optional)
+- Type: `0x${string}`
+
+Smart Wallet expects a 16 byte hex string. If the data suffix is not a 16 byte hex string, the Smart Wallet will ignore the property. 
