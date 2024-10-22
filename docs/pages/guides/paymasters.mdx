@@ -123,7 +123,7 @@ export async function willSponsor({
 
     let callToCheckIndex = 0;
     if (calls.length > 1) {
-      // if there is more than one call, check if the first is a magic spend call
+      // if there is more than one call, check if the first is a MagicSpend call
       if (calls[0].target.toLowerCase() !== magicSpendAddress.toLowerCase())
         return false;
       callToCheckIndex = 1;
