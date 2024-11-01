@@ -106,8 +106,17 @@ export default defineConfig({
           link: "/guides/batch-transactions",
         },
         {
-          text: "Session Keys",
-          link: "/guides/session-keys",
+          text: "Spend Permissions",
+          items: [
+            {
+              text: "Overview",
+              link: "/guides/spend-permissions/overview",
+            },
+            {
+              text: "Quick Start",
+              link: "/guides/spend-permissions/quick-start",
+            },
+          ],
         },
         {
           text: "Paymasters (Sponsored Transactions)",
