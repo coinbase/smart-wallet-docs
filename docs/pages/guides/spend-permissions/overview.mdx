@@ -1,49 +1,33 @@
 # Spend Permissions
 
-Spend Permissions enable apps/third-party spenders to spend native tokens and ERC-20 tokens on behalf of users in a 
-recurring way. This unlocks use cases that would otherwise be prohibited by the burden of requiring real-time signatures 
-from users, such as 
+Spend Permissions enable third-party signers to spend assets (native and ERC-20 tokens) from user wallets. 
+This unlocks the following use cases: // TODO make note about reduced signing
 - frequent in-game spending
 - subscription payments
 - auto-renewals
 - automated or event-based trading
 - micropayment streaming
 
-Designed to integrate with Coinbase Smart Wallet V1, a smart wallet adds the 
-single `SpendPermissionManager` contract as an owner of their account, and can then use this gatekeeper to authorize 
-third-party spenders to spend from their account within their specified parameters. In addition to the spender, 
-spend permissions specify the start and end times that bound a permission’s validity, as well as an allowance and a 
-recurring period duration, allowing the spender to spend up to this allowance per-period. Users can revoke existing 
-permissions at any time. 
+Differences between Spend Permissions and ERC-20 permits:
+- Spend Permissions **supports all ERC-20 assets**, whereas permits only support ERC-20s that implement the permit standard  
+- Spend Permissions **enable spending native tokens**  
+- Spend Permissions offers granular **controls for recurrence**  
+- The logic that controls asset movements is **implemented in the user's wallet**, not the asset contract  
 
-While authorized spending of ERC-20s has long been supported by allowance and permit mechanisms 
-in token standards like ERC-20, the arbitrary programmability of smart contract wallets unlocks a vast design space for implementing
-controls like spend permissions in a per-wallet way. Spend permissions are an early example of functionality that can be achieved 
-within this new paradigm.
 
 ## The `SpendPermission` details
 A spend permission is defined by the following parameters
 
 ```solidity
-/// @notice A spend permission for an external entity to be able to spend an account's tokens.
 struct SpendPermission {
-    /// @dev Smart account this spend permission is valid for.
     address account;
-    /// @dev Entity that can spend `account`'s tokens.
     address spender;
-    /// @dev Token address (ERC-7528 native token address or ERC-20 contract).
     address token;
-    /// @dev Maximum allowed value to spend within each `period`.
     uint160 allowance;
-    /// @dev Time duration for resetting used `allowance` on a recurring basis (seconds).
     uint48 period;
-    /// @dev Timestamp this spend permission is valid after (unix seconds).
     uint48 start;
-    /// @dev Timestamp this spend permission is valid until (unix seconds).
     uint48 end;
-    /// @dev An arbitrary salt to differentiate unique spend permissions with otherwise identical data.
     uint256 salt;
-    /// @dev Arbitrary data to include in the signature.
     bytes extraData;
 }
 ```
@@ -51,8 +35,7 @@ struct SpendPermission {
 
 ## Approving
 
-Spend permissions can be approved in two ways. The user can call `approve` directly with the details
-of a spend permission to establish an approval for a spender. Alternatively, the user can sign the hash
+Spend permissions can be approved in two ways. the user can sign the hash
 of a spend permission and anyone can submit that signature and the details of the spend permission to
 `approveWithSignature` (or `approveBatchWithSignature` in the case of a batch signature) to authorize
 the approval. 
@@ -97,3 +80,11 @@ Unlimited batch size
 ## Misc
 ERC6492 Signatures are supported 
 
+## Appendix:
+
+Designed to integrate with Coinbase Smart Wallet V1, a smart wallet adds the 
+single `SpendPermissionManager` contract as an owner of their account, and can then use this gatekeeper to authorize 
+third-party spenders to spend from their account within their specified parameters. In addition to the spender, 
+spend permissions specify the start and end times that bound a permission’s validity, as well as an allowance and a 
+recurring period duration, allowing the spender to spend up to this allowance per-period. Users can revoke existing 
+permissions at any time. 
