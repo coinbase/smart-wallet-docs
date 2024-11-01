@@ -4,6 +4,9 @@ import { Callout } from "vocs/components";
 
 This guide will walk you through a simple example of building an app that leverages Spend Permissions, using [Viem](https://viem.sh/) and [Wagmi](https://wagmi.sh/).
 
+TODO: directly post deployment addresses here w/ links to basescan?
+For the contract deployment addresses see the contracts [README](https://github.com/coinbase/spend-permissions/blob/main/README.md).
+
 <Callout type="info">
   **Tips**: If you need a template to start with, you can check out [Onchain App
   Template](https://github.com/coinbase/onchain-app-template/tree/main).
@@ -12,6 +15,9 @@ This guide will walk you through a simple example of building an app that levera
 :::steps
 
 ### Create a spender client
+
+This is an example of a spender that is a Coinbase Smart Wallet that is sponsored by a paymaster. 
+EOAs or other smart contracts can also be spenders.
 
 ```ts [spender. ts]
 import { createPublicClient, Hex, http } from "viem";
@@ -55,6 +61,9 @@ export async function getSpenderBundlerClient() {
 
 ### Construct a `SpendPermission` object to obtain signed approval from the user
 
+A `SpendPermission` is the struct that defines the parameters of the permission.
+See the solidity struct [here](https://github.com/coinbase/spend-permissions/blob/07067168108b83d9662435b056a2a580c08be214/src/SpendPermissionManager.sol#L20).
+
 ```ts [Subscribe.tsx]
 
 export default function Subscribe() {
@@ -90,12 +99,17 @@ export default function Subscribe() {
     ...
 
   return (
-    ...
+    <div>
+      ...
+    </div>
   );
 }
 ```
 
-### Obtain signed approval from the user
+### Obtain a signature over the spend permission from the user
+
+The `SpendPermissionManager.sol` uses [ERC-712](https://eips.ethereum.org/EIPS/eip-712) signatures.
+The following will prompt the user to sign this spend permission data with their smart wallet.
 
 ```ts [Subscribe.tsx]
 
@@ -141,17 +155,143 @@ export default function Subscribe() {
     ...
 
   return (
-    ...
+    <div>
+      ...
+    </div>
   );
 }
 ```
 
 ### Submit the signature to `SpendPermissionManager.approveWithSignature`
 
+Spend permissions can be approved in two ways. The user can call `approve` directly with the details
+of a spend permission to establish an approval for a spender. Alternatively, the user can sign the hash
+of a spend permission and anyone can submit that signature and the details of the spend permission to
+`approveWithSignature` (or `approveBatchWithSignature` in the case of a batch signature) to authorize
+the approval. 
+
+This example shows our spender app submitting the user's signature to approve the permission.
+
+```ts [Subscribe.tsx]
+// We send the permission details and the user signature to our 
+// backend route
+async function handleCollectSubscription() {
+    setIsDisabled(true);
+    let data;
+    try {
+      const replacer = (key: string, value: any) => {
+        if (typeof value === "bigint") {
+          return value.toString();
+        }
+        return value;
+      };
+      const response = await fetch("/collect", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(
+          {
+            spendPermission,
+            signature,
+            dummyData: Math.ceil(Math.random() * 100),
+          },
+          replacer
+        ),
+      });
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+      data = await response.json();
+    } catch (e) {
+      // Handle error
+    }
+    setIsDisabled(false);
+    return data;
+  }
+```
+
+We use our bundler client and the `SpendPermissionManager.sol` contract address and abi to call `approveWithSignature`
+```ts [route.tsx]
+import { NextRequest, NextResponse } from "next/server";
+import { getSpenderBundlerClient } from "../../lib/spender";
+import {
+  spendPermissionManagerAbi,
+  spendPermissionManagerAddress,
+} from "../../lib/abi/SpendPermissionManager";
+
+export async function POST(request: NextRequest) {
+  const spenderBundlerClient = await getSpenderBundlerClient();
+  try {
+    const body = await request.json();
+    const { spendPermission, signature } = body;
+
+    const userOpHash = await spenderBundlerClient.sendUserOperation({
+      calls: [ 
+        { 
+          abi: spendPermissionManagerAbi,
+          functionName: "approveWithSignature",
+          to: spendPermissionManagerAddress,
+          args: [spendPermission, signature],
+        },
+      ],
+    });
+
+    const userOpReceipt =
+      await spenderBundlerClient.waitForUserOperationReceipt({
+        hash: userOpHash,
+      });
+
+    if (userOpReceipt.success) {
+      console.log("Spend Permission approved");
+    }
+
+    ...
+  }
+  ...
+}
+```
+
+
 ### Spend user funds
 
+If the permission was successfully approved, we're ready to spend.
+
+```ts [route.tsx]
+...
+
+export async function POST(request: NextRequest) {
+    ...
+
+    const spendUserOpHash = await spenderBundlerClient.sendUserOperation({ // [!code focus]
+      calls: [  // [!code focus]
+        {         // [!code focus]
+          abi: spendPermissionManagerAbi, // [!code focus]
+          functionName: "spend", // [!code focus]
+          to: spendPermissionManagerAddress, // [!code focus]
+          args: [spendPermission, "1"], // spend 1 wei // [!code focus]
+        }, // [!code focus]
+      ], // [!code focus]
+    }); // [!code focus]
+
+    const spendUserOpReceipt =
+      await spenderBundlerClient.waitForUserOperationReceipt({
+        hash: spendUserOpHash,
+      });
+
+    return NextResponse.json({
+      status: spendUserOpReceipt.success ? "success" : "failure",
+      transactionHash: spendUserOpReceipt.receipt.transactionHash,
+      transactionUrl: `https://sepolia.basescan.org/tx/${spendUserOpReceipt.receipt.transactionHash}`,
+    });
+  } catch (error) {
+    // Handle error
+  }
+}
+
+```
 :::
 
-```
+That's it! We've successfully created and used permission to spend our user's funds.
 
-```
+TODO: link to more comprehensive documentation
