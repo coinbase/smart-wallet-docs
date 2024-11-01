@@ -1,0 +1,25 @@
+# Spend Permissions
+
+Spend Permissions enable apps/third-party spenders to spend native tokens and ERC-20 tokens on behalf of users in a recurring way.  
+This unlocks use cases that would otherwise be prohibited by the burden of requiring real-time signatures from users, such as frequent in-game spending,
+subscription payments, auto-renewals, asynchronous spends such as automated or event-based trading, and more. Designed to integrate with Coinbase Smart Wallet V1,
+a smart wallet adds the single `SpendPermissionManager` contract as an owner of their account, and can then use this gatekeeper to authorize third-party spenders
+to spend from their account within their specified parameters. In addition to the spender, spend permissions specify the start and end times that bound a
+permission’s validity, as well as an allowance and a recurring period duration, allowing the spender to spend up to this allowance per-period. Users can revoke
+existing permissions at any time. While authorized spending of ERC-20s has long been supported by allowance and permit mechanisms in token standards like ERC-20,
+the abstract flexibility provided by smart contract wallets enables unlimited creativity around the programmability of these wallets and other logic they may integrate with.
+Spend permissions are an early example of functionality that can be achieved within this new paradigm.
+
+## What is a spendpermission / what is it parameterized by?
+
+## How to approve? + batching
+
+## How to revoke?
+
+## Cycle accounting
+
+--> Known accounting issue with the non-reverting ERC20s
+
+## ERC6492 and general notes on SCW signature validation (link to other sig validation docs?)
+
+Maybe leave this out entirely unless we find we're getting a lot of questions about it

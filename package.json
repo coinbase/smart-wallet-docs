@@ -18,11 +18,12 @@
     "vocs": "latest"
   },
   "devDependencies": {
+    "@types/node": "^22.8.6",
     "dprint": "^0.45.1",
     "permissionless": "^0.1.29",
     "simple-git-hooks": "^2.11.1",
     "siwe": "^2.3.2",
-    "viem": "^2.9.28",
+    "viem": "^2.21.38",
     "wagmi": "^2.9.0"
   },
   "simple-git-hooks": {

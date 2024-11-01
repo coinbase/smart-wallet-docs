@@ -1,0 +1,157 @@
+import { Callout } from "vocs/components";
+
+# Getting Started with Spend Permissions
+
+This guide will walk you through a simple example of building an app that leverages Spend Permissions, using [Viem](https://viem.sh/) and [Wagmi](https://wagmi.sh/).
+
+<Callout type="info">
+  **Tips**: If you need a template to start with, you can check out [Onchain App
+  Template](https://github.com/coinbase/onchain-app-template/tree/main).
+</Callout>
+
+:::steps
+
+### Create a spender client
+
+```ts [spender. ts]
+import { createPublicClient, Hex, http } from "viem";
+import { baseSepolia } from "viem/chains";
+import { privateKeyToAccount } from "viem/accounts";
+import {
+  createBundlerClient,
+  createPaymasterClient,
+  toCoinbaseSmartAccount,
+} from "viem/account-abstraction";
+
+export async function getSpenderBundlerClient() {
+  const client = createPublicClient({
+    chain: baseSepolia,
+    transport: http(),
+  });
+
+  const spenderAccountOwner = privateKeyToAccount(
+    process.env.SUBSCRIPTION_PRIVATE_KEY! as Hex
+  );
+
+  const spenderAccount = await toCoinbaseSmartAccount({
+    client,
+    owners: [spenderAccountOwner],
+  });
+
+  const paymasterClient = createPaymasterClient({
+    transport: http(process.env.BASE_SEPOLIA_PAYMASTER_URL),
+  });
+
+  const spenderBundlerClient = createBundlerClient({
+    account: spenderAccount,
+    client,
+    paymaster: paymasterClient,
+    transport: http(process.env.BASE_SEPOLIA_PAYMASTER_URL),
+  });
+
+  return spenderBundlerClient;
+}
+```
+
+### Construct a `SpendPermission` object to obtain signed approval from the user
+
+```ts [Subscribe.tsx]
+
+export default function Subscribe() {
+...
+
+  async function handleSubmit() {
+    setIsDisabled(true);
+    let accountAddress = account?.address;
+    if (!accountAddress) {
+      try {
+        const requestAccounts = await connectAsync({
+          connector: connectors[0],
+        });
+        accountAddress = requestAccounts.accounts[0];
+      } catch {
+        return;
+      }
+    }
+
+    // Define a `SpendPermission` to request from the user    // [!code focus]
+    const spendPermission = {  // [!code focus]
+      account: accountAddress, // User wallet address // [!code focus]
+      spender: process.env.NEXT_PUBLIC_SUBSCRIPTION_SPENDER! as Address, // Spender smart contract wallet address // [!code focus]
+      token: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE" as Address, // ETH (https://eips.ethereum.org/EIPS/eip-7528) // [!code focus]
+      allowance: parseUnits("10", 18), // [!code focus]
+      period: 86400, // [!code focus]
+      start: 0, // [!code focus]
+      end: 281474976710655, // max uint48 // [!code focus]
+      salt: BigInt(0), // [!code focus]
+      extraData: "0x" as Hex, // [!code focus]
+    }; // [!code focus]
+
+    ...
+
+  return (
+    ...
+  );
+}
+```
+
+### Obtain signed approval from the user
+
+```ts [Subscribe.tsx]
+
+export default function Subscribe() {
+  ...
+
+  async function handleSubmit() {
+    ...
+
+    // Obtain signature over `SpendPermission` from user  // [!code focus]
+    try {
+      const signature = await signTypedDataAsync({ // [!code focus]
+        domain: { // [!code focus]
+          name: "Spend Permission Manager", // [!code focus]
+          version: "1", // [!code focus]
+          chainId: chainId, // [!code focus]
+          verifyingContract: spendPermissionManagerAddress, // [!code focus]
+        }, // [!code focus]
+        types: { // [!code focus]
+          SpendPermission: [ // [!code focus]
+            { name: "account", type: "address" }, // [!code focus]
+            { name: "spender", type: "address" }, // [!code focus]
+            { name: "token", type: "address" }, // [!code focus]
+            { name: "allowance", type: "uint160" }, // [!code focus]
+            { name: "period", type: "uint48" }, // [!code focus]
+            { name: "start", type: "uint48" }, // [!code focus]
+            { name: "end", type: "uint48" }, // [!code focus]
+            { name: "salt", type: "uint256" }, // [!code focus]
+            { name: "extraData", type: "bytes" }, // [!code focus]
+          ], // [!code focus]
+        }, // [!code focus]
+        primaryType: "SpendPermission", // [!code focus]
+        message: spendPermission, // [!code focus]
+      }); // [!code focus]
+      setSpendPermission(spendPermission); // [!code focus]
+      setSignature(signature); // [!code focus]
+    } catch (e) {
+      // Handle error
+    }
+    setIsDisabled(false);
+  }
+
+    ...
+
+  return (
+    ...
+  );
+}
+```
+
+### Submit the signature to `SpendPermissionManager.approveWithSignature`
+
+### Spend user funds
+
+:::
+
+```
+
+```
