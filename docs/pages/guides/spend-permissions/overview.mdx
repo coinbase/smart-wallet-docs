@@ -35,43 +35,42 @@ struct SpendPermission {
 
 ## Approving
 
-Spend permissions can be approved in two ways. the user can sign the hash
-of a spend permission and anyone can submit that signature and the details of the spend permission to
-`approveWithSignature` (or `approveBatchWithSignature` in the case of a batch signature) to authorize
-the approval. 
+A user approves a spend permission by signing an [ERC-712](https://eips.ethereum.org/EIPS/eip-712) typed object that contains
+the spend permission properties. This signature and the corresponding spend permission details are then submitted to 
+`SpendPermissionManager.approveWithSignature` to approve the spend permission onchain.
+
+Multiple spend permissions can be batched and approved with a single signature by constructing a batch spend permission object
+and approving with `SpendPermissionManager.approveBatchWithSignature`.
 
 
 ## Revoking
 
-Users can revoke permissions at any time by calling `SpendPermissionManager.revoke`, which can also be batched via 
+Users can revoke permissions at any time by calling `SpendPermissionManager.revoke`. Calls to revoke can be batched via 
 `CoinbaseSmartWallet.executeBatch`. Once a spend permission has been revoked, it can never be re-approved. 
 
 If the user wants to re-authorize the spend permission, the spender will need to generate a new spend permission 
 that has a unique hash from the original spend permission. If the details of the new spend permission are identical
-to the revoked permission, the `salt` field of the permission should be used to generate a unique has.
+to the revoked permission, the `salt` field of the permission should be used to generate a unique hash.
 
 ## Cycle accounting
 
-Spend permissions allow an app to request to spend user assets on a recurring basis (e.g. 10 USDC / month). 
-As apps spend user assets, the `SpendPermissionManager` contract tracks cumulative spend and enforces the allowance for the 
-current period. Once enough time passes to enter the next period, the allowance usage is reset to zero and 
-the app can keep spending up to the same allowance.
+Spend Permissions offers granular controls for recurrence (e.g. 10 USDC / month). 
+As the third-party signer spends user assets, the `SpendPermissionManager` contract tracks cumulative spend and enforces the per-period
+allowance. If there are multiple periods defined during the valid lifespan of the spend permission, the cumulative usage resets to 0 
+at the beginning of the next period, allowing the spender to once again spend up to the allowance.
 
-This behavior is parameterized by the following properties of a spend permission:
+This behavior is parameterized by the `start`, `end`, `period` and `allowance` properties of the permission.
 
-`start`: time this permission is valid starting at (unix time, seconds)  
-`end`: time this permission is valid until (unix time, seconds)  
-`period`: duration of a recurring interval that resets the spender's allowance (seconds)  
-`allowance`: amount of tokens spendable per period
-
-Note that spend permissions can be used for one-time allowances, either time-bounded or indefinite, by setting
+Note that spend permissions can be used for non-recurring allowances, either indefinite or with expiry, by setting
 a period durantion that spans the entire range between start and end.
 
 A comprehensive example of spend permission accounting can be found [here](https://github.com/coinbase/spend-permissions/blob/main/docs/SpendPermissionAccounting.md).
 
-## Additional documentation
+## Additional resources
 Contract sourcecode, diagrams, and additional documentation can be found in the open-source [contracts repository](https://github.com/coinbase/spend-permissions).
 
+
+// TODO - Do we want to include any of this stuff? Here or somewhere else?
 ## Known issues
 ERC20s w non-reverting transfers will lead to inconsistent spend state  
 Duplicate spend permissions can be approved (and regardless of revocation status)
@@ -79,12 +78,3 @@ Unlimited batch size
 
 ## Misc
 ERC6492 Signatures are supported 
-
-## Appendix:
-
-Designed to integrate with Coinbase Smart Wallet V1, a smart wallet adds the 
-single `SpendPermissionManager` contract as an owner of their account, and can then use this gatekeeper to authorize 
-third-party spenders to spend from their account within their specified parameters. In addition to the spender, 
-spend permissions specify the start and end times that bound a permission’s validity, as well as an allowance and a 
-recurring period duration, allowing the spender to spend up to this allowance per-period. Users can revoke existing 
-permissions at any time. 

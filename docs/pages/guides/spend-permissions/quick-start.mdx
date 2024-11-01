@@ -12,12 +12,23 @@ For the contract deployment addresses see the contracts [README](https://github.
   Template](https://github.com/coinbase/onchain-app-template/tree/main).
 </Callout>
 
+:::danger
+Always secure your private keys appropriately!  
+We use an environment variable for our spender's private key for simplicity of demonstration.
+:::
+
 :::steps
 
 ### Create a spender client
 
-This is an example of a spender that is a Coinbase Smart Wallet that is sponsored by a paymaster. 
+This is an example of a spender that is a Coinbase Smart Wallet sponsored by a paymaster. 
 EOAs or other smart contracts can also be spenders.
+
+<Callout type="info">
+  **Tips**: You can set up a paymaster and get an API key [Coinbase Developer Platform](https://portal.cdp.coinbase.com/).  
+  Your `BASE_SEPOLIA_PAYMASTER_URL` will be  
+  `https://api.developer.coinbase.com/rpc/v1/base-sepolia/{YOUR_CDP_API_KEY}`
+</Callout>
 
 ```ts [spender. ts]
 import { createPublicClient, Hex, http } from "viem";
@@ -59,7 +70,7 @@ export async function getSpenderBundlerClient() {
 }
 ```
 
-### Construct a `SpendPermission` object to obtain signed approval from the user
+### Assemble a `SpendPermission` object for the user to sign
 
 A `SpendPermission` is the struct that defines the parameters of the permission.
 See the solidity struct [here](https://github.com/coinbase/spend-permissions/blob/07067168108b83d9662435b056a2a580c08be214/src/SpendPermissionManager.sol#L20).
@@ -106,10 +117,11 @@ export default function Subscribe() {
 }
 ```
 
-### Obtain a signature over the spend permission from the user
+### Prompt the user to sign the spend permission data from their Smart Wallet.
 
-The `SpendPermissionManager.sol` uses [ERC-712](https://eips.ethereum.org/EIPS/eip-712) signatures.
-The following will prompt the user to sign this spend permission data with their smart wallet.
+<Callout type="info">
+SpendPermissions use [ERC-712](https://eips.ethereum.org/EIPS/eip-712) signatures.
+</Callout>
 
 ```ts [Subscribe.tsx]
 
@@ -162,19 +174,13 @@ export default function Subscribe() {
 }
 ```
 
-### Submit the signature to `SpendPermissionManager.approveWithSignature`
+### Approve the spend permission onchain
 
-Spend permissions can be approved in two ways. The user can call `approve` directly with the details
-of a spend permission to establish an approval for a spender. Alternatively, the user can sign the hash
-of a spend permission and anyone can submit that signature and the details of the spend permission to
-`approveWithSignature` (or `approveBatchWithSignature` in the case of a batch signature) to authorize
-the approval. 
-
-This example shows our spender app submitting the user's signature to approve the permission.
+This example shows our spender app approving the permission onchain by submitting the 
+signature and the permission details to `approveWithSignature` on the `SpendPermissionManager` contract.
 
 ```ts [Subscribe.tsx]
-// We send the permission details and the user signature to our 
-// backend route
+// We send the permission details and the user signature to our backend route
 async function handleCollectSubscription() {
     setIsDisabled(true);
     let data;
@@ -211,7 +217,13 @@ async function handleCollectSubscription() {
   }
 ```
 
-We use our bundler client and the `SpendPermissionManager.sol` contract address and abi to call `approveWithSignature`
+We use our bundler client and the `SpendPermissionManager.sol` contract address and ABI to call `approveWithSignature`
+
+<Callout type="info">
+TODO: post testnet and/or mainnet addresses of manager contract here?  
+[Here's an example](https://docs.basescan.org/api-endpoints/contracts) of finding the ABI of a verified contract on Basescan.
+</Callout>
+
 ```ts [route.tsx]
 import { NextRequest, NextResponse } from "next/server";
 import { getSpenderBundlerClient } from "../../lib/spender";
@@ -292,6 +304,6 @@ export async function POST(request: NextRequest) {
 ```
 :::
 
-That's it! We've successfully created and used permission to spend our user's funds.
+That's it! We've successfully created, approved and used a spend permission to spend our user's funds.
 
-TODO: link to more comprehensive documentation
+TODO: link to more comprehensive documentation/complete example app or repo
