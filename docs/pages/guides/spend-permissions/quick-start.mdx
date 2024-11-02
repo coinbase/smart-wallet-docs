@@ -2,35 +2,61 @@ import { Callout } from "vocs/components";
 
 # Getting Started with Spend Permissions
 
-This guide will walk you through a simple example of building an app that leverages Spend Permissions, using [Viem](https://viem.sh/) and [Wagmi](https://wagmi.sh/).
+This guide will walk you through a simple example of building an app that leverages Spend Permissions using 
+[OnchainKit](https://onchainkit.xyz/), [Viem](https://viem.sh/) and [Wagmi](https://wagmi.sh/).
 
 TODO: directly post deployment addresses here w/ links to basescan?
 For the contract deployment addresses see the contracts [README](https://github.com/coinbase/spend-permissions/blob/main/README.md).
 
-<Callout type="info">
-  **Tips**: If you need a template to start with, you can check out [Onchain App
-  Template](https://github.com/coinbase/onchain-app-template/tree/main).
-</Callout>
 
-:::danger
-Always secure your private keys appropriately!  
-We use an environment variable for our spender's private key for simplicity of demonstration.
-:::
 
 :::steps
+### Set up a basic app template using OnchainKit
+
+<Callout type="info">
+  You will need a Coinbase Developer Platform API key for this example, which you can get [here](https://portal.cdp.coinbase.com/).  
+</Callout>
+
+Set up a boilerplate React/Next app by running the following command and following the instructions:
+
+```bash
+npm create onchain
+```
+
+This will generate an app that is ready to run and contains a wallet connection button that users can use
+to connect their smart wallet to the application.
+
+From here, we'll modify the app to assemble, sign, approve, and use a spend permission to spend our users' funds.
 
 ### Create a spender client
 
-This is an example of a spender that is a Coinbase Smart Wallet sponsored by a paymaster. 
-EOAs or other smart contracts can also be spenders.
+Our client is what our app will use to communicate with the blockchain. In this example, our client will
+also be a Coinbase Smart Wallet, and we'll use a [paymaster](/guides/paymasters.mdx) to sponsor our transactions so we don't have to worry
+about having gas money. Note that EOAs or smart contracts can also be spenders.
+
+For this toy example, go ahead and create two environment variables in a local `.env` called `SUBSCRIPTION_PRIVATE_KEY` and `NEXT_PUBLIC_SUBSCRIPTION_SPENDER`.
+These will represent our private key and, for convenience, the address of our spender smart contract wallet.
+
+
+You can generate a random private key [here](https://privatekeys.pw/keys/ethereum/random), but our address won't actually be the corresponding
+address listed on this site because our private key will be an owner of a smart contract wallet.  We'll get our smart contract address later.
+
+<Callout type="danger">
+Always secure your private keys appropriately!  
+We use an environment variable in this demo only for simplicity.
+</Callout>
+
+
+Next, create a sibling directory to `app` called `lib` and add the following `spender.ts` file to create your spender client.
 
 <Callout type="info">
-  **Tips**: You can set up a paymaster and get an API key [Coinbase Developer Platform](https://portal.cdp.coinbase.com/).  
   Your `BASE_SEPOLIA_PAYMASTER_URL` will be  
   `https://api.developer.coinbase.com/rpc/v1/base-sepolia/{YOUR_CDP_API_KEY}`
 </Callout>
 
-```ts [spender. ts]
+
+
+```ts [lib/spender. ts]
 import { createPublicClient, Hex, http } from "viem";
 import { baseSepolia } from "viem/chains";
 import { privateKeyToAccount } from "viem/accounts";
