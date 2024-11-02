@@ -28,31 +28,35 @@ to connect their smart wallet to the application.
 
 From here, we'll modify the app to assemble, sign, approve, and use a spend permission to spend our users' funds.
 
-### Create a spender client
-
-Our client is what our app will use to communicate with the blockchain. In this example, our client will
-also be a Coinbase Smart Wallet, and we'll use a [paymaster](/guides/paymasters.mdx) to sponsor our transactions so we don't have to worry
-about having gas money. Note that EOAs or smart contracts can also be spenders.
-
-For this toy example, go ahead and create two environment variables in a local `.env` called `SUBSCRIPTION_PRIVATE_KEY` and `NEXT_PUBLIC_SUBSCRIPTION_SPENDER`.
-These will represent our private key and, for convenience, the address of our spender smart contract wallet.
-
-
-You can generate a random private key [here](https://privatekeys.pw/keys/ethereum/random), but our address won't actually be the corresponding
-address listed on this site because our private key will be an owner of a smart contract wallet.  We'll get our smart contract address later.
+### Set up some environment variables
 
 <Callout type="danger">
 Always secure your private keys appropriately!  
 We use an environment variable in this demo only for simplicity.
 </Callout>
 
+For this toy example, go ahead and create a local `.env` file, and add two environment variables: `SUBSCRIPTION_PRIVATE_KEY` and `NEXT_PUBLIC_SUBSCRIPTION_SPENDER`.
+These will represent our private key and, for convenience, the address of our spender smart contract wallet.
+
+You can generate a random private key [here](https://privatekeys.pw/keys/ethereum/random), but our address won't actually be the corresponding
+address listed on this site because our actual spender address will be a smart contract wallet to which this private key is acting as an owner.  
+We'll get this smart contract address later.
+
+Next, make sure you have a Coinbase Developer Platform API key, which you can get [here](https://portal.cdp.coinbase.com/). 
+Put this in your `.env` as `NEXT_PUBLIC_CDP_API_KEY`.
+
+You'll need one more environment variable, which is `BASE_SEPOLIA_PAYMASTER_URL`.  
+This one's easy if you already have your CDP API key:  
+  `"https://api.developer.coinbase.com/rpc/v1/base-sepolia/{YOUR_CDP_API_KEY}"`
+
+
+### Create a spender client
+
+Our client is what our app will use to communicate with the blockchain. In this example, our client will
+also be a Coinbase Smart Wallet, and we'll use a [paymaster](/guides/paymasters.mdx) to sponsor our transactions so we don't have to worry
+about having gas money.
 
 Next, create a sibling directory to `app` called `lib` and add the following `spender.ts` file to create your spender client.
-
-<Callout type="info">
-  Your `BASE_SEPOLIA_PAYMASTER_URL` will be  
-  `https://api.developer.coinbase.com/rpc/v1/base-sepolia/{YOUR_CDP_API_KEY}`
-</Callout>
 
 
 
