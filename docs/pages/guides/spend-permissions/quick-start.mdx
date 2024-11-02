@@ -1,13 +1,21 @@
 import { Callout } from "vocs/components";
 
+TODO =============================
+- how do we configure this to talk to the chameleon keys deployment for wallet?
+- what's the best way for our readers to find and establish their spender address?
+    - should we make them create a smart contract wallet first? (if so, how do they get ahold of the private key?)
+    - should we have them take our approach and examine error logs to extract the correct spender? (super sloppy)
+    - should we provide them with a working example owner private key/ scw address?
+- to see this work, they'll need some ETH in their smart contract wallet. we should point them to a faucet?
+- post deployment addresses here w/ links to basescan? Or a message pointing to the readme such as: For the contract deployment addresses see the contracts [README](https://github.com/coinbase/spend-permissions/blob/main/README.md).
+- consider pointing them to a github permalink for the `Subscribe` component unless we can get these docs working with copy-paste buttons and collapsible codeblocks because it's way too long
+===================================
+
+
 # Getting Started with Spend Permissions
 
 This guide will walk you through a simple example of building an app that leverages Spend Permissions using 
 [OnchainKit](https://onchainkit.xyz/), [Viem](https://viem.sh/) and [Wagmi](https://wagmi.sh/).
-
-TODO: directly post deployment addresses here w/ links to basescan?
-For the contract deployment addresses see the contracts [README](https://github.com/coinbase/spend-permissions/blob/main/README.md).
-
 
 
 :::steps
@@ -26,7 +34,7 @@ npm create onchain
 This will generate an app that is ready to run and contains a wallet connection button that users can use
 to connect their smart wallet to the application.
 
-From here, we'll modify the app to assemble, sign, approve, and use a spend permission to spend our users' funds.
+From here, we'll modify the app to assemble, sign, approve and use a spend permission to spend our users' funds!
 
 ### Set up some environment variables
 
@@ -49,6 +57,15 @@ You'll need one more environment variable, which is `BASE_SEPOLIA_PAYMASTER_URL`
 This one's easy if you already have your CDP API key:  
   `"https://api.developer.coinbase.com/rpc/v1/base-sepolia/{YOUR_CDP_API_KEY}"`
 
+### Install additional dependencies
+
+We'll need a few additional dependencies: [Viem](https://viem.sh/), [Wagmi](https://wagmi.sh/), and [TanStack](https://tanstack.com/query/latest)
+
+Run the following command to install these with our package manager, [Bun](https://bun.sh/)
+
+```bash
+bun add viem wagmi @tanstack/react-query
+```
 
 ### Create a spender client
 
@@ -56,9 +73,9 @@ Our client is what our app will use to communicate with the blockchain. In this 
 also be a Coinbase Smart Wallet, and we'll use a [paymaster](/guides/paymasters.mdx) to sponsor our transactions so we don't have to worry
 about having gas money.
 
-Next, create a sibling directory to `app` called `lib` and add the following `spender.ts` file to create your spender client.
+Create a sibling directory to `app` called `lib` and add the following `spender.ts` file to create your spender client.
 
-
+TODO: installing dependencies
 
 ```ts [lib/spender. ts]
 import { createPublicClient, Hex, http } from "viem";
@@ -99,13 +116,256 @@ export async function getSpenderBundlerClient() {
   return spenderBundlerClient;
 }
 ```
+### Set up our references to the `SpendPermissionManager`
 
+Spend permissions are managed by a singleton contract called the `SpendPermissionManager`. We'll add some
+configuration so our client knows how to interact with this contract.
+
+Inside your `/lib` directory, create a new subdirectory called `/abi`. This is where we'll store information about
+[smart contract interfaces](https://docs.soliditylang.org/en/latest/abi-spec.html) and addresses.
+
+Add a new file called `SpendPermissionManager.ts` and copy and paste the code from [this file](https://github.com/ilikesymmetry/subscribe-onchain/blob/1be831ec664edf505c539db7b0485f7a78e6bfe5/lib/abi/SpendPermissionManager.ts).
+
+<Callout type="info">
+[Here's an example](https://docs.basescan.org/api-endpoints/contracts) of finding the ABI of any verified contract on Basescan.
+</Callout>
+
+### Add a Subscribe button
+
+Let's create a button that will prompt a user to subscribe to our services by authorizing 
+a spend permission for our app to spend their assets.
+
+Create a subdirectory inside `/app` called `/components` and paste the following code into a new file called `Subscribe.tsx`.
+
+We'll walk through what's happening here in subsequent steps.
+
+```tsx showLineNumbers
+"use client";
+import { cn, color, pressable, text } from "@coinbase/onchainkit/theme";
+import { useEffect, useState } from "react";
+import {
+  useAccount,
+  useChainId,
+  useConnect,
+  useConnectors,
+  useSignTypedData,
+} from "wagmi";
+import { Address, Hex, parseUnits } from "viem";
+import { useQuery } from "@tanstack/react-query";
+import { spendPermissionManagerAddress } from "@/lib/abi/SpendPermissionManager";
+
+export default function Subscribe() {
+  const [isDisabled, setIsDisabled] = useState(false);
+  const [signature, setSignature] = useState<Hex>();
+  const [transactions, setTransactions] = useState<Hex[]>([]);
+  const [spendPermission, setSpendPermission] = useState<object>();
+
+  const { signTypedDataAsync } = useSignTypedData();
+  const account = useAccount();
+  const chainId = useChainId();
+  const { connectAsync } = useConnect();
+  const connectors = useConnectors();
+
+  const { data, error, isLoading, refetch } = useQuery({
+    queryKey: ["collectSubscription"],
+    queryFn: handleCollectSubscription,
+    refetchOnWindowFocus: false,
+    enabled: !!signature,
+  });
+
+  async function handleSubmit() {
+    setIsDisabled(true);
+    let accountAddress = account?.address;
+    if (!accountAddress) {
+      try {
+        const requestAccounts = await connectAsync({
+          connector: connectors[0],
+        });
+        accountAddress = requestAccounts.accounts[0];
+      } catch {
+        return;
+      }
+    }
+
+    const spendPermission = {
+      account: accountAddress, // User wallet address
+      spender: process.env.NEXT_PUBLIC_SUBSCRIPTION_SPENDER! as Address, // Spender smart contract wallet address
+      token: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE" as Address, // ETH (https://eips.ethereum.org/EIPS/eip-7528)
+      allowance: parseUnits("10", 18),
+      period: 86400, // seconds in a day
+      start: 0, // unix timestamp
+      end: 281474976710655, // max uint48
+      salt: BigInt(0),
+      extraData: "0x" as Hex,
+    };
+
+    try {
+      const signature = await signTypedDataAsync({
+        domain: {
+          name: "Spend Permission Manager",
+          version: "1",
+          chainId: chainId,
+          verifyingContract: spendPermissionManagerAddress,
+        },
+        types: {
+          SpendPermission: [
+            { name: "account", type: "address" },
+            { name: "spender", type: "address" },
+            { name: "token", type: "address" },
+            { name: "allowance", type: "uint160" },
+            { name: "period", type: "uint48" },
+            { name: "start", type: "uint48" },
+            { name: "end", type: "uint48" },
+            { name: "salt", type: "uint256" },
+            { name: "extraData", type: "bytes" },
+          ],
+        },
+        primaryType: "SpendPermission",
+        message: spendPermission,
+      });
+      setSpendPermission(spendPermission);
+      setSignature(signature);
+    } catch (e) {
+      // Handle error
+    }
+    setIsDisabled(false);
+  }
+
+  async function handleCollectSubscription() {
+    setIsDisabled(true);
+    let data;
+    try {
+      const replacer = (key: string, value: any) => {
+        if (typeof value === "bigint") {
+          return value.toString();
+        }
+        return value;
+      };
+      const response = await fetch("/collect", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(
+          {
+            spendPermission,
+            signature,
+            dummyData: Math.ceil(Math.random() * 100),
+          },
+          replacer
+        ),
+      });
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+      data = await response.json();
+    } catch (e) {
+      // Handle error
+    }
+    setIsDisabled(false);
+    return data;
+  }
+
+  useEffect(() => {
+    if (!data) return;
+    setTransactions([data?.transactionHash, ...transactions]);
+  }, [data]);
+
+  return (
+    <div>
+      {!signature ? (
+        <div className="flex w-[450px]">
+          <button
+            className={cn(
+              pressable.primary,
+              "w-full rounded-xl",
+              "px-4 py-3 font-medium text-base text-white leading-6",
+              isDisabled && pressable.disabled,
+              text.headline
+            )}
+            onClick={handleSubmit}
+            type="button"
+            disabled={isDisabled}
+            data-testid="ockTransactionButton_Button"
+          >
+            <span
+              className={cn(
+                text.headline,
+                color.inverse,
+                "flex justify-center"
+              )}
+            >
+              Subscribe
+            </span>
+          </button>
+        </div>
+      ) : (
+        <div className="space-y-8 w-[450px]">
+          <div className="flex">
+            <button
+              className={cn(
+                pressable.primary,
+                "w-full rounded-xl",
+                "px-4 py-3 font-medium text-base text-white leading-6",
+                isDisabled && pressable.disabled,
+                text.headline
+              )}
+              onClick={() => refetch()}
+              type="button"
+              disabled={isDisabled}
+              data-testid="collectSubscriptionButton_Button"
+            >
+              <span
+                className={cn(
+                  text.headline,
+                  color.inverse,
+                  "flex justify-center"
+                )}
+              >
+                Collect Subscription
+              </span>
+            </button>
+          </div>
+          <div className="h-80 space-y-4 relative">
+            <div className="text-lg font-bold">Subscription Payments</div>
+            <div className="flex flex-col">
+              {transactions.map((transactionHash, i) => (
+                <a
+                  key={i}
+                  className="hover:underline text-ellipsis truncate"
+                  target="_blank"
+                  href={`https://sepolia.basescan.org/tx/${transactionHash}`}
+                >
+                  View transaction {transactionHash}
+                </a>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+Also be sure to add this new component to the top level component on `Page.tsx`. You can delete everything between
+the two `<main></main>` tags and simply add `<Subscribe/>`.
+
+```tsx [Page.tsx]
+  ...
+  <main>
+    <Subscribe/>
+  </main>
+  ...
+```
 ### Assemble a `SpendPermission` object for the user to sign
 
 A `SpendPermission` is the struct that defines the parameters of the permission.
 See the solidity struct [here](https://github.com/coinbase/spend-permissions/blob/07067168108b83d9662435b056a2a580c08be214/src/SpendPermissionManager.sol#L20).
 
-```ts [Subscribe.tsx]
+You can see the spend permission object being defined in lines 49-59 of our `Subscribe` component:
+
+```tsx [Subscribe.tsx]
 
 export default function Subscribe() {
 ...
@@ -136,7 +396,7 @@ export default function Subscribe() {
       salt: BigInt(0), // [!code focus]
       extraData: "0x" as Hex, // [!code focus]
     }; // [!code focus]
-
+  }
     ...
 
   return (
@@ -149,11 +409,14 @@ export default function Subscribe() {
 
 ### Prompt the user to sign the spend permission data from their Smart Wallet.
 
+As part of our button handler `handleSubmit`, in lines 61-91 of our subscribe component we call [`signTypedDataAsync`](https://wagmi.sh/react/api/hooks/useSignTypedData),
+a Wagmi hook that will prompt our user to create a signature from their wallet across the details of the spend permission.
+
 <Callout type="info">
 SpendPermissions use [ERC-712](https://eips.ethereum.org/EIPS/eip-712) signatures.
 </Callout>
 
-```ts [Subscribe.tsx]
+```tsx [Subscribe.tsx]
 
 export default function Subscribe() {
   ...
@@ -205,9 +468,11 @@ export default function Subscribe() {
 ```
 
 ### Approve the spend permission onchain
-
-This example shows our spender app approving the permission onchain by submitting the 
+Now that we have a signature from the user, we can approve the permission onchain by submitting the 
 signature and the permission details to `approveWithSignature` on the `SpendPermissionManager` contract.
+
+Our `handleCollectSubscription` function that's defined in our `Subscribe` will pass this signature and data to our 
+backend, so the spender client we created earlier can handle our onchain calls.
 
 ```ts [Subscribe.tsx]
 // We send the permission details and the user signature to our backend route
@@ -247,12 +512,11 @@ async function handleCollectSubscription() {
   }
 ```
 
-We use our bundler client and the `SpendPermissionManager.sol` contract address and ABI to call `approveWithSignature`
+But wait, we don't have any backend routes set up yet! Let's define what should happen when we want to
+approve and use our spend permission.
 
-<Callout type="info">
-TODO: post testnet and/or mainnet addresses of manager contract here?  
-[Here's an example](https://docs.basescan.org/api-endpoints/contracts) of finding the ABI of a verified contract on Basescan.
-</Callout>
+Create a new subdirectory under `/app` called `collect`. Create a new file there called `route.tsx` and paste the following
+code:
 
 ```ts [route.tsx]
 import { NextRequest, NextResponse } from "next/server";
@@ -269,8 +533,8 @@ export async function POST(request: NextRequest) {
     const { spendPermission, signature } = body;
 
     const userOpHash = await spenderBundlerClient.sendUserOperation({
-      calls: [ 
-        { 
+      calls: [
+        {
           abi: spendPermissionManagerAbi,
           functionName: "approveWithSignature",
           to: spendPermissionManagerAddress,
@@ -288,38 +552,22 @@ export async function POST(request: NextRequest) {
       console.log("Spend Permission approved");
     }
 
-    ...
-  }
-  ...
-}
-```
-
-
-### Spend user funds
-
-If the permission was successfully approved, we're ready to spend.
-
-```ts [route.tsx]
-...
-
-export async function POST(request: NextRequest) {
-    ...
-
-    const spendUserOpHash = await spenderBundlerClient.sendUserOperation({ // [!code focus]
-      calls: [  // [!code focus]
-        {         // [!code focus]
-          abi: spendPermissionManagerAbi, // [!code focus]
-          functionName: "spend", // [!code focus]
-          to: spendPermissionManagerAddress, // [!code focus]
-          args: [spendPermission, "1"], // spend 1 wei // [!code focus]
-        }, // [!code focus]
-      ], // [!code focus]
-    }); // [!code focus]
+    const spendUserOpHash = await spenderBundlerClient.sendUserOperation({
+      calls: [
+        {
+          abi: spendPermissionManagerAbi,
+          functionName: "spend",
+          to: spendPermissionManagerAddress,
+          args: [spendPermission, "1"], // spend 1 wei
+        },
+      ],
+    });
 
     const spendUserOpReceipt =
       await spenderBundlerClient.waitForUserOperationReceipt({
         hash: spendUserOpHash,
       });
+    console.log({ userOpReceipt });
 
     return NextResponse.json({
       status: spendUserOpReceipt.success ? "success" : "failure",
@@ -327,13 +575,59 @@ export async function POST(request: NextRequest) {
       transactionUrl: `https://sepolia.basescan.org/tx/${spendUserOpReceipt.receipt.transactionHash}`,
     });
   } catch (error) {
-    // Handle error
+    console.error(error);
+    return NextResponse.json({}, { status: 500 });
   }
 }
-
 ```
+
+This code is using our spender client to do two things:
+1. calls `approveWithSignature` approve the spend permission
+2. calls `spend` to make use of our allowance and spend our user's funds
+
+Since our spender is a smart contract wallet, notice that these calls are formulated as userOperations instead of 
+direct transactions. They'll be submitted to the blockchain by a bundler and the gas will be subsidized by our
+Coinbase Developer Platform paymaster.
+
+
+Note that we could actually bundle both of these calls together if we wanted to, as long as we put 
+the approval call first. The calls are serialized separately in our example for easier debugging, 
+but here's an example of batching our calls:
+
+```ts
+    const userOpHash = await spenderBundlerClient.sendUserOperation({
+      calls: [
+        {
+          abi: spendPermissionManagerAbi,
+          functionName: "approveWithSignature",
+          to: spendPermissionManagerAddress,
+          args: [spendPermission, signature],
+        },
+        {
+          abi: spendPermissionManagerAbi,
+          functionName: "spend",
+          to: spendPermissionManagerAddress,
+          args: [spendPermission, "1"], // spend 1 wei
+        },
+      ],
+    });
+```
+
+### Try it out yourself
+
+We've made it! 🎉
+
+Our app successfully
+- prompts the user to connect their Coinbase Smart Wallet to our app
+- assembles a spend permission representing our recurring spending needs as an app
+- retrieves a signature from the user authorizing this spend permission
+- approves the spend permission onchain
+- uses this permission to retrieve user assets within our allowance
+
+Run your app locally (`bun run dev`) and visit `localhost:3000`.
+
+If you don't have a Coinbase Smart Wallet yet, the "Connect Wallet" button will bring you to a popup
+where you can create one, owned by a passkey stored on your device or in your browser.
+
+....... TODO
 :::
-
-That's it! We've successfully created, approved and used a spend permission to spend our user's funds.
-
-TODO: link to more comprehensive documentation/complete example app or repo
