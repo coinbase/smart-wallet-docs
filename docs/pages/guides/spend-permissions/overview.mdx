@@ -75,6 +75,9 @@ Contract sourcecode, diagrams, and additional documentation can be found in the 
 ERC20s w non-reverting transfers will lead to inconsistent spend state  
 Duplicate spend permissions can be approved (and regardless of revocation status)
 Unlimited batch size
+Fractional final periods still allow full allowance spend
+Revocations can be frontrun to ensure the spender spends the full allowance for the current period before revocation
+
 
 ## Misc
 ERC6492 Signatures are supported 
