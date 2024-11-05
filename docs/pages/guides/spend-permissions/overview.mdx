@@ -77,7 +77,13 @@ Duplicate spend permissions can be approved (and regardless of revocation status
 Unlimited batch size
 Fractional final periods still allow full allowance spend
 Revocations can be frontrun to ensure the spender spends the full allowance for the current period before revocation
-
+Spends always need to be checked for success by the spender, because successfull call to `approveWithSignature` tells you nothing
+    about whether the permission is revoked or not, and similarly `isApproved` tells you nothing about whether the permission may
+    become revoked by the time `spend` is called, and finally, even if `spend` is called and the transaction is successful, it may
+    have interacted with a non-reverting ERC20, and since we don't check the result of transfer.... they need to do a balance check.
+    Is this prohibitive from a usability perspective for an app? Should we be doing balance checks and reverting? It's not just about
+    accounting for their allowance, but rather for their ability to know if they've received the funds they're being paid or not.
+    
 
 ## Misc
 ERC6492 Signatures are supported 
