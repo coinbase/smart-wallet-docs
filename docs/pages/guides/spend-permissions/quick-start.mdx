@@ -1,29 +1,15 @@
 import { Callout } from "vocs/components";
 
-TODO =============================
-- how do we configure this to talk to the chameleon keys deployment for wallet?
-- to see this work, they'll need some ETH in their "User" smart contract wallet. we should point them to a faucet?
-- post contract addresses here w/ links to basescan? Or a message pointing to the readme such as: For the contract deployment addresses see the contracts [README](https://github.com/coinbase/spend-permissions/blob/main/README.md).
-- consider pointing them to a github permalink for the `Subscribe` component unless we can get these docs working with copy-paste buttons and collapsible codeblocks because it's way too long
-- Let's put a link to the complete example project at the top of this guide.  Should we move that project to something hosted in the Coinbase github org?
-===================================
-
-
 # Getting Started with Spend Permissions
 
 This guide will walk you through a simple example of building an app that leverages Spend Permissions using 
 [OnchainKit](https://onchainkit.xyz/), [Viem](https://viem.sh/) and [Wagmi](https://wagmi.sh/).
 
-A complete example of this demo can be found [here](https://github.com/ilikesymmetry/subscribe-onchain).
-
+A complete example of this demo can be found [here](https://github.com/ilikesymmetry/subscribe-onchain).  
+Smart contract deployment addresses for `SpendPermissionManager.sol` can be found [here](https://github.com/coinbase/spend-permissions).
 
 :::steps
 ### Set up a basic app template using OnchainKit
-
-<Callout type="info">
-  You will need a Coinbase Developer Platform API key for this example, which you can get [here](https://portal.cdp.coinbase.com/).  
-</Callout>
-
 Set up a boilerplate React/Next app by running the following command and following the instructions:
 
 ```bash
@@ -43,17 +29,23 @@ We'll need a few additional dependencies: [Viem](https://viem.sh/), [Wagmi](http
 Run the following command to install these with our package manager, [Bun](https://bun.sh/)
 
 ```bash
-bun add viem wagmi @tanstack/react-query dotenv
+bun add viem wagmi @tanstack/react-query
 ```
 
 ### Set up your spender wallet
 
 <Callout type="danger">
 Always secure your private keys appropriately!  
-We insecurely use an environment variable in this demo only for simplicity.
+We insecurely use an environment variable in this demo for simplicity.
 </Callout>
 
-Create a local `.env` file, and add two environment variables: `SUBSCRIPTION_PRIVATE_KEY` and `NEXT_PUBLIC_SUBSCRIPTION_SPENDER`.
+Create a local `.env` file and add two environment variables:
+
+```
+SUBSCRIPTION_PRIVATE_KEY=
+NEXT_PUBLIC_SUBSCRIPTION_SPENDER=
+```
+
 These will represent our spender private key and the address of our spender smart contract wallet.
 
 You can generate a random private key [here](https://privatekeys.pw/keys/ethereum/random), or maybe you have a development private key
@@ -64,7 +56,9 @@ Paste your private key as the value for `SUBSCRIPTION_PRIVATE_KEY`. This should 
 This private key is an EOA, but we want our spender to be a smart contract wallet. We'll achieve this by treating our new EOA as the owner of a
 brand new [Coinbase Smart Wallet](/why.mdx). The address of a smart contract wallet is deterministic, and depends on the bytecode of the implementation
 contract combined with a salt, which in our case will be an array consisting of the initial owner(s) of the smart contract wallet. See the 
-[smart wallet repository](https://github.com/coinbase/smart-wallet) for more details. We'll generate the deterministic address of this Smart Wallet
+[smart wallet repository](https://github.com/coinbase/smart-wallet) for more details. 
+
+We'll generate the deterministic address of this Smart Wallet
 so we can store it as a public environment variable.
 
 Paste the following code into a top-level file called `logSpenderSmartWalletAddress.ts`
@@ -110,18 +104,22 @@ if (require.main === module) {
 }
 ```
 
-You can run this script to log the counterfactual address of your new smart contract wallet.
+Run this script to log the counterfactual address of your new smart contract wallet and assign this address to the 
+`NEXT_PUBLIC_SUBSCRIPTION_SPENDER` variable in your .env.
 
 <Callout type="info">
-You may need to install ts-node and/or typescript if you haven't already: `npm install -g ts-node typescript @types/node`  
-You may need to set the value of `"module"` in your `tsconfig.json` to `"commonjs"` to run this script.
+You may need to install ts-node or other of the following dependencies: `npm install -g ts-node typescript @types/node dotenv`  
 </Callout>
 
-Assign this address to the `NEXT_PUBLIC_SUBSCRIPTION_SPENDER` variable in your .env.
+<Callout type="info">
+You may need to temporarily set the value of `"module"` in your `tsconfig.json` to `"commonjs"` to run this script.
+</Callout>
+
+
 
 ### Set up remaining environment variables
 Next, make sure you have a Coinbase Developer Platform API key, which you can get [here](https://portal.cdp.coinbase.com/). 
-Put this in your `.env` as `NEXT_PUBLIC_CDP_API_KEY`.
+Assign this key to `NEXT_PUBLIC_CDP_API_KEY` in your `.env`.
 
 You'll need one more environment variable, which is `BASE_SEPOLIA_PAYMASTER_URL`.  
 This one's easy if you already have your CDP API key:  
@@ -672,7 +670,19 @@ but here's an example of batching our calls:
     });
 ```
 
-### Try it out yourself
+### Try out your app
+
+Run your app locally with `bun run dev` and visit `localhost:3000`.
+
+You should see a "Connect wallet" button in the top right corner.
+
+You can create a new Smart Wallet via the popup. Note that you'll need a little ETH in this wallet to fund the
+deployment of your account. If you don't have any testnet ETH, try this [Coinbase faucet](https://portal.cdp.coinbase.com/products/faucet).
+
+Once your wallet is created and funded, return to the app and click "Subscribe".
+Sign the prompts, which will deploy your new Smart Wallet (if undeployed), and then prompt you to sign over the spend permission.
+
+Once you've subscribed, you should see spend transactions happening automatically every few seconds. Click the transaction links to check them out on Etherscan.
 
 We've made it! 🎉
 
@@ -682,11 +692,4 @@ Our app successfully
 - retrieves a signature from the user authorizing this spend permission
 - approves the spend permission onchain
 - uses this permission to retrieve user assets within our allowance
-
-Run your app locally (`bun run dev`) and visit `localhost:3000`.
-
-If you don't have a Coinbase Smart Wallet yet, the "Connect Wallet" button will bring you to a popup
-where you can create one, owned by a passkey stored on your device or in your browser.
-
-....... TODO
 :::
