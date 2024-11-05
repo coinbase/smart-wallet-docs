@@ -173,6 +173,13 @@ export async function getSpenderBundlerClient() {
   return spenderBundlerClient;
 }
 ```
+
+### Configure the Smart Wallet URL
+
+In `providers.tsx`, update the value of `keysUrl` to be `"https://wallet.chameleon.systems"`.
+This will point your app to connect to our public dev environment for smart wallet connections.
+
+
 ### Set up our interface to the `SpendPermissionManager` smart contract
 
 Spend permissions are managed by a singleton contract called the `SpendPermissionManager`. We'll add some
