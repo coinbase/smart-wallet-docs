@@ -1,12 +1,8 @@
 # Spend Permissions
 
-Spend Permissions enable third-party signers to spend assets (native and ERC-20 tokens) from user wallets. 
-This unlocks the following use cases: // TODO make note about reduced signing
-- frequent in-game spending
-- subscription payments
-- auto-renewals
-- automated or event-based trading
-- micropayment streaming
+Spend Permissions enable third-party signers to spend assets (native and ERC-20 tokens) from users' wallets. Once granted, spend permissions 
+allow you to move your users' assets without any further of signatures, unlocking use cases like subscriptions & trading bots. The reduced signing friction 
+can also be leveraged to enhance UX for high-frequency use cases such as onchain games.
 
 Differences between Spend Permissions and ERC-20 permits:
 - Spend Permissions **supports all ERC-20 assets**, whereas permits only support ERC-20s that implement the permit standard  
@@ -32,6 +28,8 @@ struct SpendPermission {
 }
 ```
 
+Spend Permissions are managed by a single manager contract, the `SpendPermissionManager`, which tracks the approval/revocation 
+statuses of all perissions and enforces accurate spending limits and accounting.
 
 ## Approving
 
@@ -45,12 +43,12 @@ and approving with `SpendPermissionManager.approveBatchWithSignature`.
 
 ## Revoking
 
-Users can revoke permissions at any time by calling `SpendPermissionManager.revoke`. Calls to revoke can be batched via 
-`CoinbaseSmartWallet.executeBatch`. Once a spend permission has been revoked, it can never be re-approved. 
+Users can revoke permissions at any time by calling `SpendPermissionManager.revoke`. Revocations are onchain calls that can be
+batched similar to other ERC-4337 transactions. 
 
-If the user wants to re-authorize the spend permission, the spender will need to generate a new spend permission 
-that has a unique hash from the original spend permission. If the details of the new spend permission are identical
-to the revoked permission, the `salt` field of the permission should be used to generate a unique hash.
+Once a spend permission has been revoked, it can never be re-approved. Therefore, if a user wants to re-authorize a revoked spend permission, 
+the spender will need to generate a new spend permission that has a unique hash from the original spend permission.
+If the parameters of the new spend permission are identical to the revoked permission, the `salt` field of the permission can be used to generate a unique hash.
 
 ## Cycle accounting
 

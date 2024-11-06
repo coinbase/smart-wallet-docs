@@ -10,27 +10,20 @@ Smart contract deployment addresses for `SpendPermissionManager.sol` can be foun
 
 :::steps
 ### Set up a basic app template using OnchainKit
-Set up a boilerplate React/Next app by running the following command and following the instructions:
+Set up a boilerplate React/Next app by running the following command and following the instructions. Don't worry about your Coinbase
+Developer Platform API Key, we'll get one of those later. When prompted to use Coinbase Smart Wallet select "yes".
 
 ```bash
-npm create onchain
+bun create onchain
 ```
+<Callout type="info">
+You may need to install the package manager [`bun`](https://bun.sh/docs/installation)
+</Callout>
 
 This will generate an app that is ready to run and contains a wallet connection button that users can use
 to connect their smart wallet to the application.
 
 From here, we'll modify the app to assemble, sign, approve and use a spend permission to spend our users' funds!
-
-
-### Install additional dependencies
-
-We'll need a few additional dependencies: [Viem](https://viem.sh/), [Wagmi](https://wagmi.sh/), and [TanStack](https://tanstack.com/query/latest)
-
-Run the following command to install these with our package manager, [Bun](https://bun.sh/)
-
-```bash
-bun add viem wagmi @tanstack/react-query
-```
 
 ### Set up your spender wallet
 
@@ -39,17 +32,19 @@ Always secure your private keys appropriately!
 We insecurely use an environment variable in this demo for simplicity.
 </Callout>
 
-Create a local `.env` file and add two environment variables:
+Create a local `.env` file and add these environment variables:
 
 ```
 SUBSCRIPTION_PRIVATE_KEY=
 NEXT_PUBLIC_SUBSCRIPTION_SPENDER=
+NEXT_PUBLIC_CDP_API_KEY=
+BASE_SEPOLIA_PAYMASTER_URL=
 ```
 
-These will represent our spender private key and the address of our spender smart contract wallet.
+The `SUBSCRIPTION_PRIVATE_KEY` will be our spender private key and `NEXT_PUBLIC_SUBSCRIPTION_SPENDER` will be the address of our spender smart contract wallet.
 
-You can generate a random private key [here](https://privatekeys.pw/keys/ethereum/random), or maybe you have a development private key
-lying around already. This account won't need any ETH because our spender's gas will be sponsored by a paymaster!
+You can use a development private key you already have, or generate a random new one. If you have [Foundry](https://book.getfoundry.sh/) installed, you can generate a new
+wallet via `cast wallet new`. This wallet won't need to hold any ETH for gas because our spender smart contract wallet will be sponsored by a paymaster.
 
 Paste your private key as the value for `SUBSCRIPTION_PRIVATE_KEY`. This should be hex-prefixed, i.e. `SUBSCRIPTION_PRIVATE_KEY=0xAbC123...dEf456`
 
@@ -105,16 +100,15 @@ if (require.main === module) {
 ```
 
 Run this script to log the counterfactual address of your new smart contract wallet and assign this address to the 
-`NEXT_PUBLIC_SUBSCRIPTION_SPENDER` variable in your .env.
+`NEXT_PUBLIC_SUBSCRIPTION_SPENDER` variable in your .env:
 
-<Callout type="info">
-You may need to install ts-node or other of the following dependencies: `npm install -g ts-node typescript @types/node dotenv`  
-</Callout>
+```bash
+npm install -g ts-node typescript @types/node dotenv && ts-node logSpenderSmartContractWalletAddress.ts
+```
 
 <Callout type="info">
 You may need to temporarily set the value of `"module"` in your `tsconfig.json` to `"commonjs"` to run this script.
 </Callout>
-
 
 
 ### Set up remaining environment variables
@@ -130,7 +124,7 @@ This one's easy if you already have your CDP API key:
 
 Our client is what our app will use to communicate with the blockchain. In this example, our client is a Coinbase Smart Wallet, 
 and we'll use a [paymaster](/guides/paymasters.mdx) to sponsor our transactions so we don't have to worry
-about having gas money.
+about having ETH in the spender account.
 
 Create a sibling directory to `app` called `lib` and add the following `spender.ts` file to create your spender client.
 
@@ -604,20 +598,6 @@ export async function POST(request: NextRequest) {
           to: spendPermissionManagerAddress,
           args: [spendPermission, signature],
         },
-      ],
-    });
-
-    const userOpReceipt =
-      await spenderBundlerClient.waitForUserOperationReceipt({
-        hash: userOpHash,
-      });
-
-    if (userOpReceipt.success) {
-      console.log("Spend Permission approved");
-    }
-
-    const spendUserOpHash = await spenderBundlerClient.sendUserOperation({
-      calls: [
         {
           abi: spendPermissionManagerAbi,
           functionName: "spend",
@@ -627,16 +607,15 @@ export async function POST(request: NextRequest) {
       ],
     });
 
-    const spendUserOpReceipt =
+    const userOpReceipt =
       await spenderBundlerClient.waitForUserOperationReceipt({
-        hash: spendUserOpHash,
+        hash: userOpHash,
       });
-    console.log({ userOpReceipt });
 
     return NextResponse.json({
-      status: spendUserOpReceipt.success ? "success" : "failure",
-      transactionHash: spendUserOpReceipt.receipt.transactionHash,
-      transactionUrl: `https://sepolia.basescan.org/tx/${spendUserOpReceipt.receipt.transactionHash}`,
+      status: userOpReceipt.success ? "success" : "failure",
+      transactionHash: userOpReceipt.receipt.transactionHash,
+      transactionUrl: `https://sepolia.basescan.org/tx/${userOpReceipt.receipt.transactionHash}`,
     });
   } catch (error) {
     console.error(error);
@@ -646,42 +625,18 @@ export async function POST(request: NextRequest) {
 ```
 
 This code is using our spender client to do two things:
-1. calls `approveWithSignature` approve the spend permission
+1. calls `approveWithSignature` to approve the spend permission
 2. calls `spend` to make use of our allowance and spend our user's funds
 
 Since our spender is a smart contract wallet, notice that these calls are formulated as userOperations instead of 
 direct transactions. They'll be submitted to the blockchain by a bundler and the gas will be subsidized by our
 Coinbase Developer Platform paymaster.
 
-
-Note that we could actually bundle both of these calls together if we wanted to, as long as we put 
-the approval call first. The calls are serialized separately in our example for easier debugging, 
-but here's an example of batching our calls:
-
-```ts
-    const userOpHash = await spenderBundlerClient.sendUserOperation({
-      calls: [
-        {
-          abi: spendPermissionManagerAbi,
-          functionName: "approveWithSignature",
-          to: spendPermissionManagerAddress,
-          args: [spendPermission, signature],
-        },
-        {
-          abi: spendPermissionManagerAbi,
-          functionName: "spend",
-          to: spendPermissionManagerAddress,
-          args: [spendPermission, "1"], // spend 1 wei
-        },
-      ],
-    });
-```
-
 ### Try out your app
 
 Run your app locally with `bun run dev` and visit `localhost:3000`.
 
-You should see a "Connect wallet" button in the top right corner.
+You should see a "Connect wallet" button in the top right corner; click that.
 
 You can create a new Smart Wallet via the popup. Note that you'll need a little ETH in this wallet to fund the
 deployment of your account. If you don't have any testnet ETH, try this [Coinbase faucet](https://portal.cdp.coinbase.com/products/faucet).
