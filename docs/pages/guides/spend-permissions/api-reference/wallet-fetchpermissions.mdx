@@ -33,9 +33,9 @@ type FetchPermissionsResultItem = {
     spender: string; // address
     token: string; // address
     allowance: string; // base 10 numeric string
-    period: number;
-    start: number;
-    end: number;
+    period: number; // unix time, seconds
+    start: number; // unix time, seconds
+    end: number; // unix time, seconds
     salt: string; // base 10 numeric string
     extraData: string // hex formatted bytes, i.e. "0x" for empty data
   };
