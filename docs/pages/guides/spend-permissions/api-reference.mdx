@@ -1,0 +1,275 @@
+# Spend Permissions API Reference
+
+A more detailed reference guide for integrating with Spend Permissions.
+
+Integrating with Spend Permissions involves interacting with several APIs:
+- direct interaction with the `SpendPermissionManager` smart contract
+- interaction with the users' connected Coinbase Smart Wallet
+- optionally, using the Coinbase Wallet API to fetch information about existing permissions
+
+## `SpendPermissionManager.sol` smart contract
+
+### Structs
+
+#### `SpendPermission`
+Defines the complete parameters of a spend permission.
+
+| Field       | Type     | Description                                                                 |
+|-------------|----------|-----------------------------------------------------------------------------|
+| `account`   | `address`| Smart account this spend permission is valid for.                           |
+| `spender`   | `address`| Entity that can spend `account`'s tokens.                                   |
+| `token`     | `address`| Token address (ERC-7528 native token address or ERC-20 contract).           |
+| `allowance` | `uint160`| Maximum allowed value to spend within each `period`.                        |
+| `period`    | `uint48` | Time duration for resetting used `allowance` on a recurring basis (seconds).|
+| `start`     | `uint48` | Timestamp this spend permission is valid after (unix seconds).              |
+| `end`       | `uint48` | Timestamp this spend permission is valid until (unix seconds).              |
+| `salt`      | `uint256`| An arbitrary salt to differentiate unique spend permissions with otherwise identical data. |
+| `extraData` | `bytes`  | Arbitrary data to include in the signature.                                 |
+
+---
+
+#### `SpendPermissionBatch`
+
+| Field         | Type                   | Description                                                                 |
+|---------------|------------------------|-----------------------------------------------------------------------------|
+| `account`     | `address`              | Smart account this spend permission is valid for.                           |
+| `period`      | `uint48`               | Time duration for resetting used allowance on a recurring basis (seconds).  |
+| `start`       | `uint48`               | Timestamp this spend permission is valid after (unix seconds).              |
+| `end`         | `uint48`               | Timestamp this spend permission is valid until (unix seconds).              |
+| `permissions` | `PermissionDetails[]`  | Array of PermissionDetails structs defining properties that apply per-permission. |
+
+---
+
+#### `PermissionDetails`
+
+| Field       | Type     | Description                                                                 |
+|-------------|----------|-----------------------------------------------------------------------------|
+| `spender`   | `address`| Entity that can spend user funds.                                           |
+| `token`     | `address`| Token address (ERC-7528 ether address or ERC-20 contract).                  |
+| `allowance` | `uint160`| Maximum allowed value to spend within a recurring period.                   |
+| `salt`      | `uint256`| An arbitrary salt to differentiate unique spend permissions with otherwise identical data. |
+| `extraData` | `bytes`  | Arbitrary data to include in the signature.                                 |
+
+---
+
+#### `PeriodSpend`
+
+| Field       | Type     | Description                                                                 |
+|-------------|----------|-----------------------------------------------------------------------------|
+| `start`     | `uint48` | Start time of the period (unix seconds).                                    |
+| `end`       | `uint48` | End time of the period (unix seconds).                                      |
+| `spend`     | `uint160`| Accumulated spend amount for period.                                        |
+
+---
+
+### Contract functions
+#### `approve`
+
+Approve a spend permission via a direct call from the account. Only callable by the account owner specified in the spend permission.
+
+```solidity
+function approve(SpendPermission calldata spendPermission) external requireSender(spendPermission.account);
+```
+
+---
+
+#### `approveWithSignature`
+
+Approve a spend permission via a signature from the account owner. Compatible with [ERC-6492](https://eips.ethereum.org/EIPS/eip-6492) signatures.
+
+```solidity
+function approveWithSignature(SpendPermission calldata spendPermission, bytes calldata signature) external;
+```
+
+---
+
+#### `approveBatchWithSignature`
+
+Approve a batch of spend permissions via one signature from the account owner. Batched permissions share an `account`, `period`,
+`start` and `end`. Details unique to each permission in the batch are specified by an array of `PermissionDetails` structs.
+
+```solidity
+function approveBatchWithSignature(SpendPermissionBatch memory spendPermissionBatch, bytes calldata signature) external;
+```
+
+---
+
+#### `spend`
+
+Spend tokens using a spend permission, transferring them from the account to the spender. Only callable by the spender specified in the permission.
+
+```solidity
+function spend(SpendPermission memory spendPermission, uint160 value) external requireSender(spendPermission.spender);
+```
+
+---
+
+#### `revoke`
+
+Revoke a spend permission, permanently disabling its use. Only callable by the account owner specified in the spend permission.
+
+```solidity
+function revoke(SpendPermission calldata spendPermission) external requireSender(spendPermission.account);
+```
+
+---
+
+#### `getHash`
+
+Generate a hash of a `SpendPermission` struct for signing, in accordance with [EIP-712](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-712.md).
+
+```solidity
+function getHash(SpendPermission memory spendPermission) public view returns (bytes32);
+```
+
+---
+
+#### `getBatchHash`
+
+Generate a hash of a `SpendPermissionBatch` struct for signing, in accordance with [EIP-712](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-712.md). 
+Reverts if the batch is empty.
+
+```solidity
+function getBatchHash(SpendPermissionBatch memory spendPermissionBatch) public view returns (bytes32);
+```
+
+---
+
+#### `isApproved`
+
+Check if a spend permission is approved and not revoked.
+
+```solidity
+function isApproved(SpendPermission memory spendPermission) public view returns (bool);
+```
+
+---
+
+#### `getCurrentPeriod`
+
+Retrieve the start, end, and accumulated spend for the current period of a spend permission.
+
+```solidity
+function getCurrentPeriod(SpendPermission memory spendPermission) public view returns (PeriodSpend memory);
+```
+## Coinbase Smart Wallet clients
+
+### Using Viem
+[Viem](https://viem.sh/) is a TypeScript interface for Ethereum that provides low-level stateless primitives for interacting with Ethereum.
+
+- **[Getting Started with Viem](https://viem.sh/docs/getting-started.html)** 
+
+- **[Getting Started with Account Abstraction](https://viem.sh/account-abstraction#getting-started-with-account-abstraction)** 
+   Viem provides support for account abstraction clients, including specific support for Coinbase Smart Wallet and paymasters.
+
+### Using OnchainKit
+[OnchainKit](https://onchainkit.xyz/) is a collection of React components and TypeScript utilities that help developers quickly build
+onchain applications.
+
+### Using Wagmi
+[Wagmi](https://wagmi.sh/) is a collection of React Hooks that facilitate development of blockchain frontends.
+
+-  **[Getting Started with Wagmi](https://wagmi.sh/react/getting-started)** 
+- **[coinbaseWallet](https://wagmi.sh/react/api/connectors/coinbaseWallet)** 
+
+
+## Coinbase Wallet API
+
+### `wallet_fetchPermissions`
+
+#### Schema
+```typescript
+type FetchPermissionsRequest = {
+  account: Address;
+  chainId: string; // 0x...
+  spender: Address;
+  pageOptions: PageOptions; // optional, defaults to page size 50 and empty cursor
+}
+
+type FetchPermissionsResponse = {
+  permissions: FetchPermissionsResponseItem[];
+  pageDescription: PageDescription;
+}
+
+type PageOptions = {
+  pageSize number; // number of items requested, defaults to 50
+  cursor string; // identifier for where the page should start
+}
+
+type PageDescription = {
+  pageSize number; // number of items returned
+  nextCursor string; // identifier for where the next page should start
+}
+
+type FetchPermissionsResponseItem = {
+  createdAt: number; // UTC timestamp for when the permission was granted
+  permissionHash: string;
+  signature: string;
+  permission: {
+    account: string;
+    spender: string;
+    token: string;
+    allowance: string; // base 10 numeric string
+    period: number;
+    start: number;
+    end: number;
+    salt: string; // base 10 numeric string
+    extraData: string // 0x...
+  };
+}
+```
+
+#### Example request
+
+```bash
+curl --location 'https://wallet-chain-proxy-dev.cbhq.net?targetName=base-sepolia' \
+--header 'Content-Type: application/json' \
+--data '{
+    "jsonrpc":"2.0",
+    "method":"wallet_fetchPermissions",
+    "params":["0x764e97e81a0b1138c70525499037e27e442bd3b2","0x14A34","0xd4e17478581878a967aa22d45a5158a9fe96aa08"],
+    "id":1
+}'
+```
+
+#### Example response
+
+```bash
+{
+  "permissions": [
+    {
+      "createdAt": 1730320800,
+      "permissionHash": "0xe15ff6f0f1e666a7b55e3886af487b0f86f17dad1c103932aa215adcd9d3420f",
+      "signature": "0x000000000000000000000000ca11bde05977b3631167028862be2a173976ca110000000000000000000000000000000000000000000000000000000000000060000000000000000000000000000000000000000000000000000000000000028000000000000000000000000000000000000000000000000000000000000001e482ad56cb0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000200000000000000000000000000ba5ed0c6aa8c49038f819e587e2633c4a9f428a0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000000000e43ffba36f00000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000040c2a3c9b9ac1dbb4c0887d85bb36e1f406f412eb509be7f50bc0dd0f7e10c2ae239c5385467133101accc9789e5df580ae61eb036eb978d2c9b08af7bd50708d2000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002800000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000c000000000000000000000000000000000000000000000000000000000000001200000000000000000000000000000000000000000000000000000000000000017000000000000000000000000000000000000000000000000000000000000000152b3bb6203349a2d949b434711fec2dc2210b54f39b330978e7d861594574d370de2f0d78b35d17226185c5a9580215b96f90d874e6e109d2c5c11f55d928d0b000000000000000000000000000000000000000000000000000000000000002549960de5880e8c687434170f6476605b8fe4aeb9a28632c7995cf3ba831d9763050000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000867b2274797065223a22776562617574686e2e676574222c226368616c6c656e6765223a2238425359395564574a685f41383468565a5a674f4b6e42326e3965465471365a5944656846673252556a73222c226f726967696e223a22687474703a2f2f6c6f63616c686f73743a33303035222c2263726f73734f726967696e223a66616c73657d00000000000000000000000000000000000000000000000000006492649264926492649264926492649264926492649264926492649264926492",
+      "spendPermission": {
+        "spender": "0xd4e17478581878a967aa22d45a5158a9fe96aa08",
+        "account": "0x764e97e81a0b1138c70525499037e27e442bd3b2",
+        "token": "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+        "allowance": "10000000000",
+        "period": 86400,
+        "start": 1724264802,
+        "end": 17242884802,
+        "salt": "1",
+        "extraData": "0x"
+      }
+    },
+    {
+      "createdAt": 1730320968,
+      "permissionHash": "0x4c1f453f72463e7ba809a33fd2139844c0fcc65eb41301147a91aadc4f784468",
+      "signature": "0x0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000260000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000c0000000000000000000000000000000000000000000000000000000000000012000000000000000000000000000000000000000000000000000000000000000170000000000000000000000000000000000000000000000000000000000000001b5b5e61db096d44311246729f88cf1fe57fe233e5315f94cf541e6fe3086eaef5142efb9267d19cd64b97866a8cfa6c3b872da47264db3c15d36d75e44373f9f000000000000000000000000000000000000000000000000000000000000002549960de5880e8c687434170f6476605b8fe4aeb9a28632c7995cf3ba831d9763050000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f37b2274797065223a22776562617574686e2e676574222c226368616c6c656e6765223a22704746725847794a654c514f427a6e554c3763533937726435654e46634d396a3357647064704f565f474d222c226f726967696e223a22687474703a2f2f6c6f63616c686f73743a33303035222c2263726f73734f726967696e223a66616c73652c226f746865725f6b6579735f63616e5f62655f61646465645f68657265223a22646f206e6f7420636f6d7061726520636c69656e74446174614a534f4e20616761696e737420612074656d706c6174652e205365652068747470733a2f2f676f6f2e676c2f796162506578227d00000000000000000000000000",
+      "spendPermission": {
+        "spender": "0xd4e17478581878a967aa22d45a5158a9fe96aa08",
+        "account": "0x764e97e81a0b1138c70525499037e27e442bd3b2",
+        "token": "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+        "allowance": "10000000000",
+        "period": 86400,
+        "start": 1724264802,
+        "end": 17242884802,
+        "salt": "2",
+        "extraData": "0x"
+      }
+    }
+  ]
+}
+
+```
