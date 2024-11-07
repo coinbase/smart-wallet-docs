@@ -35,18 +35,18 @@ We insecurely use an environment variable in this demo for simplicity.
 Create a local `.env` file and add these environment variables:
 
 ```
-SUBSCRIPTION_PRIVATE_KEY=
-NEXT_PUBLIC_SUBSCRIPTION_SPENDER=
+SPENDER_OWNER_PRIVATE_KEY=
+NEXT_PUBLIC_SPENDER_WALLET_ADDRESS=
 NEXT_PUBLIC_CDP_API_KEY=
 BASE_SEPOLIA_PAYMASTER_URL=
 ```
 
-The `SUBSCRIPTION_PRIVATE_KEY` will be our spender private key and `NEXT_PUBLIC_SUBSCRIPTION_SPENDER` will be the address of our spender smart contract wallet.
+The `SPENDER_OWNER_PRIVATE_KEY` will be our spender private key and `NEXT_PUBLIC_SPENDER_WALLET_ADDRESS` will be the address of our spender smart contract wallet.
 
 You can use a development private key you already have, or generate a random new one. If you have [Foundry](https://book.getfoundry.sh/) installed, you can generate a new
 wallet via `cast wallet new`. This wallet won't need to hold any ETH for gas because our spender smart contract wallet will be sponsored by a paymaster.
 
-Paste your private key as the value for `SUBSCRIPTION_PRIVATE_KEY`. This should be hex-prefixed, i.e. `SUBSCRIPTION_PRIVATE_KEY=0xAbC123...dEf456`
+Paste your private key as the value for `SPENDER_OWNER_PRIVATE_KEY`. This should be hex-prefixed, i.e. `SPENDER_OWNER_PRIVATE_KEY=0xAbC123...dEf456`
 
 This private key is an EOA, but we want our spender to be a smart contract wallet. We'll achieve this by treating our new EOA as the owner of a
 brand new [Coinbase Smart Wallet](/why.mdx). The address of a smart contract wallet is deterministic, and depends on the bytecode of the implementation
@@ -76,7 +76,7 @@ export async function logSpenderSmartContractWalletAddress() {
   });
 
   const spenderAccountOwner = privateKeyToAccount(
-    process.env.NEXT_PUBLIC_SUBSCRIPTION_PRIVATE_KEY! as Hex
+    process.env.NEXT_PUBLIC_SPENDER_OWNER_PRIVATE_KEY! as Hex
   );
   console.log("spenderAccountOwner", spenderAccountOwner.address);
 
@@ -100,7 +100,7 @@ if (require.main === module) {
 ```
 
 Run this script to log the counterfactual address of your new smart contract wallet and assign this address to the 
-`NEXT_PUBLIC_SUBSCRIPTION_SPENDER` variable in your .env:
+`NEXT_PUBLIC_SPENDER_WALLET_ADDRESS` variable in your .env:
 
 ```bash
 npm install -g ts-node typescript @types/node dotenv && ts-node logSpenderSmartContractWalletAddress.ts
@@ -145,7 +145,7 @@ export async function getSpenderBundlerClient() {
   });
 
   const spenderAccountOwner = privateKeyToAccount(
-    process.env.SUBSCRIPTION_PRIVATE_KEY! as Hex
+    process.env.SPENDER_OWNER_PRIVATE_KEY! as Hex
   );
 
   const spenderAccount = await toCoinbaseSmartAccount({
@@ -271,7 +271,7 @@ export default function Subscribe() {
 
     const spendPermission = {
       account: accountAddress, // User wallet address
-      spender: process.env.NEXT_PUBLIC_SUBSCRIPTION_SPENDER! as Address, // Spender smart contract wallet address
+      spender: process.env.NEXT_PUBLIC_SPENDER_WALLET_ADDRESS! as Address, // Spender smart contract wallet address
       token: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE" as Address, // ETH (https://eips.ethereum.org/EIPS/eip-7528)
       allowance: parseUnits("10", 18),
       period: 86400, // seconds in a day
@@ -469,7 +469,7 @@ export default function Subscribe() {
     // Define a `SpendPermission` to request from the user    // [!code focus]
     const spendPermission = {  // [!code focus]
       account: accountAddress, // User wallet address // [!code focus]
-      spender: process.env.NEXT_PUBLIC_SUBSCRIPTION_SPENDER! as Address, // Spender smart contract wallet address // [!code focus]
+      spender: process.env.NEXT_PUBLIC_SPENDER_WALLET_ADDRESS! as Address, // Spender smart contract wallet address // [!code focus]
       token: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE" as Address, // ETH (https://eips.ethereum.org/EIPS/eip-7528) // [!code focus]
       allowance: parseUnits("10", 18), // [!code focus]
       period: 86400, // seconds // [!code focus]
