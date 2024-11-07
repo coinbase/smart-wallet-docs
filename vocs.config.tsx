@@ -107,6 +107,7 @@ export default defineConfig({
         },
         {
           text: "Spend Permissions",
+          collapsed: true,
           items: [
             {
               text: "Overview",
@@ -118,7 +119,20 @@ export default defineConfig({
             },
             {
               text: "API Reference",
-              link: "/guides/spend-permissions/api-reference",
+              items: [
+                {
+                  text: "SpendPermissionManager Contract",
+                  link: "/guides/spend-permissions/api-reference/spendpermissionmanager",
+                },
+                {
+                  text: "wallet_fetchPermissions",
+                  link: "/guides/spend-permissions/api-reference/wallet-fetchpermissions",
+                },
+                {
+                  text: "Client Resources",
+                  link: "/guides/spend-permissions/api-reference/client-resources",
+                },
+              ],
             },
           ],
         },
