@@ -27,12 +27,17 @@ From here, we'll modify the app to assemble, sign, approve and use a spend permi
 
 ### Set up your spender wallet
 
-<Callout type="danger">
-Always secure your private keys appropriately!  
-We insecurely use an environment variable in this demo for simplicity.
-</Callout>
+In this example, our app spender wallet will be a brand new Coinbase Smart Wallet. This means the wallet itself is a smart
+contract, and this smart contract has at least one owner that can produce signatures on behalf of the wallet.
+In our case, this owner will be an EOA. Our app will need access to this owner EOA private key, to generate 
+signatures, as well as the address of the actual smart contract wallet, which is the spender address actually
+being authorized by the spend permission.
 
-Create a local `.env` file and add these environment variables:
+The address of a smart contract wallet is deterministic, and depends on the bytecode of the implementation
+contract combined with a salt, which in our case will be an array consisting of the initial owner(s) of the smart contract wallet. 
+See the [smart wallet repository](https://github.com/coinbase/smart-wallet) for more details about how this works. 
+
+Add these environment variables to your `.env` file:
 
 ```
 SPENDER_OWNER_PRIVATE_KEY=
@@ -43,20 +48,19 @@ BASE_SEPOLIA_PAYMASTER_URL=
 
 The `SPENDER_OWNER_PRIVATE_KEY` will be our spender private key and `NEXT_PUBLIC_SPENDER_WALLET_ADDRESS` will be the address of our spender smart contract wallet.
 
+<Callout type="danger">
+Always secure your private keys appropriately!  
+We insecurely use an environment variable in this demo for simplicity.
+</Callout>
+
 You can use a development private key you already have, or generate a random new one. If you have [Foundry](https://book.getfoundry.sh/) installed, you can generate a new
 wallet via `cast wallet new`. This wallet won't need to hold any ETH for gas because our spender smart contract wallet will be sponsored by a paymaster.
 
 Paste your private key as the value for `SPENDER_OWNER_PRIVATE_KEY`. This should be hex-prefixed, i.e. `SPENDER_OWNER_PRIVATE_KEY=0xAbC123...dEf456`
 
-This private key is an EOA, but we want our spender to be a smart contract wallet. We'll achieve this by treating our new EOA as the owner of a
-brand new [Coinbase Smart Wallet](/why.mdx). The address of a smart contract wallet is deterministic, and depends on the bytecode of the implementation
-contract combined with a salt, which in our case will be an array consisting of the initial owner(s) of the smart contract wallet. See the 
-[smart wallet repository](https://github.com/coinbase/smart-wallet) for more details. 
+We'll have to generate the deterministic address of the Smart Wallet owned by this private key so we can store it as a public environment variable.
 
-We'll generate the deterministic address of this Smart Wallet
-so we can store it as a public environment variable.
-
-Paste the following code into a top-level file called `logSpenderSmartWalletAddress.ts`
+Paste the following code into a file at the project root called `logSpenderSmartWalletAddress.ts`
 
 ```ts [logSpenderSmartWalletAddress.tsx]
 import { createPublicClient, Hex, http } from "viem";
@@ -69,14 +73,14 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-export async function logSpenderSmartContractWalletAddress() {
+export async function logSpenderSmartWalletAddress() {
   const client = createPublicClient({
     chain: baseSepolia,
     transport: http(),
   });
 
   const spenderAccountOwner = privateKeyToAccount(
-    process.env.NEXT_PUBLIC_SPENDER_OWNER_PRIVATE_KEY! as Hex
+    process.env.SPENDER_OWNER_PRIVATE_KEY! as Hex
   );
   console.log("spenderAccountOwner", spenderAccountOwner.address);
 
@@ -88,7 +92,7 @@ console.log("Spender Smart Wallet Address:", spenderAccount.address);
 }
 
 async function main() {
-  await logSpenderSmartContractWalletAddress();
+  await logSpenderSmartWalletAddress();
 }
 
 if (require.main === module) {
@@ -103,7 +107,7 @@ Run this script to log the counterfactual address of your new smart contract wal
 `NEXT_PUBLIC_SPENDER_WALLET_ADDRESS` variable in your .env:
 
 ```bash
-npm install -g ts-node typescript @types/node dotenv && ts-node logSpenderSmartContractWalletAddress.ts
+npm install -g ts-node typescript @types/node dotenv && ts-node logSpenderSmartWalletAddress.ts
 ```
 
 <Callout type="info">
@@ -112,7 +116,7 @@ You may need to temporarily set the value of `"module"` in your `tsconfig.json` 
 
 
 ### Set up remaining environment variables
-Next, make sure you have a Coinbase Developer Platform API key, which you can get [here](https://portal.cdp.coinbase.com/). 
+Next, make sure you have a Coinbase Developer Platform Client API key, which you can get [here](https://portal.cdp.coinbase.com/). 
 Assign this key to `NEXT_PUBLIC_CDP_API_KEY` in your `.env`.
 
 You'll need one more environment variable, which is `BASE_SEPOLIA_PAYMASTER_URL`.  
@@ -172,6 +176,9 @@ export async function getSpenderBundlerClient() {
 
 In `providers.tsx`, update the value of `keysUrl` to be `"https://keys-beta.coinbase.com/connect"`.
 This will point your app to connect to our public dev environment for smart wallet connections.
+
+We also want to point our chain id to Base Sepolia testnet by setting replacing all instances of `base`
+with `baseSepolia` in this file (including the import). 
 
 Your config should now look like this:
 
@@ -234,7 +241,7 @@ import {
 } from "wagmi";
 import { Address, Hex, parseUnits } from "viem";
 import { useQuery } from "@tanstack/react-query";
-import { spendPermissionManagerAddress } from "@/lib/abi/SpendPermissionManager";
+import { spendPermissionManagerAddress } from "@/app/lib/abi/SpendPermissionManager";
 
 export default function Subscribe() {
   const [isDisabled, setIsDisabled] = useState(false);
@@ -430,9 +437,9 @@ export default function Subscribe() {
 }
 ```
 
-Also be sure to add this new `Subscribe` button component to the top level component in `Page.tsx`. You can put it somewhere between the `<main></main>` tags:
+Also be sure to add this new `Subscribe` button component to the top level component in `page.tsx`. You can put it somewhere between the `<main></main>` tags:
 
-```tsx [Page.tsx]
+```tsx [page.tsx]
   ...
   <main>
    ...
