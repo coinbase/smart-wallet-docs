@@ -170,9 +170,33 @@ export async function getSpenderBundlerClient() {
 
 ### Configure the Smart Wallet URL
 
-In `providers.tsx`, update the value of `keysUrl` to be `"https://wallet.chameleon.systems"`.
+In `providers.tsx`, update the value of `keysUrl` to be `"https://keys-beta.coinbase.com/connect"`.
 This will point your app to connect to our public dev environment for smart wallet connections.
 
+Your config should now look like this:
+
+```
+const config = createConfig({
+  chains: [baseSepolia],
+  connectors: [
+    coinbaseWallet({
+      appName: process.env.NEXT_PUBLIC_ONCHAINKIT_PROJECT_NAME,
+      preference: process.env.NEXT_PUBLIC_ONCHAINKIT_WALLET_CONFIG as
+        | "smartWalletOnly"
+        | "all",
+      // @ts-ignore
+      keysUrl: "https://keys-beta.coinbase.com/connect"
+    }),
+  ],
+  storage: createStorage({
+    storage: cookieStorage,
+  }),
+  ssr: true,
+  transports: {
+    [baseSepolia.id]: http(),
+  },
+});
+```
 
 ### Set up our interface to the `SpendPermissionManager` smart contract
 
