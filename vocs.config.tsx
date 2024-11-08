@@ -107,6 +107,7 @@ export default defineConfig({
         },
         {
           text: "Spend Permissions",
+          collapsed: true,
           items: [
             {
               text: "Overview",
@@ -115,6 +116,23 @@ export default defineConfig({
             {
               text: "Quick Start",
               link: "/guides/spend-permissions/quick-start",
+            },
+            {
+              text: "API Reference",
+              items: [
+                {
+                  text: "SpendPermissionManager Contract",
+                  link: "/guides/spend-permissions/api-reference/spendpermissionmanager",
+                },
+                {
+                  text: "wallet_fetchPermissions",
+                  link: "/guides/spend-permissions/api-reference/wallet-fetchpermissions",
+                },
+                {
+                  text: "Client Resources",
+                  link: "/guides/spend-permissions/api-reference/client-resources",
+                },
+              ],
             },
           ],
         },
@@ -172,8 +190,8 @@ export default defineConfig({
           link: "https://github.com/coinbase/smart-wallet",
         },
         {
-          text: "Smart Wallet Permissions",
-          link: "https://github.com/coinbase/smart-wallet-permissions",
+          text: "Spend Permissions",
+          link: "https://github.com/coinbase/spend-permissions",
         },
         {
           text: "MagicSpend",
