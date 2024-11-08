@@ -2,22 +2,26 @@ import { Callout } from "vocs/components";
 
 # Getting Started with Spend Permissions
 
-This guide will walk you through a simple example of building an app that leverages Spend Permissions using 
+This guide will walk you through a simple example of building an app that leverages Spend Permissions using
 [OnchainKit](https://onchainkit.xyz/), [Viem](https://viem.sh/) and [Wagmi](https://wagmi.sh/).
 
-A complete example of this demo can be found [here](https://github.com/ilikesymmetry/subscribe-onchain).  
+A complete example of this demo can be found [here](https://github.com/ilikesymmetry/spend-permissions-quickstart).  
 Smart contract deployment addresses for `SpendPermissionManager.sol` can be found [here](https://github.com/coinbase/spend-permissions).
 
 :::steps
+
 ### Set up a basic app template using OnchainKit
+
 Set up a boilerplate React/Next app by running the following command and following the instructions. Don't worry about your Coinbase
 Developer Platform API Key, we'll get one of those later. When prompted to use Coinbase Smart Wallet select "yes".
 
 ```bash
 bun create onchain@latest
 ```
+
 <Callout type="info">
-You may need to install the package manager [`bun`](https://bun.sh/docs/installation)
+  You may need to install the package manager
+  [`bun`](https://bun.sh/docs/installation)
 </Callout>
 
 This will generate an app that is ready to run and contains a wallet connection button that users can use
@@ -25,7 +29,7 @@ to connect their smart wallet to the application.
 
 From here, we'll modify the app to assemble, sign, approve and use a spend permission to spend our users' funds!
 
-### Set up your spender wallet and environment 
+### Set up your spender wallet and environment
 
 Add the following variables to your `.env`:
 
@@ -36,27 +40,115 @@ NEXT_PUBLIC_CDP_API_KEY=
 BASE_SEPOLIA_PAYMASTER_URL=
 ```
 
-
 <Callout type="danger">
-Always secure your private keys appropriately!  
-We insecurely use an environment variable in this demo for simplicity.
+  Always secure your private keys appropriately! We insecurely use an
+  environment variable in this demo for simplicity.
 </Callout>
 
 Our spender will need to sign transactions from our app, so we'll create a wallet (private key and address) for our spender.
 If you have [Foundry](https://book.getfoundry.sh/) installed, you can generate a new wallet via `cast wallet new`. Assign the private key and address to
 `SPENDER_PRIVATE_KEY` and `NEXT_PUBLIC_SPENDER_ADDRESS`, respectively.
 
-Next, make sure you have a Coinbase Developer Platform Client API key (different from Secret API Key), which you can get [here](https://portal.cdp.coinbase.com/). 
-Assign this key to `NEXT_PUBLIC_CDP_API_KEY` in your `.env`.
+<<<<<<< HEAD
+Next, make sure you have a Coinbase Developer Platform Client API key (different from Secret API Key), which you can get [here](https://portal.cdp.coinbase.com/).
+=======
+
+```
+SUBSCRIPTION_PRIVATE_KEY=
+NEXT_PUBLIC_SUBSCRIPTION_SPENDER=
+NEXT_PUBLIC_CDP_API_KEY=
+BASE_SEPOLIA_PAYMASTER_URL=
+```
+
+The `SUBSCRIPTION_PRIVATE_KEY` will be our spender private key and `NEXT_PUBLIC_SUBSCRIPTION_SPENDER` will be the address of our spender smart contract wallet.
+
+You can use a development private key you already have, or generate a random new one. If you have [Foundry](https://book.getfoundry.sh/) installed, you can generate a new
+wallet via `cast wallet new`. This wallet won't need to hold any ETH for gas because our spender smart contract wallet will be sponsored by a paymaster.
+
+Paste your private key as the value for `SUBSCRIPTION_PRIVATE_KEY`. This should be hex-prefixed, i.e. `SUBSCRIPTION_PRIVATE_KEY=0xAbC123...dEf456`
+
+This private key is an EOA, but we want our spender to be a smart contract wallet. We'll achieve this by treating our new EOA as the owner of a
+brand new [Coinbase Smart Wallet](/why.mdx). The address of a smart contract wallet is deterministic, and depends on the bytecode of the implementation
+contract combined with a salt, which in our case will be an array consisting of the initial owner(s) of the smart contract wallet. See the
+[smart wallet repository](https://github.com/coinbase/smart-wallet) for more details.
+
+We'll generate the deterministic address of this Smart Wallet
+so we can store it as a public environment variable.
+
+Paste the following code into a top-level file called `logSpenderSmartWalletAddress.ts`
+
+```ts [logSpenderSmartWalletAddress.tsx]
+import { createPublicClient, Hex, http } from "viem";
+import { baseSepolia } from "viem/chains";
+import { privateKeyToAccount } from "viem/accounts";
+import { toCoinbaseSmartAccount } from "viem/account-abstraction";
+import dotenv from "dotenv";
+
+dotenv.config();
+
+export async function logSpenderSmartContractWalletAddress() {
+  const client = createPublicClient({
+    chain: baseSepolia,
+    transport: http(),
+  });
+
+  const spenderAccountOwner = privateKeyToAccount(
+    process.env.NEXT_PUBLIC_SUBSCRIPTION_PRIVATE_KEY! as Hex
+  );
+  console.log("spenderAccountOwner", spenderAccountOwner.address);
+
+  const spenderAccount = await toCoinbaseSmartAccount({
+    client,
+    owners: [spenderAccountOwner],
+  });
+  console.log("Spender Smart Wallet Address:", spenderAccount.address);
+}
+
+async function main() {
+  await logSpenderSmartContractWalletAddress();
+}
+
+if (require.main === module) {
+  main().catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });
+}
+```
+
+Run this script to log the counterfactual address of your new smart contract wallet and assign this address to the
+`NEXT_PUBLIC_SUBSCRIPTION_SPENDER` variable in your .env:
+
+```bash
+npm install -g ts-node typescript @types/node dotenv && ts-node logSpenderSmartContractWalletAddress.ts
+```
+
+<Callout type="info">
+  You may need to temporarily set the value of `"module"` in your
+  `tsconfig.json` to `"commonjs"` to run this script.
+</Callout>
+
+### Set up remaining environment variables
+
+Next, make sure you have a Coinbase Developer Platform API key, which you can get [here](https://portal.cdp.coinbase.com/).
+
+> > > > > > > 0cf0e12 (Update sample repo and lint)
+> > > > > > > Assign this key to `NEXT_PUBLIC_CDP_API_KEY` in your `.env`.
 
 You'll need one more environment variable, which is `BASE_SEPOLIA_PAYMASTER_URL`.  
 This one's easy if you already have your CDP API key:  
-  `"https://api.developer.coinbase.com/rpc/v1/base-sepolia/{YOUR_CDP_API_KEY}"`
-
+ `"https://api.developer.coinbase.com/rpc/v1/base-sepolia/{YOUR_CDP_API_KEY}"`
 
 ### Create a spender client
 
+<<<<<<< HEAD
 Our client is what our app will use to communicate with the blockchain.
+=======
+Our client is what our app will use to communicate with the blockchain. In this example, our client is a Coinbase Smart Wallet,
+and we'll use a [paymaster](/guides/paymasters.mdx) to sponsor our transactions so we don't have to worry
+about having ETH in the spender account.
+
+> > > > > > > 0cf0e12 (Update sample repo and lint)
 
 Create a sibling directory to `app` called `lib` and add the following `spender.ts` file to create your spender client.
 
@@ -93,11 +185,11 @@ In `app/providers.tsx`, update the value of `keysUrl` to be `"https://keys-dev.c
 This will point your app to connect to our public dev environment for smart wallet connections.
 
 We also want to point our chain id to Base Sepolia testnet by setting replacing all instances of `base`
-with `baseSepolia` in this file (including the import). 
+with `baseSepolia` in this file (including the import).
 
 Your config in `app/providers.tsx` should now look like this:
 
-```
+```ts
 const config = createConfig({
   chains: [baseSepolia],
   connectors: [
@@ -107,7 +199,7 @@ const config = createConfig({
         | "smartWalletOnly"
         | "all",
       // @ts-ignore
-      keysUrl: "https://keys-dev.coinbase.com/connect"
+      keysUrl: "https://keys-dev.coinbase.com/connect",
     }),
   ],
   storage: createStorage({
@@ -128,15 +220,16 @@ configuration so our client knows how to interact with this contract.
 Inside your `/lib` directory, create a new subdirectory called `/abi`. This is where we'll store information about
 [smart contract interfaces](https://docs.soliditylang.org/en/latest/abi-spec.html) and addresses.
 
-Add a new file called `SpendPermissionManager.ts` and copy and paste the code from [this file](https://github.com/ilikesymmetry/subscribe-onchain/blob/1be831ec664edf505c539db7b0485f7a78e6bfe5/lib/abi/SpendPermissionManager.ts).
+Add a new file called `SpendPermissionManager.ts` and copy and paste the code from [this file](https://github.com/ilikesymmetry/spend-permissions-quickstart/blob/main/lib/abi/SpendPermissionManager.ts).
 
 <Callout type="info">
-[Here's an example](https://docs.basescan.org/api-endpoints/contracts) of finding the ABI for any verified contract on Basescan.
+  [Here's an example](https://docs.basescan.org/api-endpoints/contracts) of
+  finding the ABI for any verified contract on Basescan.
 </Callout>
 
 ### Add a Subscribe button
 
-Let's create a button that will prompt a user to subscribe to our services by authorizing 
+Let's create a button that will prompt a user to subscribe to our services by authorizing
 a spend permission for our app to spend their assets.
 
 Create a subdirectory inside `/app` called `/components` and paste the following code into a new file called `Subscribe.tsx`.
@@ -230,7 +323,7 @@ export default function Subscribe() {
       setSpendPermission(spendPermission);
       setSignature(signature);
     } catch (e) {
-      console.error(e)
+      console.error(e);
     }
     setIsDisabled(false);
   }
@@ -264,7 +357,7 @@ export default function Subscribe() {
       }
       data = await response.json();
     } catch (e) {
-      console.error(e)
+      console.error(e);
     }
     setIsDisabled(false);
     return data;
@@ -362,6 +455,7 @@ Also be sure to add this new `Subscribe` button component to the top level compo
   </main>
   ...
 ```
+
 ### Assemble a `SpendPermission` object for the user to sign
 
 A `SpendPermission` is the struct that defines the parameters of the permission.
@@ -417,7 +511,8 @@ As part of our button handler `handleSubmit`, in lines 61-91 of our subscribe co
 a Wagmi hook that will prompt our user to create a signature from their wallet across the details of the spend permission.
 
 <Callout type="info">
-SpendPermissions use [ERC-712](https://eips.ethereum.org/EIPS/eip-712) signatures.
+  SpendPermissions use [ERC-712](https://eips.ethereum.org/EIPS/eip-712)
+  signatures.
 </Callout>
 
 ```tsx [Subscribe.tsx]
@@ -472,48 +567,49 @@ export default function Subscribe() {
 ```
 
 ### Approve the spend permission onchain
-Now that we have a signature from the user, we can approve the permission onchain by submitting the 
+
+Now that we have a signature from the user, we can approve the permission onchain by submitting the
 signature and the permission details to `approveWithSignature` on the `SpendPermissionManager` contract.
 
-Our `handleCollectSubscription` function that's defined in our `Subscribe` will pass this signature and data to our 
+Our `handleCollectSubscription` function that's defined in our `Subscribe` will pass this signature and data to our
 backend, so the spender client we created earlier can handle our onchain calls.
 
 ```ts [Subscribe.tsx]
 // We send the permission details and the user signature to our backend route
 async function handleCollectSubscription() {
-    setIsDisabled(true);
-    let data;
-    try {
-      const replacer = (key: string, value: any) => {
-        if (typeof value === "bigint") {
-          return value.toString();
-        }
-        return value;
-      };
-      const response = await fetch("/collect", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(
-          {
-            spendPermission,
-            signature,
-            dummyData: Math.ceil(Math.random() * 100),
-          },
-          replacer
-        ),
-      });
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
+  setIsDisabled(true);
+  let data;
+  try {
+    const replacer = (key: string, value: any) => {
+      if (typeof value === "bigint") {
+        return value.toString();
       }
-      data = await response.json();
-    } catch (e) {
-      console.error(e)
+      return value;
+    };
+    const response = await fetch("/collect", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(
+        {
+          spendPermission,
+          signature,
+          dummyData: Math.ceil(Math.random() * 100),
+        },
+        replacer
+      ),
+    });
+    if (!response.ok) {
+      throw new Error("Network response was not ok");
     }
-    setIsDisabled(false);
-    return data;
+    data = await response.json();
+  } catch (e) {
+    console.error(e);
   }
+  setIsDisabled(false);
+  return data;
+}
 ```
 
 But wait, we don't have any backend routes set up yet! Let's define what should happen when we want to
@@ -572,9 +668,17 @@ export async function POST(request: NextRequest) {
 ```
 
 This code is using our spender client to do two things:
+
 1. calls `approveWithSignature` to approve the spend permission
 2. calls `spend` to make use of our allowance and spend our user's funds
 
+# <<<<<<< HEAD
+
+Since our spender is a smart contract wallet, notice that these calls are formulated as userOperations instead of
+direct transactions. They'll be submitted to the blockchain by a bundler and the gas will be subsidized by our
+Coinbase Developer Platform paymaster.
+
+> > > > > > > 0cf0e12 (Update sample repo and lint)
 
 ### Try out your app
 
@@ -585,8 +689,8 @@ When you click the "Subscribe" button you should be prompted to create or connec
 You can create a new Smart Wallet via the popup. Note that you'll need a little ETH in this wallet to fund the
 deployment of your account. If you don't have any testnet ETH, try this [Coinbase faucet](https://portal.cdp.coinbase.com/products/faucet).
 
-Note that we'll need a little bit of base sepolia ETH in both wallet addresses (the "user" wallet and the "app" wallet). 
-In a more involved implementation you would use a paymaster to eliminate this requirement. 
+Note that we'll need a little bit of base sepolia ETH in both wallet addresses (the "user" wallet and the "app" wallet).
+In a more involved implementation you would use a paymaster to eliminate this requirement.
 For now, If you don't have any base sepolia ETH, try this [Coinbase faucet](https://portal.cdp.coinbase.com/products/faucet).
 
 Once your wallet is created and both wallets are funded, return to the app and click "Subscribe", then sign the prompt to allow the spend permission.
@@ -597,9 +701,10 @@ You can prompt subsequent spends by clicking the "Collect Subscription" button. 
 We've made it! 🎉
 
 Our app successfully
+
 - prompts the user to connect their Coinbase Smart Wallet to our app
 - assembles a spend permission representing our recurring spending needs as an app
 - retrieves a signature from the user authorizing this spend permission
 - approves the spend permission onchain
 - uses this permission to retrieve user assets within our allowance
-:::
+  :::
