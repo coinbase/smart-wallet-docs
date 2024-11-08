@@ -5,7 +5,7 @@ import { Callout } from "vocs/components";
 This guide will walk you through a simple example of building an app that leverages Spend Permissions using
 [OnchainKit](https://onchainkit.xyz/), [Viem](https://viem.sh/) and [Wagmi](https://wagmi.sh/).
 
-A complete example of this demo can be found [here](https://github.com/ilikesymmetry/subscribe-onchain).  
+A complete example of this demo can be found [here](https://github.com/ilikesymmetry/spend-permissions-quickstart).  
 Smart contract deployment addresses for `SpendPermissionManager.sol` can be found [here](https://github.com/coinbase/spend-permissions).
 
 :::steps
@@ -130,7 +130,7 @@ configuration so our client knows how to interact with this contract.
 Inside your `/lib` directory, create a new subdirectory called `/abi`. This is where we'll store information about
 [smart contract interfaces](https://docs.soliditylang.org/en/latest/abi-spec.html) and addresses.
 
-Add a new file called `SpendPermissionManager.ts` and copy and paste the code from [this file](https://github.com/ilikesymmetry/subscribe-onchain/blob/1be831ec664edf505c539db7b0485f7a78e6bfe5/lib/abi/SpendPermissionManager.ts).
+Add a new file called `SpendPermissionManager.ts` and copy and paste the code from [this file](https://github.com/ilikesymmetry/spend-permissions-quickstart/blob/main/lib/abi/SpendPermissionManager.ts).
 
 <Callout type="info">
   [Here's an example](https://docs.basescan.org/api-endpoints/contracts) of
