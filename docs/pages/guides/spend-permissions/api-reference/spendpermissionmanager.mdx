@@ -82,7 +82,7 @@ function getHash(SpendPermission memory spendPermission) public view returns (by
 
 #### `isApproved`
 
-Check if a spend permission is approved and not revoked.
+Check if a spend permission is approved and not revoked, regardless of whether the current time is within the valid time range of the permission.
 
 ```solidity
 function isApproved(SpendPermission memory spendPermission) public view returns (bool);
@@ -93,7 +93,8 @@ function isApproved(SpendPermission memory spendPermission) public view returns 
 #### `getCurrentPeriod`
 
 Retrieve the `start`, `end`, and accumulated `spend` for the current period of a spend permission.
-
+Reverts if the current time is outside the valid time range of the permission, but does not validate whether the 
+spend permission has been approved or revoked.
 ```solidity
 function getCurrentPeriod(SpendPermission memory spendPermission) public view returns (PeriodSpend memory);
 ```
