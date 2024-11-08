@@ -1,13 +1,17 @@
 ## Coinbase Wallet API
 
 ### `wallet_fetchPermissions`
+
 A utility API endpoint for recalling permissions previously granted for a specific user.
-Excludes any permissions that have been revoked or are expired.
+Excludes permissions that have expired or been revoked.
 
 #### Schema
+
+**Endpoint:** `https://chain-proxy.wallet.coinbase.com?targetName=base-sepolia`.
+
 ```typescript
 type FetchPermissionsRequest = {
-  chainId: string; // uint256, hex formatted
+  chainId: string; // hex, uint256
   account: string; // address
   spender: string; // address
   pageOptions?: {
@@ -24,22 +28,20 @@ type FetchPermissionsResult = {
   }
 }
 
-type PageDescription = 
-
 type FetchPermissionsResultItem = {
   createdAt: number; // UTC timestamp for when the permission was granted
-  permissionHash: string;
-  signature: string;
+  permissionHash: string; // hex
+  signature: string; // hex
   permission: {
     account: string; // address
     spender: string; // address
     token: string; // address
     allowance: string; // base 10 numeric string
-    period: number; // unix time, seconds
-    start: number; // unix time, seconds
-    end: number; // unix time, seconds
+    period: number; // unix seconds
+    start: number; // unix seconds
+    end: number; // unix seconds
     salt: string; // base 10 numeric string
-    extraData: string // hex formatted bytes, i.e. "0x" for empty data
+    extraData: string // hex
   };
 }
 ```

@@ -1,35 +1,39 @@
 # `SpendPermissionManager.sol` smart contract
+
 The open-source contracts repository is [here](https://github.com/coinbase/spend-permissions).
 
 ### Structs
 
 #### `SpendPermission`
+
 Defines the complete parameters of a spend permission.
 
-| Field       | Type     | Description                                                                 |
-|-------------|----------|-----------------------------------------------------------------------------|
-| `account`   | `address`| Smart account this spend permission is valid for.                           |
-| `spender`   | `address`| Entity that can spend `account`'s tokens.                                   |
-| `token`     | `address`| Token address (ERC-7528 native token address or ERC-20 contract).           |
-| `allowance` | `uint160`| Maximum allowed value to spend within each `period`.                        |
-| `period`    | `uint48` | Time duration for resetting used `allowance` on a recurring basis (seconds).|
-| `start`     | `uint48` | Timestamp this spend permission is valid after (unix seconds).              |
-| `end`       | `uint48` | Timestamp this spend permission is valid until (unix seconds).              |
-| `salt`      | `uint256`| An arbitrary salt to differentiate unique spend permissions with otherwise identical data. |
-| `extraData` | `bytes`  | Arbitrary data to include in the signature.                                 |
+| Field       | Type      | Description                                                                                |
+| ----------- | --------- | ------------------------------------------------------------------------------------------ |
+| `account`   | `address` | Smart account this spend permission is valid for.                                          |
+| `spender`   | `address` | Entity that can spend `account`'s tokens.                                                  |
+| `token`     | `address` | Token address (ERC-7528 native token address or ERC-20 contract).                          |
+| `allowance` | `uint160` | Maximum allowed value to spend within each `period`.                                       |
+| `period`    | `uint48`  | Time duration for resetting used `allowance` on a recurring basis (seconds).               |
+| `start`     | `uint48`  | Timestamp this spend permission is valid starting at (unix seconds).                       |
+| `end`       | `uint48`  | Timestamp this spend permission is valid until (unix seconds).                             |
+| `salt`      | `uint256` | An arbitrary salt to differentiate unique spend permissions with otherwise identical data. |
+| `extraData` | `bytes`   | Arbitrary data to include in the permission.                                               |
 
 #### `PeriodSpend`
+
 Describes the cumulative spend for the current active period.
 
-| Field       | Type     | Description                                                                 |
-|-------------|----------|-----------------------------------------------------------------------------|
-| `start`     | `uint48` | Start time of the period (unix seconds).                                    |
-| `end`       | `uint48` | End time of the period (unix seconds).                                      |
-| `spend`     | `uint160`| Accumulated spend amount for period.                                        |
+| Field   | Type      | Description                              |
+| ------- | --------- | ---------------------------------------- |
+| `start` | `uint48`  | Start time of the period (unix seconds). |
+| `end`   | `uint48`  | End time of the period (unix seconds).   |
+| `spend` | `uint160` | Accumulated spend amount for period.     |
 
 ---
 
 ### Contract functions
+
 #### `approve`
 
 Approve a spend permission via a direct call from the `account`. Only callable by the `account` specified in the spend permission.
@@ -55,7 +59,7 @@ function approveWithSignature(SpendPermission calldata spendPermission, bytes ca
 Spend tokens using a spend permission, transferring them from the `account` to the `spender`. Only callable by the `spender` specified in the permission.
 
 ```solidity
-function spend(SpendPermission memory spendPermission, uint160 value) external requireSender(spendPermission.spender);
+function spend(SpendPermission memory spendPermission, uint160 value) external;
 ```
 
 ---
@@ -65,7 +69,7 @@ function spend(SpendPermission memory spendPermission, uint160 value) external r
 Revoke a spend permission, permanently disabling its use. Only callable by the `account` owner specified in the spend permission.
 
 ```solidity
-function revoke(SpendPermission calldata spendPermission) external requireSender(spendPermission.account);
+function revoke(SpendPermission calldata spendPermission) external;
 ```
 
 ---
@@ -93,8 +97,9 @@ function isApproved(SpendPermission memory spendPermission) public view returns 
 #### `getCurrentPeriod`
 
 Retrieve the `start`, `end`, and accumulated `spend` for the current period of a spend permission.
-Reverts if the current time is outside the valid time range of the permission, but does not validate whether the 
+Reverts if the current time is outside the valid time range of the permission, but does not validate whether the
 spend permission has been approved or revoked.
+
 ```solidity
 function getCurrentPeriod(SpendPermission memory spendPermission) public view returns (PeriodSpend memory);
 ```
