@@ -141,7 +141,12 @@ export default defineConfig({
           link: "/guides/paymasters",
         },
         {
+          text: "Token Paymasters (Gas Tokens)",
+          link: "/guides/erc20-paymasters",
+        },
+        {
           text: "MagicSpend Support",
+
           link: "/guides/magic-spend",
         },
         {
