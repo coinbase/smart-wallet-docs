@@ -42,8 +42,7 @@ Always secure your private keys appropriately!
 We insecurely use an environment variable in this demo for simplicity.
 </Callout>
 
-Our spender will need to sign transactions from our app, so we'll create a local wallet for our spender. We'll need a private key and the corresponding ethereum
-address in our environment variables. You can use a development private key you already have, or generate a random new one. 
+Our spender will need to sign transactions from our app, so we'll create a wallet (private key and address) for our spender.
 If you have [Foundry](https://book.getfoundry.sh/) installed, you can generate a new wallet via `cast wallet new`. Assign the private key and address to
 `SPENDER_PRIVATE_KEY` and `NEXT_PUBLIC_SPENDER_ADDRESS`, respectively.
 
@@ -90,13 +89,13 @@ export async function getSpenderWalletClient() {
 
 ### Configure the Smart Wallet URL
 
-In `providers.tsx`, update the value of `keysUrl` to be `"https://keys-beta.coinbase.com/connect"`.
+In `app/providers.tsx`, update the value of `keysUrl` to be `"https://keys-beta.coinbase.com/connect"`.
 This will point your app to connect to our public dev environment for smart wallet connections.
 
 We also want to point our chain id to Base Sepolia testnet by setting replacing all instances of `base`
 with `baseSepolia` in this file (including the import). 
 
-Your config in `providers.tsx` should now look like this:
+Your config in `app/providers.tsx` should now look like this:
 
 ```
 const config = createConfig({
@@ -586,13 +585,14 @@ When you click the "Subscribe" button you should be prompted to create or connec
 You can create a new Smart Wallet via the popup. Note that you'll need a little ETH in this wallet to fund the
 deployment of your account. If you don't have any testnet ETH, try this [Coinbase faucet](https://portal.cdp.coinbase.com/products/faucet).
 
-Before you continue, note that you'll also need a little testnet ETH in your spender wallet, which will need to fund the gas for the transactions.
+Note that we'll need a little bit of base sepolia ETH in both wallet addresses (the "user" wallet and the "app" wallet). 
+In a more involved implementation you would use a paymaster to eliminate this requirement. 
+For now, If you don't have any base sepolia ETH, try this [Coinbase faucet](https://portal.cdp.coinbase.com/products/faucet).
 
-Once your wallet is created and both wallets are funded, return to the app and click "Subscribe".
-Sign the prompts, which will deploy your new Smart Wallet (if undeployed), and then prompt you to sign the spend permission requested by the app.
+Once your wallet is created and both wallets are funded, return to the app and click "Subscribe", then sign the prompt to allow the spend permission.
 
 Once you've subscribed, you should see a spend transaction hash show up on screen after a few seconds.
-You can prompt new spends by clicking the "Collect Subscription" button. Click the transactions to check them out on Etherscan!
+You can prompt subsequent spends by clicking the "Collect Subscription" button. Click the transactions to check them out on Etherscan!
 
 We've made it! 🎉
 
