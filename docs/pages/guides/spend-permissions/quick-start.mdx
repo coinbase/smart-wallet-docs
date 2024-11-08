@@ -14,7 +14,7 @@ Set up a boilerplate React/Next app by running the following command and followi
 Developer Platform API Key, we'll get one of those later. When prompted to use Coinbase Smart Wallet select "yes".
 
 ```bash
-bun create onchain
+bun create onchain@latest
 ```
 <Callout type="info">
 You may need to install the package manager [`bun`](https://bun.sh/docs/installation)
@@ -25,94 +25,28 @@ to connect their smart wallet to the application.
 
 From here, we'll modify the app to assemble, sign, approve and use a spend permission to spend our users' funds!
 
-### Set up your spender wallet
+### Set up your spender wallet and environment 
+
+Add the following variables to your `.env`:
+
+```
+SPENDER_PRIVATE_KEY=
+NEXT_PUBLIC_SPENDER_ADDRESS=
+NEXT_PUBLIC_CDP_API_KEY=
+BASE_SEPOLIA_PAYMASTER_URL=
+```
+
 
 <Callout type="danger">
 Always secure your private keys appropriately!  
 We insecurely use an environment variable in this demo for simplicity.
 </Callout>
 
-Create a local `.env` file and add these environment variables:
+Our spender will need to sign transactions from our app, so we'll create a wallet (private key and address) for our spender.
+If you have [Foundry](https://book.getfoundry.sh/) installed, you can generate a new wallet via `cast wallet new`. Assign the private key and address to
+`SPENDER_PRIVATE_KEY` and `NEXT_PUBLIC_SPENDER_ADDRESS`, respectively.
 
-```
-SUBSCRIPTION_PRIVATE_KEY=
-NEXT_PUBLIC_SUBSCRIPTION_SPENDER=
-NEXT_PUBLIC_CDP_API_KEY=
-BASE_SEPOLIA_PAYMASTER_URL=
-```
-
-The `SUBSCRIPTION_PRIVATE_KEY` will be our spender private key and `NEXT_PUBLIC_SUBSCRIPTION_SPENDER` will be the address of our spender smart contract wallet.
-
-You can use a development private key you already have, or generate a random new one. If you have [Foundry](https://book.getfoundry.sh/) installed, you can generate a new
-wallet via `cast wallet new`. This wallet won't need to hold any ETH for gas because our spender smart contract wallet will be sponsored by a paymaster.
-
-Paste your private key as the value for `SUBSCRIPTION_PRIVATE_KEY`. This should be hex-prefixed, i.e. `SUBSCRIPTION_PRIVATE_KEY=0xAbC123...dEf456`
-
-This private key is an EOA, but we want our spender to be a smart contract wallet. We'll achieve this by treating our new EOA as the owner of a
-brand new [Coinbase Smart Wallet](/why.mdx). The address of a smart contract wallet is deterministic, and depends on the bytecode of the implementation
-contract combined with a salt, which in our case will be an array consisting of the initial owner(s) of the smart contract wallet. See the 
-[smart wallet repository](https://github.com/coinbase/smart-wallet) for more details. 
-
-We'll generate the deterministic address of this Smart Wallet
-so we can store it as a public environment variable.
-
-Paste the following code into a top-level file called `logSpenderSmartWalletAddress.ts`
-
-```ts [logSpenderSmartWalletAddress.tsx]
-import { createPublicClient, Hex, http } from "viem";
-import { baseSepolia } from "viem/chains";
-import { privateKeyToAccount } from "viem/accounts";
-import {
-  toCoinbaseSmartAccount,
-} from "viem/account-abstraction";
-import dotenv from "dotenv";
-
-dotenv.config();
-
-export async function logSpenderSmartContractWalletAddress() {
-  const client = createPublicClient({
-    chain: baseSepolia,
-    transport: http(),
-  });
-
-  const spenderAccountOwner = privateKeyToAccount(
-    process.env.NEXT_PUBLIC_SUBSCRIPTION_PRIVATE_KEY! as Hex
-  );
-  console.log("spenderAccountOwner", spenderAccountOwner.address);
-
-  const spenderAccount = await toCoinbaseSmartAccount({
-    client,
-    owners: [spenderAccountOwner],
-  });
-console.log("Spender Smart Wallet Address:", spenderAccount.address);
-}
-
-async function main() {
-  await logSpenderSmartContractWalletAddress();
-}
-
-if (require.main === module) {
-  main().catch((error) => {
-    console.error(error);
-    process.exit(1);
-  });
-}
-```
-
-Run this script to log the counterfactual address of your new smart contract wallet and assign this address to the 
-`NEXT_PUBLIC_SUBSCRIPTION_SPENDER` variable in your .env:
-
-```bash
-npm install -g ts-node typescript @types/node dotenv && ts-node logSpenderSmartContractWalletAddress.ts
-```
-
-<Callout type="info">
-You may need to temporarily set the value of `"module"` in your `tsconfig.json` to `"commonjs"` to run this script.
-</Callout>
-
-
-### Set up remaining environment variables
-Next, make sure you have a Coinbase Developer Platform API key, which you can get [here](https://portal.cdp.coinbase.com/). 
+Next, make sure you have a Coinbase Developer Platform Client API key (different from Secret API Key), which you can get [here](https://portal.cdp.coinbase.com/). 
 Assign this key to `NEXT_PUBLIC_CDP_API_KEY` in your `.env`.
 
 You'll need one more environment variable, which is `BASE_SEPOLIA_PAYMASTER_URL`.  
@@ -122,57 +56,69 @@ This one's easy if you already have your CDP API key:
 
 ### Create a spender client
 
-Our client is what our app will use to communicate with the blockchain. In this example, our client is a Coinbase Smart Wallet, 
-and we'll use a [paymaster](/guides/paymasters.mdx) to sponsor our transactions so we don't have to worry
-about having ETH in the spender account.
+Our client is what our app will use to communicate with the blockchain.
 
 Create a sibling directory to `app` called `lib` and add the following `spender.ts` file to create your spender client.
 
 ```ts [lib/spender. ts]
-import { createPublicClient, Hex, http } from "viem";
+import { createPublicClient, createWalletClient, Hex, http } from "viem";
 import { baseSepolia } from "viem/chains";
 import { privateKeyToAccount } from "viem/accounts";
-import {
-  createBundlerClient,
-  createPaymasterClient,
-  toCoinbaseSmartAccount,
-} from "viem/account-abstraction";
 
-export async function getSpenderBundlerClient() {
+export async function getPublicClient() {
   const client = createPublicClient({
     chain: baseSepolia,
     transport: http(),
   });
+  return client;
+}
 
-  const spenderAccountOwner = privateKeyToAccount(
-    process.env.SUBSCRIPTION_PRIVATE_KEY! as Hex
+export async function getSpenderWalletClient() {
+  const spenderAccount = privateKeyToAccount(
+    process.env.SPENDER_PRIVATE_KEY! as Hex
   );
 
-  const spenderAccount = await toCoinbaseSmartAccount({
-    client,
-    owners: [spenderAccountOwner],
-  });
-
-  const paymasterClient = createPaymasterClient({
-    transport: http(process.env.BASE_SEPOLIA_PAYMASTER_URL),
-  });
-
-  const spenderBundlerClient = createBundlerClient({
+  const spenderWallet = await createWalletClient({
     account: spenderAccount,
-    client,
-    paymaster: paymasterClient,
-    transport: http(process.env.BASE_SEPOLIA_PAYMASTER_URL),
+    chain: baseSepolia,
+    transport: http(),
   });
-
-  return spenderBundlerClient;
+  return spenderWallet;
 }
 ```
 
 ### Configure the Smart Wallet URL
 
-In `providers.tsx`, update the value of `keysUrl` to be `"https://keys-dev.coinbase.com/connect"`.
+In `app/providers.tsx`, update the value of `keysUrl` to be `"https://keys-dev.coinbase.com/connect"`.
 This will point your app to connect to our public dev environment for smart wallet connections.
 
+We also want to point our chain id to Base Sepolia testnet by setting replacing all instances of `base`
+with `baseSepolia` in this file (including the import). 
+
+Your config in `app/providers.tsx` should now look like this:
+
+```
+const config = createConfig({
+  chains: [baseSepolia],
+  connectors: [
+    coinbaseWallet({
+      appName: process.env.NEXT_PUBLIC_ONCHAINKIT_PROJECT_NAME,
+      preference: process.env.NEXT_PUBLIC_ONCHAINKIT_WALLET_CONFIG as
+        | "smartWalletOnly"
+        | "all",
+      // @ts-ignore
+      keysUrl: "https://keys-dev.coinbase.com/connect"
+    }),
+  ],
+  storage: createStorage({
+    storage: cookieStorage,
+  }),
+  ssr: true,
+  transports: {
+    [baseSepolia.id]: http(),
+  },
+});
+```
 
 ### Set up our interface to the `SpendPermissionManager` smart contract
 
@@ -210,7 +156,7 @@ import {
 } from "wagmi";
 import { Address, Hex, parseUnits } from "viem";
 import { useQuery } from "@tanstack/react-query";
-import { spendPermissionManagerAddress } from "@/lib/abi/SpendPermissionManager";
+import { spendPermissionManagerAddress } from "@/app/lib/abi/SpendPermissionManager";
 
 export default function Subscribe() {
   const [isDisabled, setIsDisabled] = useState(false);
@@ -247,7 +193,7 @@ export default function Subscribe() {
 
     const spendPermission = {
       account: accountAddress, // User wallet address
-      spender: process.env.NEXT_PUBLIC_SUBSCRIPTION_SPENDER! as Address, // Spender smart contract wallet address
+      spender: process.env.NEXT_PUBLIC_SPENDER_ADDRESS! as Address, // Spender smart contract wallet address
       token: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE" as Address, // ETH (https://eips.ethereum.org/EIPS/eip-7528)
       allowance: parseUnits("10", 18),
       period: 86400, // seconds in a day
@@ -406,9 +352,9 @@ export default function Subscribe() {
 }
 ```
 
-Also be sure to add this new `Subscribe` button component to the top level component in `Page.tsx`. You can put it somewhere between the `<main></main>` tags:
+Also be sure to add this new `Subscribe` button component to the top level component in `page.tsx`. You can put it somewhere between the `<main></main>` tags:
 
-```tsx [Page.tsx]
+```tsx [page.tsx]
   ...
   <main>
    ...
@@ -445,7 +391,7 @@ export default function Subscribe() {
     // Define a `SpendPermission` to request from the user    // [!code focus]
     const spendPermission = {  // [!code focus]
       account: accountAddress, // User wallet address // [!code focus]
-      spender: process.env.NEXT_PUBLIC_SUBSCRIPTION_SPENDER! as Address, // Spender smart contract wallet address // [!code focus]
+      spender: process.env.NEXT_PUBLIC_SPENDER_ADDRESS! as Address, // Spender smart contract wallet address // [!code focus]
       token: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE" as Address, // ETH (https://eips.ethereum.org/EIPS/eip-7528) // [!code focus]
       allowance: parseUnits("10", 18), // [!code focus]
       period: 86400, // seconds // [!code focus]
@@ -578,44 +524,45 @@ code:
 
 ```ts [route.tsx]
 import { NextRequest, NextResponse } from "next/server";
-import { getSpenderBundlerClient } from "../../lib/spender";
+import { getPublicClient, getSpenderWalletClient } from "../../lib/spender";
 import {
   spendPermissionManagerAbi,
   spendPermissionManagerAddress,
 } from "../../lib/abi/SpendPermissionManager";
 
 export async function POST(request: NextRequest) {
-  const spenderBundlerClient = await getSpenderBundlerClient();
+  const spenderBundlerClient = await getSpenderWalletClient();
+  const publicClient = await getPublicClient();
   try {
     const body = await request.json();
     const { spendPermission, signature } = body;
 
-    const userOpHash = await spenderBundlerClient.sendUserOperation({
-      calls: [
-        {
-          abi: spendPermissionManagerAbi,
-          functionName: "approveWithSignature",
-          to: spendPermissionManagerAddress,
-          args: [spendPermission, signature],
-        },
-        {
-          abi: spendPermissionManagerAbi,
-          functionName: "spend",
-          to: spendPermissionManagerAddress,
-          args: [spendPermission, "1"], // spend 1 wei
-        },
-      ],
+    const approvalTxnHash = await spenderBundlerClient.writeContract({
+      address: spendPermissionManagerAddress,
+      abi: spendPermissionManagerAbi,
+      functionName: "approveWithSignature",
+      args: [spendPermission, signature],
     });
 
-    const userOpReceipt =
-      await spenderBundlerClient.waitForUserOperationReceipt({
-        hash: userOpHash,
-      });
+    const approvalReceipt = await publicClient.waitForTransactionReceipt({
+      hash: approvalTxnHash,
+    });
+
+    const spendTxnHash = await spenderBundlerClient.writeContract({
+      address: spendPermissionManagerAddress,
+      abi: spendPermissionManagerAbi,
+      functionName: "spend",
+      args: [spendPermission, "1"],
+    });
+
+    const spendReceipt = await publicClient.waitForTransactionReceipt({
+      hash: spendTxnHash,
+    });
 
     return NextResponse.json({
-      status: userOpReceipt.success ? "success" : "failure",
-      transactionHash: userOpReceipt.receipt.transactionHash,
-      transactionUrl: `https://sepolia.basescan.org/tx/${userOpReceipt.receipt.transactionHash}`,
+      status: spendReceipt.status ? "success" : "failure",
+      transactionHash: spendReceipt.transactionHash,
+      transactionUrl: `https://sepolia.basescan.org/tx/${spendReceipt.transactionHash}`,
     });
   } catch (error) {
     console.error(error);
@@ -628,23 +575,24 @@ This code is using our spender client to do two things:
 1. calls `approveWithSignature` to approve the spend permission
 2. calls `spend` to make use of our allowance and spend our user's funds
 
-Since our spender is a smart contract wallet, notice that these calls are formulated as userOperations instead of 
-direct transactions. They'll be submitted to the blockchain by a bundler and the gas will be subsidized by our
-Coinbase Developer Platform paymaster.
 
 ### Try out your app
 
 Run your app locally with `bun run dev` and visit `localhost:3000`.
 
-You should see a "Connect wallet" button in the top right corner; click that.
+When you click the "Subscribe" button you should be prompted to create or connect your Smart Wallet.
 
 You can create a new Smart Wallet via the popup. Note that you'll need a little ETH in this wallet to fund the
 deployment of your account. If you don't have any testnet ETH, try this [Coinbase faucet](https://portal.cdp.coinbase.com/products/faucet).
 
-Once your wallet is created and funded, return to the app and click "Subscribe".
-Sign the prompts, which will deploy your new Smart Wallet (if undeployed), and then prompt you to sign over the spend permission.
+Note that we'll need a little bit of base sepolia ETH in both wallet addresses (the "user" wallet and the "app" wallet). 
+In a more involved implementation you would use a paymaster to eliminate this requirement. 
+For now, If you don't have any base sepolia ETH, try this [Coinbase faucet](https://portal.cdp.coinbase.com/products/faucet).
 
-Once you've subscribed, you should see spend transactions happening automatically every few seconds. Click the transaction links to check them out on Etherscan.
+Once your wallet is created and both wallets are funded, return to the app and click "Subscribe", then sign the prompt to allow the spend permission.
+
+Once you've subscribed, you should see a spend transaction hash show up on screen after a few seconds.
+You can prompt subsequent spends by clicking the "Collect Subscription" button. Click the transactions to check them out on Etherscan!
 
 We've made it! 🎉
 
