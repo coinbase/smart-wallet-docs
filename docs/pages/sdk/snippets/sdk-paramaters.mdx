@@ -1,16 +1,7 @@
-# Setup 
-Create a new `CoinbaseWalletSDK` instance. 
+import PreferenceParameters from './preference-parameters.mdx'
 
-```ts twoslash
-import { CoinbaseWalletSDK } from '@coinbase/wallet-sdk'
+## Parameters
 
-const sdk = new CoinbaseWalletSDK({
-  appName: 'My App Name',
-  appChainIds: [8453]
-});
-```
-
-## Parameters 
 ### appName (optional)
 - Type: `string`
 
@@ -32,3 +23,4 @@ App logo image URL. Favicon is used if unspecified.
 Local paths are not supported for `appLogoUrl` as the logo is presented on another window as popup. Please provide a non-local URL.
 :::
 
+<PreferenceParameters />

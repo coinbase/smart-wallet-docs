@@ -169,16 +169,24 @@ export default defineConfig({
       collapsed: false,
       items: [
         {
-          text: "Install",
-          link: "/sdk/install",
+          text: "Getting Started (v4.2.0+)",
+          link: "/sdk/getting-started",
+          items: [
+            {
+              text: "createCoinbaseWalletSDK",
+              link: "/sdk/create-coinbase-wallet-sdk",
+            },
+          ],
         },
         {
-          text: "Setup",
-          link: "/sdk/setup",
-        },
-        {
-          text: "makeWeb3Provider",
-          link: "/sdk/makeWeb3Provider",
+          text: "Legacy Setup",
+          link: "/sdk/legacy-setup",
+          items: [
+            {
+              text: "makeWeb3Provider",
+              link: "/sdk/make-web3-provider",
+            },
+          ],
         },
         {
           text: "Upgrading from 3.x",
