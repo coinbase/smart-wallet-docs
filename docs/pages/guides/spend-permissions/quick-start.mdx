@@ -12,32 +12,25 @@ Smart contract deployment addresses for `SpendPermissionManager.sol` can be foun
 
 ### Set up a basic app template using OnchainKit
 
-Set up a boilerplate React/Next app by running the following command and following the instructions. Don't worry about your Coinbase
-Developer Platform API Key, we'll get one of those later. When prompted to use Coinbase Smart Wallet select "yes".
+Set up a boilerplate React/Next app by running the following command and following the instructions. Don't worry about getting a Coinbase
+Developer Platform API Key, you don't need one for this example. When prompted to use Coinbase Smart Wallet select "yes".
 
 ```bash
-bun create onchain@latest
+npm create onchain@latest
 ```
-
-<Callout type="info">
-  You may need to install the package manager
-  [`bun`](https://bun.sh/docs/installation)
-</Callout>
 
 This will generate an app that is ready to run and contains a wallet connection button that users can use
 to connect their smart wallet to the application.
 
 From here, we'll modify the app to assemble, sign, approve and use a spend permission to spend our users' funds!
 
-### Set up your spender wallet and environment
+### Set up your spender wallet
 
 Add the following variables to your `.env`:
 
 ```
 SPENDER_PRIVATE_KEY=
 NEXT_PUBLIC_SPENDER_ADDRESS=
-NEXT_PUBLIC_CDP_API_KEY=
-BASE_SEPOLIA_PAYMASTER_URL=
 ```
 
 <Callout type="danger">
@@ -46,15 +39,9 @@ BASE_SEPOLIA_PAYMASTER_URL=
 </Callout>
 
 Our spender will need to sign transactions from our app, so we'll create a wallet (private key and address) for our spender.
-If you have [Foundry](https://book.getfoundry.sh/) installed, you can generate a new wallet via `cast wallet new`. Assign the private key and address to
+If you have [Foundry](https://book.getfoundry.sh/) installed, you can generate a new wallet via `cast wallet new`. If you already have a 
+development keypair you can use that too. Assign the private key and address to
 `SPENDER_PRIVATE_KEY` and `NEXT_PUBLIC_SPENDER_ADDRESS`, respectively.
-
-Next, make sure you have a Coinbase Developer Platform Client API key (different from Secret API Key), which you can get [here](https://portal.cdp.coinbase.com/).
-Assign this key to `NEXT_PUBLIC_CDP_API_KEY` in your `.env`.
-
-You'll need one more environment variable, which is `BASE_SEPOLIA_PAYMASTER_URL`.  
-This one's easy if you already have your CDP API key:  
- `"https://api.developer.coinbase.com/rpc/v1/base-sepolia/{YOUR_CDP_API_KEY}"`
 
 ### Create a spender client
 
@@ -159,7 +146,7 @@ import {
 } from "wagmi";
 import { Address, Hex, parseUnits } from "viem";
 import { useQuery } from "@tanstack/react-query";
-import { spendPermissionManagerAddress } from "@/app/lib/abi/SpendPermissionManager";
+import { spendPermissionManagerAddress } from "@/lib/abi/SpendPermissionManager";
 
 export default function Subscribe() {
   const [isDisabled, setIsDisabled] = useState(false);
@@ -355,18 +342,25 @@ export default function Subscribe() {
 }
 ```
 
-Also be sure to add this new `Subscribe` button component to the top level component in `page.tsx`. You can put it somewhere between the `<main></main>` tags:
+Also be sure to add this new `Subscribe` button component to the top level component in `page.tsx`. 
+You can delete lines 77-127 and put your button there.
 
 ```tsx [page.tsx]
   ...
-  <main>
-   ...
-    <Subscribe/>
-  </main>
+      <main className="flex-grow flex items-center justify-center">
+        <div className="max-w-4xl w-full p-4">
+          <div className="w-1/3 mx-auto mb-6">
+            <ImageSvg />
+          </div>
+          <div className="flex justify-center mb-6">
+            <Subscribe />
+          </div>
+        </div>
+      </main>
   ...
 ```
 
-### Assemble a `SpendPermission` object for the user to sign
+### Examine the `SpendPermission` object our user will sign
 
 A `SpendPermission` is the struct that defines the parameters of the permission.
 See the solidity struct [here](https://github.com/coinbase/spend-permissions/blob/07067168108b83d9662435b056a2a580c08be214/src/SpendPermissionManager.sol#L20).
@@ -415,7 +409,7 @@ export default function Subscribe() {
 }
 ```
 
-### Prompt the user to sign the spend permission data from their Smart Wallet.
+### Observe the `signTypedData` hook
 
 As part of our button handler `handleSubmit`, in lines 61-91 of our subscribe component we call [`signTypedDataAsync`](https://wagmi.sh/react/api/hooks/useSignTypedData),
 a Wagmi hook that will prompt our user to create a signature from their wallet across the details of the spend permission.
@@ -584,7 +578,7 @@ This code is using our spender client to do two things:
 
 ### Try out your app
 
-Run your app locally with `bun run dev` and visit `localhost:3000`.
+Run your app locally with `npm run dev` and visit `localhost:3000`.
 
 When you click the "Subscribe" button you should be prompted to create or connect your Smart Wallet.
 
