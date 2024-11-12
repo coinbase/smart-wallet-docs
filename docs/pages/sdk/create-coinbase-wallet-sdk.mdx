@@ -14,7 +14,6 @@ export const provider = sdk.getProvider();
 const addresses = provider.request({method: 'eth_requestAccounts'});
 ```
 ```ts twoslash [setup.ts] filename="setup.ts"
-// @ts-expect-error - TODO: update when the SDK is released
 import { createCoinbaseWalletSDK } from '@coinbase/wallet-sdk';
 
 export const sdk = createCoinbaseWalletSDK({
