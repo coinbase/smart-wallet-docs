@@ -12,6 +12,7 @@
   "dependencies": {
     "@types/react": "latest",
     "@vercel/analytics": "^1.2.2",
+    "@coinbase/wallet-sdk": "latest",
     "react": "latest",
     "react-dom": "latest",
     "typescript": "latest",
