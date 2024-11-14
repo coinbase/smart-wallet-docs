@@ -10,9 +10,9 @@
     "prepare": "bun x simple-git-hooks"
   },
   "dependencies": {
+    "@coinbase/wallet-sdk": "latest",
     "@types/react": "latest",
     "@vercel/analytics": "^1.2.2",
-    "@coinbase/wallet-sdk": "latest",
     "react": "latest",
     "react-dom": "latest",
     "typescript": "latest",
