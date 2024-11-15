@@ -47,3 +47,28 @@ With this option, users will only see an option to create a Smart Wallet or sign
 Users will only see the mobile app connection option. If the user is on mobile, they will be taken directly 
 to the Coinbase Wallet app. If the user is using a browser with Coinbase Wallet Extension, they will be taken 
 directly to the Extension.
+
+### attribution (optional)
+- Type: `Attribution`
+
+This option only applies to Coinbase Smart Wallet. When a valid data suffix is supplied, it is appended to the initCode and executeBatch calldata.
+
+```ts twoslash
+type Attribution = {
+    auto: boolean;
+    dataSuffix?: never;
+} | {
+    auto?: never;
+    dataSuffix: `0x${string}`;
+}
+```
+
+##### `auto` (optional)
+- Type: `boolean`
+
+If auto is true, the Smart Wallet will generate a 16 byte hex string from the apps origin.
+
+##### `dataSuffix` (optional)
+- Type: `0x${string}`
+
+Smart Wallet expects a 16 byte hex string. If the data suffix is not a 16 byte hex string, the Smart Wallet will ignore the property. 

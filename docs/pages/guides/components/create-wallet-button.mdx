@@ -289,7 +289,7 @@ To implement the Create Wallet button using only the SDK, all you need to do is 
 
 ```tsx twoslash [BlueCreateWalletButton.tsx] filename="BlueCreateWalletButton.tsx"
 import React, { useCallback } from 'react';
-import { CoinbaseWalletSDK } from '@coinbase/wallet-sdk';
+import { createCoinbaseWalletSDK } from '@coinbase/wallet-sdk';
 import { CoinbaseWalletLogo } from './CoinbaseWalletLogo';
 
 const buttonStyles = {
@@ -309,13 +309,13 @@ const buttonStyles = {
   borderRadius: 10,
 };
 
-const sdk = new CoinbaseWalletSDK({
+const sdk = new createCoinbaseWalletSDK({
   appName: 'My Dapp',
   appLogoUrl: 'https://example.com/logo.png',
   appChainIds: [84532],
 });
 
-const provider = sdk.makeWeb3Provider();
+const provider = sdk.getProvider();
 
 export function BlueCreateWalletButton({ handleSuccess, handleError }) {
   const createWallet = useCallback(async () => {
@@ -340,7 +340,7 @@ export function BlueCreateWalletButton({ handleSuccess, handleError }) {
 
 ```tsx twoslash [BlackCreateWalletButton.tsx] filename="BlackCreateWalletButton.tsx"
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { CoinbaseWalletSDK } from '@coinbase/wallet-sdk';
+import { createCoinbaseWalletSDK } from '@coinbase/wallet-sdk';
 import { CoinbaseWalletLogo } from './CoinbaseWalletLogo';
 
 const GRADIENT_BORDER_WIDTH = 2;
@@ -391,13 +391,13 @@ function Gradient({ children, style, isAnimationDisabled = false }) {
   );
 }
 
-const sdk = new CoinbaseWalletSDK({
+const sdk = new createCoinbaseWalletSDK({
   appName: 'My Dapp With Vanilla SDK',
   appLogoUrl: 'https://example.com/logo.png',
   appChainIds: [84532],
 });
 
-const provider = sdk.makeWeb3Provider();
+const provider = sdk.getProvider();
 
 export function BlackCreateWalletButton({ height = 66, width = 200 }) {
   const minButtonHeight = 48;
