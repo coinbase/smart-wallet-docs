@@ -7,7 +7,7 @@ Excludes permissions that have expired or been revoked.
 
 #### Schema
 
-**Endpoint:** `https://chain-proxy.wallet.coinbase.com`
+**Endpoint:** `https://rpc.wallet.coinbase.com`
 
 ```typescript
 type FetchPermissionsRequest = {
@@ -41,7 +41,7 @@ type FetchPermissionsResultItem = {
     start: number; // unix seconds
     end: number; // unix seconds
     salt: string; // base 10 numeric string
-    extraData: string // hex
+    extraData; string // hex
   };
 }
 ```
