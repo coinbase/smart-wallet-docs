@@ -49,3 +49,9 @@ This means users no longer have to deal with passwords or recovery phrases. Inst
 ## What happens if a user loses their passkey? 
 
 Every Smart Wallet supports multiple owners, and our client will soon allow users to add a backup recovery key for the unlikely case they lose their passkey.
+
+## Are there different gas limitations when using Smart Wallet?
+
+Smart Wallet transactions have additional gas overhead and require somewhat more conservative gas estimations. This means the maximum gas that can be consumed by a 
+Smart Wallet transaction (user operation) is currently capped at 18 million gas, much lower than the block gas limit itself. It will be possible to increase this 
+limit as L2 throughput continues to scale.
