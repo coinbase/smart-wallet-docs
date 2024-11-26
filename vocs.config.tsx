@@ -125,8 +125,8 @@ export default defineConfig({
                   link: "/guides/spend-permissions/api-reference/spendpermissionmanager",
                 },
                 {
-                  text: "wallet_fetchPermissions",
-                  link: "/guides/spend-permissions/api-reference/wallet-fetchpermissions",
+                  text: "coinbase_fetchPermissions",
+                  link: "/guides/spend-permissions/api-reference/coinbase-fetchpermissions",
                 },
                 {
                   text: "Client Resources",
