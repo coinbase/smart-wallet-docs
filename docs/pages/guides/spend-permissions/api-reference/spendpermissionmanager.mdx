@@ -1,4 +1,4 @@
-import { Callout } from 'vocs/components';
+import { Callout } from "vocs/components";
 
 # `SpendPermissionManager.sol` smart contract
 
@@ -10,8 +10,9 @@ The open-source contracts repository is [here](https://github.com/coinbase/spend
 
 Defines the complete parameters of a spend permission.
 
-<Callout type="warning" >
-The fields of the `SpendPermission` structure must be strictly ordered as defined below. 
+<Callout type="warning">
+  The fields of the `SpendPermission` structure must be strictly ordered as
+  defined below.
 </Callout>
 
 | Field       | Type      | Description                                                                                |
@@ -92,10 +93,40 @@ function getHash(SpendPermission memory spendPermission) public view returns (by
 
 #### `isApproved`
 
-Check if a spend permission is approved and not revoked, regardless of whether the current time is within the valid time range of the permission.
+Check if a spend permission is approved, regardless of whether the current time is within the valid time range of the permission.
 
 ```solidity
 function isApproved(SpendPermission memory spendPermission) public view returns (bool);
+```
+
+---
+
+#### `isRevoked`
+
+Check if a spend permission is revoked, regardless of whether the current time is within the valid time range of the permission.
+
+```solidity
+function isRevoked(SpendPermission memory spendPermission) public view returns (bool);
+```
+
+---
+
+#### `isValid`
+
+Check if a spend permission is approved and not revoked, regardless of whether the current time is within the valid time range of the permission.
+
+```solidity
+function isValid(SpendPermission memory spendPermission) public view returns (bool);
+```
+
+---
+
+#### `getLastUpdatedPeriod`
+
+Retrieve the `start`, `end`, and accumulated `spend` for the last updated period of a spend permission.
+
+```solidity
+function getLastUpdatedPeriod(SpendPermission memory spendPermission) public view returns (PeriodSpend memory);
 ```
 
 ---

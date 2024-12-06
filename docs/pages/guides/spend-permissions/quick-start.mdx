@@ -39,7 +39,7 @@ NEXT_PUBLIC_SPENDER_ADDRESS=
 </Callout>
 
 Our spender will need to sign transactions from our app, so we'll create a wallet (private key and address) for our spender.
-If you have [Foundry](https://book.getfoundry.sh/) installed, you can generate a new wallet via `cast wallet new`. If you already have a 
+If you have [Foundry](https://book.getfoundry.sh/) installed, you can generate a new wallet via `cast wallet new`. If you already have a
 development keypair you can use that too. Assign the private key and address to
 `SPENDER_PRIVATE_KEY` and `NEXT_PUBLIC_SPENDER_ADDRESS`, respectively.
 
@@ -342,7 +342,7 @@ export default function Subscribe() {
 }
 ```
 
-Also be sure to add this new `Subscribe` button component to the top level component in `page.tsx`. 
+Also be sure to add this new `Subscribe` button component to the top level component in `page.tsx`.
 You can delete lines 77-127 and put your button there.
 
 ```tsx [page.tsx]
@@ -363,7 +363,7 @@ You can delete lines 77-127 and put your button there.
 ### Examine the `SpendPermission` object our user will sign
 
 A `SpendPermission` is the struct that defines the parameters of the permission.
-See the solidity struct [here](https://github.com/coinbase/spend-permissions/blob/07067168108b83d9662435b056a2a580c08be214/src/SpendPermissionManager.sol#L20).
+See the solidity struct [here](https://github.com/coinbase/spend-permissions/blob/main/src/SpendPermissionManager.sol#L18-L38).
 
 You can see the spend permission object being defined in lines 49-59 of our `Subscribe` component:
 
