@@ -3,7 +3,7 @@ import { Callout } from "vocs/components";
 # Create a React Native App
 
 <Callout type="info">
-  This doc is updated for Mobile Wallet Protocol Client `v0.1.0`
+  This doc is updated for Mobile Wallet Protocol Client `v1.0.0`
 </Callout>
 
 This guide will walk you through adding support for Smart Wallet into a React Native app by integrating the [Mobile Wallet Protocol Client](https://www.npmjs.com/package/@mobile-wallet-protocol/client).
@@ -20,21 +20,9 @@ This guide will walk you through adding support for Smart Wallet into a React Na
 
 ### Deeplink handling
 
-Your app needs to be correctly configured to handle [Universal Links (iOS)](https://developer.apple.com/documentation/xcode/allowing-apps-and-websites-to-link-to-your-content) and [App Links (Android)](https://developer.android.com/training/app-links).
-At runtime, a link like `https://your-app.example.com/mobile-wallet-protocol` should be able to open up your app for smart wallet to send responses back.
-
-Follow this [Expo Guide](https://docs.expo.dev/guides/deep-linking/) for detailed instructions on setting up deeplinks in the Expo environment, this is a required setup for smart wallet to work.
-
-<Callout type="warning">
-  Please make sure you hosted `apple-app-site-association` file and
-  `assetlinks.json` file under your domain's `/.well-known/` path.
-</Callout>
-
-<Callout type="warning">
-  When instantiating the SDK, `appDeeplinkUrl` is required to establish your
-  app's identity. Use 'https://' links for production. If a custom scheme
-  `myapp://` is provided, users will see a banner warning about the insecure
-  connection.
+<Callout type="danger">
+  Breaking change in v1.0.0: Universal Links and App Links requirements are
+  removed in favor of custom schemes (e.g. `myapp://`).
 </Callout>
 
 ### Install peer dependencies
@@ -113,33 +101,10 @@ yarn add @mobile-wallet-protocol/client@latest
 
 ### Configuration
 
-Next, set up your app to pass in deeplinks coming from Smart Wallet to Mobile Wallet Protocol Client so that it can handle responses to the requests you make.
-In your app, this might look something like the following.
-
-Below is an example of how to set up deeplink handling in your app using the [Expo Linking module](https://docs.expo.dev/guides/linking/).
-
-<Callout type="warning">
-  If you are using a different library, you will need to adapt the code
-  accordingly.
+<Callout type="danger">
+  Breaking change in v1.0.0: `handleResponse` is removed. No need to handle
+  returned deeplinks as this is now handled by the SDK.
 </Callout>
-
-```tsx [App.tsx]
-import { handleResponse } from "@mobile-wallet-protocol/client";
-import * as Linking from "expo-linking";
-
-// ...
-
-useEffect(() => {
-  const subscription = Linking.addEventListener("url", ({ url }) => {
-    const handled = handleResponse(url);
-    if (!handled) {
-      // handle other deeplinks
-    }
-  });
-
-  return () => subscription.remove();
-}, []);
-```
 
 ## Usage
 
@@ -153,29 +118,20 @@ Mobile Wallet Protocol Client provides 2 interfaces for mobile app to interact w
 ### Option 1: EIP-1193 Provider
 
 <Callout type="warning">
-  Note that we are iterating on the Mobile Wallet Protocol Client and the API
-  may change.
+  the `app` prefix in SDK config params is removed in v1.0.0.
 </Callout>
 
 Create a new `EIP1193Provider` instance, which is EIP-1193 compliant.
-
-The `appDeeplinkUrl` is required and should match the deeplink URL you set up earlier.
-
-<Callout type="success">
-  The `appCustomScheme` config option can be used to remove the Done screen
-  after signing.
-</Callout>
 
 ```tsx [App.tsx]
 import { EIP1193Provider } from "@mobile-wallet-protocol/client";
 
 // Step 1. Initialize provider with your dapp's metadata and target wallet
 const metadata = {
-  appDeeplinkUrl: "https://your-app.example.com", // required to establish your app's identity, use 'https://' link for production
-  appCustomScheme: "myapp://", // optional, used to remove the Done screen after signing
-  appName: "My App Name",
-  appChainIds: [8453],
-  appLogoUrl: "https://example.com/logo.png",
+  name: "My App Name",
+  customScheme: "myapp://", // only custom scheme (e.g. `myapp://`) is supported in v1.0.0
+  chainIds: [8453],
+  logoUrl: "https://example.com/logo.png",
 };
 const provider = new EIP1193Provider({
   metadata,
@@ -210,11 +166,6 @@ yarn add @mobile-wallet-protocol/wagmi-connectors@latest
 
 Simply import the `createConnectorFromWallet` function and pass in the wallet you want to use to wagmi config.
 
-<Callout type="success">
-  The `appCustomScheme` config option can be used to remove the Done screen
-  after signing.
-</Callout>
-
 ```ts [config.ts]
 import {
   createConnectorFromWallet,
@@ -222,11 +173,10 @@ import {
 } from "@mobile-wallet-protocol/wagmi-connectors";
 
 const metadata = {
-  appDeeplinkUrl: "https://your-app.example.com", // required to establish your app's identity, use 'https://' link for production
-  appCustomScheme: "myapp://", // optional, used to remove the Done screen after signing
-  appName: "My App Name",
-  appChainIds: [8453],
-  appLogoUrl: "https://example.com/logo.png",
+  name: "My App Name",
+  customScheme: "myapp://", // only custom scheme (e.g. `myapp://`) is supported in v1.0.0
+  chainIds: [8453],
+  logoUrl: "https://example.com/logo.png",
 };
 
 export const config = createConfig({
