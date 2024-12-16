@@ -65,6 +65,16 @@ export default defineConfig({
       link: "/base-gasless-campaign",
     },
     {
+      text: "Features",
+      collapsed: false,
+      items: [
+        {
+          text: "Networks",
+          link: "/features/networks",
+        },
+      ],
+    },
+    {
       text: "Guides",
       collapsed: false,
       items: [
@@ -146,7 +156,6 @@ export default defineConfig({
         },
         {
           text: "MagicSpend Support",
-
           link: "/guides/magic-spend",
         },
         {
