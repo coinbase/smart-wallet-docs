@@ -1,4 +1,4 @@
-import { defineConfig } from "vocs";
+import { defineConfig, SidebarItem } from "vocs";
 
 export default defineConfig({
   head() {
@@ -63,6 +63,16 @@ export default defineConfig({
     {
       text: "Base Gasless Campaign",
       link: "/base-gasless-campaign",
+    },
+    {
+      text: "Features",
+      collapsed: false,
+      items: [
+        {
+          text: "Networks",
+          link: "/features/networks",
+        },
+      ],
     },
     {
       text: "Guides",
@@ -146,7 +156,6 @@ export default defineConfig({
         },
         {
           text: "MagicSpend Support",
-
           link: "/guides/magic-spend",
         },
         {
@@ -222,5 +231,5 @@ export default defineConfig({
         },
       ],
     },
-  ],
+  ] as SidebarItem[],
 });

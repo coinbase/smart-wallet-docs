@@ -1,0 +1,37 @@
+# Networks
+
+## Mainnet Networks
+- Base
+- Arbitrum
+- Optimism
+- Zora 
+- Polygon 
+- BNB
+- Avalanche
+- Ethereum mainnet ([not recommended due to costs](/faq/why-does-it-cost-more-on-ethereum-l1))
+
+## Testnet Networks
+- Sepolia 
+- Base Sepolia
+- Optimism Sepolia
+
+## Details
+
+### Addresses across Networks
+Users have the same Smart Wallet address across supported networks.
+
+### Deployment
+- Smart Wallets are deployed using the "counterfactual deployment" pattern
+- The wallet contract is deployed on first transaction
+- Same address is reserved across all chains through CREATE2
+- Deployment costs are included in the first transaction
+
+### `initCode`
+- `initCode` determines the wallet's address
+- Contains factory address and initialization parameters
+- Ensures consistent address across all chains
+- Used by bundlers to deploy the wallet if needed
+
+### tx.origin Behavior
+- `tx.origin` will be the bundler EOA address, not the Smart Wallet address
+- Consider this when integrating with existing contracts
