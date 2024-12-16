@@ -1,4 +1,4 @@
-import { defineConfig, SidebarItem } from "vocs";
+import { defineConfig } from "vocs";
 
 export default defineConfig({
   head() {
@@ -231,5 +231,5 @@ export default defineConfig({
         },
       ],
     },
-  ] as SidebarItem[],
+  ],
 });
