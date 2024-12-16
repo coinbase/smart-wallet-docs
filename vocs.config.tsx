@@ -212,5 +212,15 @@ export default defineConfig({
         },
       ],
     },
+    {
+      text: "FAQ",
+      collapsed: false,
+      items: [
+        {
+          text: "Why does it cost more on Ethereum L1?",
+          link: "/faq/why-does-it-cost-more-on-ethereum-l1",
+        },
+      ],
+    },
   ],
 });
