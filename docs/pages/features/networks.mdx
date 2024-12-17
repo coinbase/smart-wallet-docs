@@ -35,3 +35,13 @@ Users have the same Smart Wallet address across supported networks.
 ### tx.origin Behavior
 - `tx.origin` will be the bundler EOA address, not the Smart Wallet address
 - Consider this when integrating with existing contracts
+
+## Adding Network Support
+
+For a network to be supported, it needs:
+
+- CREATE2 deployer at `0x914d7Fec6aaC8cd542e72Bca78B30650d45643d7`
+- ERC-4337 Entrypoint v0.6 at `0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789` 
+- Smart Wallet Factory at `0x0BA5ED0c6AA8c49038F819E587E2633c4A9F428a`
+- ERC-4337 bundler meeting Coinbase's standards (available, latency, security)
+- Integration work from the Smart Wallet team
