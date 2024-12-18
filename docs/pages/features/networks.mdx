@@ -1,3 +1,5 @@
+import { Callout } from "vocs/components";
+
 # Networks
 
 ## Mainnet Networks
@@ -38,7 +40,9 @@ Users have the same Smart Wallet address across supported networks.
 
 ## Adding Network Support
 
-To add a network, it will require the Smart Wallet team to prioritize it.
+<Callout type="warning">
+  To add a network, it will require the Smart Wallet team to prioritize it. There is no support for custom networks or [EIP-3085](https://eips.ethereum.org/EIPS/eip-3085) (wallet_addEthereumChain). Users cannot add custom networks to Smart Wallet. Only officially supported networks listed above can be used.
+</Callout>
 
 For a network to be supported, it needs:
 
@@ -47,7 +51,3 @@ For a network to be supported, it needs:
 - [Smart Wallet Factory](https://github.com/coinbase/smart-wallet/tree/main?tab=readme-ov-file#deployments) deployed at `0x0BA5ED0c6AA8c49038F819E587E2633c4A9F428a`
 - ERC-4337 bundler meeting Coinbase's standards (availability, latency, security)
 - Integration work from the Smart Wallet team
-
-## Adding Custom Networks
-
-There is no support for custom networks or [EIP-3085](https://eips.ethereum.org/EIPS/eip-3085) (wallet_addEthereumChain). Users cannot add custom networks to Smart Wallet. Only officially supported networks listed above can be used.
