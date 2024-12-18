@@ -72,6 +72,15 @@ export default defineConfig({
           text: "Networks",
           link: "/features/networks",
         },
+        {
+          text: "Key Management",
+          items: [
+            {
+              text: "Passkeys",
+              link: "/features/passkeys",
+            },
+          ],
+        },
       ],
     },
     {
