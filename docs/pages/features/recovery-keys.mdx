@@ -1,0 +1,73 @@
+import { Callout } from "vocs/components";
+
+# Recovery Keys
+
+## Overview
+
+Smart Wallet provides backup access for users through recovery keys:
+
+- Multiple recovery keys can be generated for backup
+- Recovery keys can be used to add new passkeys if keys.coinbase.com is not accessible
+- Chain selection for recovery transactions is automated based on wallet balance
+- Each recovery key addition requires a transaction with gas fees
+- Recovery keys work across all supported chains through replay
+- Cannot be used for regular transactions in keys.coinbase.com
+- No automatic key rotation
+
+## Generate a Recovery Key
+<div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+  1. Navigate to the "Account Recovery" tab in [Smart Wallet settings](https://keys.coinbase.com/settings).
+  <div style={{ maxWidth: '400px' }}>
+    ![Recovery Key Step 1: Access Account Recovery settings](/accountRecovery.png)
+  </div>
+
+  2. Click "Generate Recovery Key" to start the process.
+  <div style={{ maxWidth: '400px' }}>
+    ![Recovery Key Step 2: Generate a new recovery key](/generateRecoveryKey.png)
+  </div>
+
+  3. Submit the recovery key to complete the process.
+  <div style={{ maxWidth: '400px' }}>
+    ![Recovery Key Step 3: Submit recovery key](/submitRecoveryKey.png)
+  </div>
+
+  4. Your recovery key will be displayed - save it securely.
+  <div style={{ maxWidth: '400px' }}>
+    ![Recovery Key Step 4: Recovery key generated successfully](/recoveryKeyCreated.png)
+  </div>
+
+  5. You will need to replay the ownership change transaction in your wallet when using another network.
+  <div style={{ maxWidth: '400px' }}>
+    ![Recovery Key Step 5: Transaction pending confirmation](/pendingOwnershipChange.png)
+  </div>
+</div>
+
+## Use a Recovery Key to Add a Passkey
+
+<div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+  1. Sign in with your recovery key.
+  <div style={{ maxWidth: '400px' }}>
+    ![Recovery Key Step 1: Sign in with recovery key](/recoveryKeySignIn.png)
+  </div>
+
+  2. Review the security warning about recovery key scams.
+  <div style={{ maxWidth: '400px' }}>
+    ![Recovery Key Step 2: Security warning about scams](/recoveryKeyScamWarning.png)
+  </div>
+
+  3. Add a new passkey to regain access to your wallet.
+  <div style={{ maxWidth: '400px' }}>
+    ![Recovery Key Step 3: Add a new passkey](/recoveryKeyAddPasskey.png)
+  </div>
+</div>
+
+<Callout type="info">
+  If you need to recover access to your passkey, please refer to your passkey provider's documentation:
+  - [Apple Support - Use passkeys](https://support.apple.com/guide/iphone/use-passkeys-to-sign-in-to-websites-and-apps-iphf538ea8d0/ios)
+  - [Google Help - About passkeys](https://support.google.com/android/answer/13462838)
+  - [Microsoft Account - Passkey sign in](https://support.microsoft.com/windows/passkey-sign-in-windows-301c8944-5ea2-452b-9886-97e4d2ef4422)
+</Callout>
+
+<Callout type="warning">
+  Removing keys is currently not supported in keys.coinbase.com.
+</Callout>

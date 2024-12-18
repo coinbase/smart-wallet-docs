@@ -79,6 +79,10 @@ export default defineConfig({
               text: "Passkeys",
               link: "/features/passkeys",
             },
+            {
+              text: "Recovery Keys",
+              link: "/features/recovery-keys",
+            },
           ],
         },
       ],
