@@ -242,6 +242,10 @@ export default defineConfig({
           text: "Why does it cost more on Ethereum L1?",
           link: "/faq/why-does-it-cost-more-on-ethereum-l1",
         },
+        {
+          text: "What happens if keys.coinbase.com is unavailable?",
+          link: "/faq/what-happens-if-keys-coinbase-com-is-unavailable",
+        },
       ],
     },
   ],
