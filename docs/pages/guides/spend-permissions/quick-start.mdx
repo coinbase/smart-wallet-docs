@@ -79,7 +79,13 @@ export async function getSpenderWalletClient() {
 
 ### Configure the Smart Wallet URL
 
-In `app/providers.tsx`, update the chain configuration to use Base Sepolia testnet by replacing all instances of `base` with `baseSepolia` in this file (including the import).
+In `app/providers.tsx`, update the value of `keysUrl` based on your environment:
+
+- For testnets: `"https://keys-dev.coinbase.com/connect"`
+- For mainnets: Leave `keysUrl` undefined (defaults to keys.coinbase.com)
+
+We also want to point our chain id to Base Sepolia testnet by setting replacing all instances of `base`
+with `baseSepolia` in this file (including the import).
 
 Your config in `app/providers.tsx` should now look like this:
 
@@ -92,6 +98,8 @@ const config = createConfig({
       preference: process.env.NEXT_PUBLIC_ONCHAINKIT_WALLET_CONFIG as
         | "smartWalletOnly"
         | "all",
+      // @ts-ignore
+      keysUrl: "https://keys-dev.coinbase.com/connect"
     }),
   ],
   storage: createStorage({
