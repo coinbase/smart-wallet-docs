@@ -148,7 +148,7 @@ export default defineConfig({
                   link: "/guides/spend-permissions/api-reference/spendpermissionmanager",
                 },
                 {
-                  text: "coinbase_fetchPermissions",
+                  text: "Fetch Permissions API",
                   link: "/guides/spend-permissions/api-reference/coinbase-fetchpermissions",
                 },
                 {
