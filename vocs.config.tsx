@@ -73,17 +73,12 @@ export default defineConfig({
           link: "/features/networks",
         },
         {
-          text: "Key Management",
-          items: [
-            {
-              text: "Passkeys",
-              link: "/features/passkeys",
-            },
-            {
-              text: "Recovery Keys",
-              link: "/features/recovery-keys",
-            },
-          ],
+          text: "Passkeys",
+          link: "/features/passkeys",
+        },
+        {
+          text: "Recovery Keys",
+          link: "/features/recovery-keys",
         },
       ],
     },
