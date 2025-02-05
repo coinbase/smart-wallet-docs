@@ -69,6 +69,10 @@ export default defineConfig({
       collapsed: false,
       items: [
         {
+          text: "Universal Account",
+          link: "/features/universal-account",
+        },
+        {
           text: "Networks",
           link: "/features/networks",
         },
@@ -79,6 +83,26 @@ export default defineConfig({
         {
           text: "Recovery Keys",
           link: "/features/recovery-keys",
+        },
+        {
+          text: "MagicSpend",
+          link: "/features/MagicSpend",
+        },
+        {
+          text: "Sponsored Transactions",
+          link: "/features/sponsored-transactions",
+        },
+        {
+          text: "Spend Permissions",
+          link: "/features/spend-permissions",
+        },
+        {
+          text: "Batch Operations",
+          link: "/features/batch-operations",
+        },
+        {
+          text: "Custom Gas Tokens",
+          link: "/features/custom-gas-tokens",
         },
       ],
     },
