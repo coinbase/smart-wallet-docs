@@ -43,10 +43,11 @@ export default defineConfig({
     {
       text: "Introduction",
       items: [
-        { text: "Install for Web", link: "/install-web" },
-        { text: "Install for React Native", link: "/install-react-native" },
-        { text: "Recommend Libraries", link: "/recommended-libraries" },
-        { text: "Starter Templates", link: "/starter-templates" },
+        { text: "Install for Web", link: "/introduction/install-web" },
+        { text: "Install for React Native", link: "/introduction/install-react-native" },
+        { text: "Recommend Libraries", link: "/introduction/recommended-libraries" },
+        { text: "Starter Templates", link: "/introduction/templates" },
+        { text: "Base Gasless Campaign", link: "/introduction/base-gasless-campaign" },
       ],
     },
 
@@ -60,14 +61,14 @@ export default defineConfig({
             { text: "Networks", link: "/features/networks" },
             { text: "Passkeys", link: "/features/passkeys" },
             { text: "Recovery", link: "/features/recovery-keys" },
-            { text: "MagicSpend", link: "/features/magic-spend" },
+            { text: "MagicSpend", link: "/features/MagicSpend" },
           ],
         },
         {
           text: "Optional Features",
           items: [
-            { text: "Gas-free Transactions", link: "/features/sponsored-transactions" },
-            { text: "One-click Transactions", link: "/features/spend-permissions" },
+            { text: "Gas-free Transactions", link: "/features/gas-free-transactions" },
+            { text: "Spend Permissions", link: "/features/spend-permissions" },
             { text: "Batch Transactions", link: "/features/batch-operations" },
             { text: "Custom Gas Tokens", link: "/features/custom-gas-tokens" },
           ],
@@ -75,14 +76,13 @@ export default defineConfig({
       ],
     },
     {
-      text: "Important Details",
+      text: "Usage Details",
       items: [
-        { text: "Signature Verification", link: "/differences/signature-verification" },
-        { text: "Popups", link: "/differences/popups" },
-        { text: "Simulations", link: "/differences/Simulations" },
-        { text: "Portability", link: "/differences/portability" },
-        { text: "Gas Usage", link: "/differences/gas-usage" },
-        { text: "Self Calls", link: "/differences/self-calls" },
+        { text: "Signature Verification", link: "/usage-details/signature-verification" },
+        { text: "Popups", link: "/usage-details/popups" },
+        { text: "Simulations", link: "/usage-details/Simulations" },
+        { text: "Gas Usage", link: "/usage-details/gas-usage" },
+        { text: "Self Calls", link: "/usage-details/self-calls" },
       ],
     },
     {
