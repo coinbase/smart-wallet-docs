@@ -4,16 +4,7 @@ import SdkParameters from './snippets/sdk-paramaters.mdx'
 Creates a new `sdk` object for getting a `CoinbaseWalletProvider` instance. 
 
 ## Usage
-:::code-group
-```ts twoslash [provider.ts]
-import { sdk } from './setup'
-
-// Create provider
-export const provider = sdk.getProvider();
-// Use provider
-const addresses = provider.request({method: 'eth_requestAccounts'});
-```
-```ts twoslash [setup.ts] filename="setup.ts"
+```ts twoslash 
 import { createCoinbaseWalletSDK } from '@coinbase/wallet-sdk';
 
 export const sdk = createCoinbaseWalletSDK({
@@ -27,8 +18,13 @@ export const sdk = createCoinbaseWalletSDK({
         }
     },
 });
+
+// Create provider
+export const provider = sdk.getProvider();
+// Use provider
+const addresses = provider.request({method: 'eth_requestAccounts'});
 ```
-:::
+
 
 ## Returns 
 An object with related SDK methods
