@@ -1,0 +1,210 @@
+{
+    "redirects": [
+      {
+        "source": "/sdk/create-coinbase-wallet-sdk",
+        "destination": "https://docs.base.org/identity/smart-wallet/sdk/create-coinbase-wallet-sdk",
+        "permanent": true
+      },
+      {
+        "source": "/guides/components/create-wallet-button",
+        "destination": "https://docs.base.org/identity/smart-wallet/guides/components/create-wallet-button",
+        "permanent": true
+      },
+      {
+        "source": "/",
+        "destination": "https://base.org/builders/smart-wallet",
+        "permanent": true
+      },
+      {
+        "source": "/guides/tips/inspect-txn-simulation",
+        "destination": "https://docs.base.org/identity/smart-wallet/guides/tips/inspect-txn-simulation",
+        "permanent": true
+      },
+      {
+        "source": "/guides/update-existing-app",
+        "destination": "https://docs.base.org/identity/smart-wallet/guides/update-existing-app",
+        "permanent": true
+      },
+      {
+        "source": "/guides/magic-spend",
+        "destination": "https://docs.base.org/identity/smart-wallet/guides/magic-spend",
+        "permanent": true
+      },
+      {
+        "source": "/guides/paymasters",
+        "destination": "https://docs.base.org/identity/smart-wallet/guides/paymasters",
+        "permanent": true
+      },
+      {
+        "source": "/guides/react-native-integration",
+        "destination": "https://docs.base.org/identity/smart-wallet/guides/react-native-integration",
+        "permanent": true
+      },
+      {
+        "source": "/guides/create-app/using-onchain-app-template",
+        "destination": "https://docs.base.org/identity/smart-wallet/guides/create-app/using-onchain-app-template",
+        "permanent": true
+      },
+      {
+        "source": "/guides/siwe",
+        "destination": "https://docs.base.org/identity/smart-wallet/guides/siwe",
+        "permanent": true
+      },
+      {
+        "source": "/wallet-library-support",
+        "destination": "https://docs.base.org/identity/smart-wallet/wallet-library-support",
+        "permanent": true
+      },
+      {
+        "source": "/guides/batch-transactions",
+        "destination": "https://docs.base.org/identity/smart-wallet/guides/batch-transactions",
+        "permanent": true
+      },
+      {
+        "source": "/features/networks",
+        "destination": "https://docs.base.org/identity/smart-wallet/features/networks",
+        "permanent": true
+      },
+      {
+        "source": "/FAQ",
+        "destination": "https://docs.base.org/identity/smart-wallet/FAQ",
+        "permanent": true
+      },
+      {
+        "source": "/features/recovery-keys",
+        "destination": "https://docs.base.org/identity/smart-wallet/features/recovery-keys",
+        "permanent": true
+      },
+      {
+        "source": "/guides/tips/popup-tips",
+        "destination": "https://docs.base.org/identity/smart-wallet/guides/tips/popup-tips",
+        "permanent": true
+      },
+      {
+        "source": "/base-gasless-campaign",
+        "destination": "https://docs.base.org/identity/smart-wallet/base-gasless-campaign",
+        "permanent": true
+      },
+      {
+        "source": "/guides/create-app/using-wagmi",
+        "destination": "https://docs.base.org/identity/smart-wallet/guides/create-app/using-wagmi",
+        "permanent": true
+      },
+      {
+        "source": "/sdk/v3-to-v4-changes",
+        "destination": "https://docs.base.org/identity/smart-wallet/sdk/v3-to-v4-changes",
+        "permanent": true
+      },
+      {
+        "source": "/checklist",
+        "destination": "https://docs.base.org/identity/smart-wallet/checklist",
+        "permanent": true
+      },
+      {
+        "source": "/features/passkeys",
+        "destination": "https://docs.base.org/identity/smart-wallet/features/passkeys",
+        "permanent": true
+      },
+      {
+        "source": "/quick-start",
+        "destination": "https://docs.base.org/identity/smart-wallet/quick-start",
+        "permanent": true
+      },
+      {
+        "source": "/guides/signature-verification",
+        "destination": "https://docs.base.org/identity/smart-wallet/guides/signature-verification",
+        "permanent": true
+      },
+      {
+        "source": "/sdk/legacy-setup",
+        "destination": "https://docs.base.org/identity/smart-wallet/sdk/legacy-setup",
+        "permanent": true
+      },
+      {
+        "source": "/guides/spend-permissions/api-reference/spendpermissionmanager",
+        "destination": "https://docs.base.org/identity/smart-wallet/guides/spend-permissions/api-reference/spendpermissionmanager",
+        "permanent": true
+      },
+      {
+        "source": "/guides/spend-permissions/overview",
+        "destination": "https://docs.base.org/identity/smart-wallet/guides/spend-permissions/overview",
+        "permanent": true
+      },
+      {
+        "source": "/sdk/getting-started",
+        "destination": "https://docs.base.org/identity/smart-wallet/sdk/getting-started",
+        "permanent": true
+      },
+      {
+        "source": "/guides/erc20-paymasters",
+        "destination": "https://docs.base.org/identity/smart-wallet/guides/erc20-paymasters",
+        "permanent": true
+      },
+      {
+        "source": "/sdk/make-web3-provider",
+        "destination": "https://docs.base.org/identity/smart-wallet/sdk/make-web3-provider",
+        "permanent": true
+      },
+      {
+        "source": "/guides/spend-permissions/api-reference/client-resources",
+        "destination": "https://docs.base.org/identity/smart-wallet/guides/spend-permissions/api-reference/client-resources",
+        "permanent": true
+      },
+      {
+        "source": "/faq/why-does-it-cost-more-on-ethereum-l1",
+        "destination": "https://docs.base.org/identity/smart-wallet/faq/why-does-it-cost-more-on-ethereum-l1",
+        "permanent": true
+      },
+      {
+        "source": "/faq/what-happens-if-keys-coinbase-com-is-unavailable",
+        "destination": "https://docs.base.org/identity/smart-wallet/faq/what-happens-if-keys-coinbase-com-is-unavailable",
+        "permanent": true
+      },
+      {
+        "source": "/guides/spend-permissions/quick-start",
+        "destination": "https://docs.base.org/identity/smart-wallet/guides/spend-permissions/quick-start",
+        "permanent": true
+      },
+      {
+        "source": "/why",
+        "destination": "https://docs.base.org/identity/smart-wallet/why",
+        "permanent": true
+      },
+      {
+        "source": "/guides/session-keys",
+        "destination": "https://docs.base.org/identity/smart-wallet/guides/session-keys",
+        "permanent": true
+      },
+      {
+        "source": "/sdk/makeWeb3Provider",
+        "destination": "https://docs.base.org/identity/smart-wallet/sdk/makeWeb3Provider",
+        "permanent": true
+      },
+      {
+        "source": "/sdk/setup",
+        "destination": "https://docs.base.org/identity/smart-wallet/sdk/setup",
+        "permanent": true
+      },
+      {
+        "source": "/sdk/install",
+        "destination": "https://docs.base.org/identity/smart-wallet/sdk/install",
+        "permanent": true
+      },
+      {
+        "source": "/guides/create-app/using-boat",
+        "destination": "https://docs.base.org/identity/smart-wallet/guides/create-app/using-boat",
+        "permanent": true
+      }
+    ],
+    "headers": [
+      {
+        "source": "/(.*)",
+        "headers": [
+          {
+            "key": "x-robots-tag",
+            "value": "index, follow"
+          }
+        ]
+      }
+    ]
+  }
