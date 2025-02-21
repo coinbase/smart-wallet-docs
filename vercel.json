@@ -82,7 +82,7 @@
     },
     {
       "source": "/base-gasless-campaign",
-      "destination": "https://docs.base.org/identity/smart-wallet/base-gasless-campaign",
+      "destination": "https://docs.base.org/identity/smart-wallet/introduction/base-gasless-campaign",
       "permanent": true
     },
     {
@@ -172,7 +172,7 @@
     },
     {
       "source": "/guides/session-keys",
-      "destination": "https://docs.base.org/identity/smart-wallet/guides/session-keys",
+      "destination": "https://www.base.org/builders/smart-wallet",
       "permanent": true
     },
     {
@@ -182,17 +182,17 @@
     },
     {
       "source": "/sdk/setup",
-      "destination": "https://docs.base.org/identity/smart-wallet/sdk/setup",
+      "destination": "https://www.smartwallet.dev/sdk/install",
       "permanent": true
     },
     {
       "source": "/sdk/install",
-      "destination": "https://docs.base.org/identity/smart-wallet/sdk/install",
+      "destination": "https://www.smartwallet.dev/sdk/install",
       "permanent": true
     },
     {
       "source": "/guides/create-app/using-boat",
-      "destination": "https://docs.base.org/identity/smart-wallet/guides/create-app/using-boat",
+      "destination": "https://docs.base.org/identity/smart-wallet/guides/create-app/using-onchain-app-template",
       "permanent": true
     }
   ],
