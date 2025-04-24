@@ -1,0 +1,595 @@
+# Wallet Webhooks
+
+With Smart Wallet, you can request information from users to be sent to your app's backend during transaction submission. The specific pieces of information available to developers include:
+
+* Wallet address
+* Name
+* Email
+* Phone number
+* Physical address
+
+You can use this feature to "validate" a user's information fits some criteria set by your application before a user submits a transaction. You can also update the transaction request the user will sign based on the information provided. Some use cases we had in mind include:
+
+* Requesting a user's wallet address before they submit a transaction and applying a discount after checking that they own a specific NFT.
+* Requesting a user's email to send them a receipt after purchasing something with USDC.
+* Requesting a user's physical address to validate you are able to ship something to them.
+
+Combined with a recent Coinbase Wallet SDK refactor that is live as of [version 4.3.0](https://www.npmjs.com/package/@coinbase/wallet-sdk/v/4.3.0), we believe this feature will unlock powerful transacting experiences with DevX and UX that exceed those of Web2 incumbents.
+
+## Getting Started
+
+This guide will go over how you can use Wallet Webhooks in a Next.js app to create a basic ecommerce experience. We'll be using the Coinbase Wallet SDK to submit transaction requests to Smart Wallet and viem to help us format our transaction request correctly.
+
+::::steps
+### Set up your app
+
+First we'll set up our Next.js app. This will be our app's frontend and host our "webhook" endpoints that will receive users' information.
+
+```bash
+bun create next-app
+```
+
+Follow the prompts to set up your app. You can use the default options.
+
+### Install the latest versions of the Coinbase Wallet SDK and viem
+
+We'll need the Coinbase Wallet SDK to submit transaction requests to Smart Wallet.
+
+```bash
+cd <your-app-name> && bun add @coinbase/wallet-sdk@latest viem@latest @tanstack/react-query@latest
+```
+
+Once these are installed, you can run your app with `bun dev`.
+
+### Create your "checkout" page
+
+This page will be responsible for prompting the transaction request in Smart Wallet. Note that we create a random identifier when the user lands on this page. While it's not necessary for this basic example, we're including it to show how you might need an identifier like this to, for example, identify different users' "carts" across your app's systems.
+
+```ts [app/page.tsx]
+"use client";
+
+import {
+  createCoinbaseWalletSDK,
+  ProviderInterface,
+} from "@coinbase/wallet-sdk";
+import { useEffect, useState } from "react";
+import { encodeFunctionData, erc20Abi, numberToHex, parseUnits } from "viem";
+
+export default function Home() {
+  const [id, setId] = useState<string | undefined>(undefined);
+  const [provider, setProvider] = useState<ProviderInterface | undefined>(
+    undefined
+  );
+
+  useEffect(() => {
+    // Generate a random identifier for this user's "cart"
+    setId(crypto.randomUUID());
+    const sdk = createCoinbaseWalletSDK({
+      appName: "My App",
+      preference: {
+        options: "smartWalletOnly",
+      },
+    });
+    const provider = sdk.getProvider();
+    setProvider(provider);
+  }, []);
+
+  return (
+    <div className="flex flex-col justify-center items-center gap-4 w-screen h-screen">
+      <button
+        className="bg-blue-500 text-white px-8 py-2 rounded-md"
+        onClick={() => {
+          provider?.request({
+            method: "wallet_sendCalls",
+            params: [
+              {
+                chainId: numberToHex(8453),
+                calls: [
+                // Send $0.10 to Vitalik.
+                  {
+                    to: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+                    data: encodeFunctionData({
+                      abi: erc20Abi,
+                      functionName: "transfer",
+                      args: [
+                        "0xd8da6bf26964af9d7eed9e03e53415d37aa96045",
+                        parseUnits("0.1", 6),
+                      ],
+                    }),
+                  },
+                ],
+                capabilities: {
+                  dataCallback: {
+                    // Request the user's wallet address
+                    requests: [
+                      {
+                        type: "walletAddress",
+                      },
+                    ],
+                    // The URLs that will receive the user's information. In our case, this will resolve to this app's backend.
+                    validationURL: `${document.location.origin}/api/validate/${id}`,
+                    updateURL: `${document.location.origin}/api/update/${id}`,
+                  },
+                },
+              },
+            ],
+          });
+        }}
+      >
+        Pay
+      </button>
+    </div>
+  );
+}
+```
+
+The above will render a page with a single "Pay" button. Let's go over some important things to note about the above code:
+
+* When the page loads, we generate a random identifier for this user's "cart". We'll use this to match user's frontend sessions with our backend storage.
+  * Note that in a production application, you'll want to create sessions / generate these IDs in your backend so you know they can be trusted.
+* Newer versions of the Coinbase Wallet SDK (>= 4.3.0) do not require an `eth_requestAccounts` ("connect wallet") step. This is why our button can immediately submit a transaction request with `wallet_sendCalls`.
+* The `wallet_sendCalls` request provided sends $0.10 to Vitalik.
+* Our `wallet_sendCalls` request includes a `dataCallback` capability. This is how we can request information from the user and receive it at the specified callback URLs.
+  * The `requests` parameter is an array of information we want to request from the user. In this case, we're requesting their wallet address.
+  * The `validationURL` is the URL that will receive the user's information for "validation". This is where we can check that the user meets some criteria before they continue with the transaction. For example, since we're requesting the user's wallet address, we could check that they own a specific NFT before they are allowed to pay.
+  * The `updateURL` allows us to update the transaction request the user will sign based on the information provided. For example, we could update the transaction request to apply a discount after checking that a user owns a specific NFT.
+  * Note that we're including the `id` parameter in our URLs. This is so validation & updates are unique per user session.
+  * Wallet Webhooks require `https` URLs, so you'll need to deploy your app or use a tool like [ngrok](https://ngrok.com/) to test locally.
+
+### Create your "validate" endpoint
+
+Your validation endpoint will be responsible for determining if the provided information is "valid". You are free to perform any checks you want here. If this endpoint responds that the provided information is "invalid", Smart Wallet will not allow the user to continue with the transaction.
+
+:::code-group
+```ts [app/api/validate/[id].ts]
+import { NextResponse } from "next/server";
+import { Address } from "viem";
+import { orders } from "../util/storage";
+
+type ValidationRequest = {
+  requestedInfo: {
+    walletAddress: Address;
+  };
+};
+
+export async function POST(
+  req: Request,
+  { params }: { params: { id: string } }
+) {
+  const {
+    requestedInfo: { walletAddress },
+  } = await readBody(req);
+
+  console.log(
+    `Validating wallet address ${walletAddress} for order ${params.id}`
+  );
+
+  // ...
+  // Perform validation on the user's wallet address.
+  // E.g. check if the user is on the allowlist before they submit payment.
+  // ...
+  const isValid = walletAddress.at(2) === "1";
+
+  if (!isValid) {
+    return Response.json({ isValid: false, invalidReason: "Not on allowlist" });
+  }
+
+  // Create an order record.
+  // We are doing this in memory for demonstration purposes.
+  orders.set(params.id, {
+    id: params.id,
+    walletAddress,
+    status: "pending",
+  });
+
+  return Response.json({ isValid: true });
+}
+
+// CORS
+export async function OPTIONS(_request: Request) {
+  const response = new NextResponse(null, {
+    status: 200,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+      "Access-Control-Allow-Headers": "*",
+    },
+  });
+
+  return response;
+}
+
+async function readBody(req: Request) {
+  return (await req.json()) as ValidationRequest;
+}
+```
+```ts [app/api/util/storage.ts]
+import { Address, Hash } from "viem";
+
+type OrderStatus = "pending" | "paid" | "failed";
+
+type Order = {
+  id: string;
+  walletAddress: Address;
+  transactionHash?: Hash;
+  status: OrderStatus;
+};
+
+export const orders = new Map<string, Order>();
+```
+:::
+
+In this example, we're checking that the user's wallet address starts with a '1'. This is a simple example, but you can imagine this being used to check that a user owns a specific NFT, is on an allowlist, or meets some other criteria.
+
+If the user's wallet address does not start with a '1', we return `isValid: false` and an `invalidReason` that the user will see in Smart Wallet. Because we're retuning `isValid: false`, Smart Wallet will not allow the user to continue with the transaction.
+
+### Create your "update" endpoint
+
+The update endpoint will be responsible for updating the transaction request the user will sign based on the information provided. In our example, we'll apply a 10% discount so the user only pays $0.09 instead of the original $0.10 if the second character of their wallet address is a '2'.
+
+The update endpoint will receive the requested user information and the current transaction request, and should respond with the updated transaction request if it needs to be updated, or the same transaction request it received if it does not need to be updated.
+
+```ts [app/api/update/[id].ts]
+import { NextResponse } from "next/server";
+import { Address, encodeFunctionData, erc20Abi, Hex, parseUnits } from "viem";
+
+type UpdateRequest = {
+  requestedInfo: {
+    walletAddress: Address;
+  };
+  calls: {
+    to: Address;
+    data?: Hex;
+    value?: Hex;
+  }[];
+  capabilities: Record<string, unknown>;
+};
+
+export async function POST(
+  req: Request,
+  { params }: { params: { id: string } }
+) {
+  const {
+    requestedInfo: { walletAddress },
+    calls,
+    capabilities,
+  } = await readBody(req);
+
+  console.log(
+    `Updating for wallet address ${walletAddress}, calls ${JSON.stringify(
+      calls
+    )},
+    capabilities ${JSON.stringify(capabilities)} for order ${params.id}`
+  );
+
+  // ...
+  // Update the calls.
+  // E.g. apply a discount.
+  // ...
+  const shouldApplyDiscount = walletAddress.at(3) === "2";
+
+  if (!shouldApplyDiscount) {
+    return Response.json({ calls });
+  }
+
+  const newCalls = [
+    {
+      to: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+      data: encodeFunctionData({
+        abi: erc20Abi,
+        functionName: "transfer",
+        args: [
+          "0xd8da6bf26964af9d7eed9e03e53415d37aa96045",
+          parseUnits("0.09", 6),
+        ],
+      }),
+    },
+  ];
+
+  return Response.json({
+    calls: newCalls,
+  });
+}
+
+// CORS
+export async function OPTIONS(_request: Request) {
+  const response = new NextResponse(null, {
+    status: 200,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+      "Access-Control-Allow-Headers": "*",
+    },
+  });
+
+  return response;
+}
+
+async function readBody(req: Request) {
+  return (await req.json()) as UpdateRequest;
+}
+```
+
+### Collect the transaciton identifier and final requested information
+
+After the user signs and submits the transaction, the Coinbase Wallet SDK will respond to the `wallet_sendCalls` request we made in the frontend with a call batch identifier and the final requested information. Let's update our app to collect this information.
+
+```ts [app/page.tsx]
+"use client";
+
+import {
+  createCoinbaseWalletSDK,
+  ProviderInterface,
+} from "@coinbase/wallet-sdk";
+import { useEffect, useState } from "react";
+import {
+  encodeFunctionData,
+  erc20Abi,
+  numberToHex,
+  parseUnits,
+  Address,
+} from "viem";
+
+export default function Home() {
+  const [id, setId] = useState<string | undefined>(undefined);
+  const [provider, setProvider] = useState<ProviderInterface | undefined>(
+    undefined
+  );
+  const [callsId, setCallsId] = useState<string | undefined>( // [!code focus]
+    undefined // [!code focus]
+  ); // [!code focus]
+  const [collectedWalletAddress, setCollectedWalletAddress] = useState< // [!code focus]
+    Address | undefined // [!code focus]
+  >(undefined); // [!code focus]
+
+  useEffect(() => {
+    // Generate a random identifier for this user's "cart"
+    setId(crypto.randomUUID());
+    const sdk = createCoinbaseWalletSDK({
+      appName: "My App",
+      preference: {
+        options: "smartWalletOnly",
+      },
+    });
+    const provider = sdk.getProvider();
+    setProvider(provider);
+  }, []);
+
+  return (
+    <div className="flex flex-col justify-center items-center gap-4 w-screen h-screen">
+      <button
+        className="bg-blue-500 text-white px-8 py-2 rounded-md"
+        onClick={async () => {
+          const { id: submittedCallsId, capabilities } = (await provider?.request({ // [!code focus]
+            method: "wallet_sendCalls",
+            params: [
+              {
+                chainId: numberToHex(8453),
+                calls: [
+                  // Send $0.10 to Vitalik.
+                  {
+                    to: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+                    data: encodeFunctionData({
+                      abi: erc20Abi,
+                      functionName: "transfer",
+                      args: [
+                        "0xd8da6bf26964af9d7eed9e03e53415d37aa96045",
+                        parseUnits("0.1", 6),
+                      ],
+                    }),
+                  },
+                ],
+                capabilities: {
+                  dataCallback: {
+                    // Request the user's wallet address
+                    requests: [
+                      {
+                        type: "walletAddress",
+                      },
+                    ],
+                    // The URLs that will receive the user's information. In our case, this will resolve to this app's backend.
+                    validationURL: `${document.location.origin}/api/validate/${id}`,
+                    updateURL: `${document.location.origin}/api/update/${id}`,
+                  },
+                },
+              },
+            ],
+          })) as { // [!code focus]
+            id: string; // [!code focus]
+            capabilities: { // [!code focus]
+              dataCallback: { requestedInfo: { walletAddress: Address } }; // [!code focus]
+            }; // [!code focus]
+          }; // [!code focus]
+          setCallsId(submittedCallsId); // [!code focus]
+          setCollectedWalletAddress( // [!code focus]
+            capabilities.dataCallback.requestedInfo.walletAddress // [!code focus]
+          ); // [!code focus]
+        }}
+      >
+        Pay
+      </button>
+    </div>
+  );
+}
+```
+
+### Poll for a transaction Hash
+
+The ID we get back from the `wallet_sendCalls` request is a call batch identifier. We can use this ID to poll for the transaction hash of the transaction that was submitted. We want to do this for long-term storage because call batch identifiers expire after 24 hours. Transaction information that needs to be kept long-term should be stored as an actual transaction hash.
+
+We'll use the `@tanstack/react-query` library to poll for the transaction hash.
+
+```ts [app/page.tsx]
+"use client";
+
+import {
+  createCoinbaseWalletSDK,
+  ProviderInterface,
+} from "@coinbase/wallet-sdk";
+import { useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+import {
+  encodeFunctionData,
+  erc20Abi,
+  numberToHex,
+  parseUnits,
+  Address,
+  Hash,
+} from "viem";
+
+export default function Home() {
+  const [id, setId] = useState<string | undefined>(undefined);
+  const [provider, setProvider] = useState<ProviderInterface | undefined>(
+    undefined
+  );
+  const [callsId, setCallsId] = useState<string | undefined>(
+    undefined
+  );
+  const [collectedWalletAddress, setCollectedWalletAddress] = useState<
+    Address | undefined
+  >(undefined);
+  const { data: callsStatus } = useQuery({ // [!code focus]
+    queryKey: ["status", callsId], // [!code focus]
+    queryFn: () => // [!code focus]
+      provider?.request({ // [!code focus]
+        method: "wallet_getCallsStatus", // [!code focus]
+        params: [callsId], // [!code focus]
+      }) as Promise<{ // [!code focus]
+        status: "PENDING" | "CONFIRMED"; // [!code focus]
+        receipts: [{ transactionHash: Hash }]; // [!code focus]
+      }>, // [!code focus]
+    refetchInterval: (data) => // [!code focus]
+      data.state.data?.status === "PENDING" ? 1000 : false, // [!code focus]
+  }); // [!code focus]
+
+  useEffect(() => { // [!code focus]
+    if (callsStatus?.status === "CONFIRMED") { // [!code focus]
+      fetch(`/api/finalize/${id}`, { // [!code focus]
+        method: "POST", // [!code focus]
+        body: JSON.stringify({ // [!code focus]
+          transactionHash: callsStatus.receipts[0].transactionHash, // [!code focus]
+          walletAddress: collectedWalletAddress, // [!code focus]
+        }), // [!code focus]
+      }); // [!code focus]
+    } // [!code focus]
+  }, [callsStatus, collectedWalletAddress, id]); // [!code focus]
+
+  useEffect(() => {
+    // Generate a random identifier for this user's "cart"
+    setId(crypto.randomUUID());
+    const sdk = createCoinbaseWalletSDK({
+      appName: "My App",
+      preference: {
+        options: "smartWalletOnly",
+      },
+    });
+    const provider = sdk.getProvider();
+    setProvider(provider);
+  }, []);
+
+  return (
+    <div className="flex flex-col justify-center items-center gap-4 w-screen h-screen">
+      <button
+        className="bg-blue-500 text-white px-8 py-2 rounded-md"
+        onClick={async () => {
+          const { id: submittedCallsId, capabilities } = (await provider?.request({
+            method: "wallet_sendCalls",
+            params: [
+              {
+                chainId: numberToHex(8453),
+                calls: [
+                  // Send $0.10 to Vitalik.
+                  {
+                    to: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+                    data: encodeFunctionData({
+                      abi: erc20Abi,
+                      functionName: "transfer",
+                      args: [
+                        "0xd8da6bf26964af9d7eed9e03e53415d37aa96045",
+                        parseUnits("0.1", 6),
+                      ],
+                    }),
+                  },
+                ],
+                capabilities: {
+                  dataCallback: {
+                    // Request the user's wallet address
+                    requests: [
+                      {
+                        type: "walletAddress",
+                      },
+                    ],
+                    // The URLs that will receive the user's information. In our case, this will resolve to this app's backend.
+                    validationURL: `${document.location.origin}/api/validate/${id}`,
+                    updateURL: `${document.location.origin}/api/update/${id}`,
+                  },
+                },
+              },
+            ],
+          })) as {
+            id: string;
+            capabilities: {
+              dataCallback: { requestedInfo: { walletAddress: Address } };
+            };
+          };
+          setCallsId(submittedCallsId);
+          setCollectedWalletAddress(
+            capabilities.dataCallback.requestedInfo.walletAddress
+          );
+        }}
+      >
+        Pay
+      </button>
+    </div>
+  );
+}
+```
+
+Once we have the transaction hash, we can finalize the "order" and update our backend records accordingly by calling the `/api/finalize` endpoint.
+
+### Create your "finalize" endpoint
+
+The finalize endpoint will be responsible for updating our backend records with the transaction hash and the final wallet address that was collected.
+
+Note that this last step is not part of the Wallet Webhooks spec, and you are free to perform whatever updates you want after receiving the call batch identifier and final requested information. We are just showing how you might want to finalize things in your app with a submitted transaction hash.
+
+```ts [app/api/finalize/[id].ts]
+import { Address, Hash } from "viem";
+import { orders } from "../util/storage";
+
+type FinalizeRequest = {
+  transactionHash: Hash;
+  walletAddress: Address;
+};
+
+export async function POST(
+  req: Request,
+  { params }: { params: { id: string } }
+) {
+  const { transactionHash, walletAddress } = await readBody(req);
+
+  console.log(
+    `Finalizing order ${params.id} with transaction hash ${transactionHash} and wallet address ${walletAddress}`
+  );
+
+  orders.set(params.id, {
+    id: params.id,
+    walletAddress,
+    status: "paid",
+    transactionHash,
+  });
+
+  return Response.json({ ok: true });
+}
+
+async function readBody(req: Request) {
+  return (await req.json()) as FinalizeRequest;
+}
+```
+
+That's it! You've now created a powerful transaction flow that allows you to collect information from users and update the transaction request they will sign based on the information provided.
+
+Read the [Wallet Webhook spec](https://hackmd.io/@lsr/BJMY-XVGkg) for more details and reach out with any questions or suggestions.
+
+::::
+

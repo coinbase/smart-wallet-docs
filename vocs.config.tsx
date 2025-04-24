@@ -172,6 +172,10 @@ export default defineConfig({
           link: "/guides/magic-spend",
         },
         {
+          text: "Wallet Webhooks",
+          link: "/guides/wallet-webhooks",
+        },
+        {
           text: "Tips & Tricks",
           items: [
             {
